@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { fetchCommentaries, getBibleHubUrl } from "../../services/commentaryService";
+import { saveCommentary } from "../../pages/CommentaryLibrary";
 
 const TABS = [
   { id: "commentary", label: "Commentary" },
@@ -16,7 +17,6 @@ export default function SidePanel({
   onDeleteNote,
 }) {
   const [activeTab, setActiveTab] = useState("commentary");
-  // Keep a local copy so the word study persists after the popup closes
   const [lastWordInfo, setLastWordInfo] = useState(null);
 
   useEffect(() => {
@@ -29,14 +29,14 @@ export default function SidePanel({
   const displayedWord = activeWordInfo || lastWordInfo;
 
   return (
-    <div className="flex flex-col h-full bg-white border-l border-cream-dark">
+    <div className="flex flex-col h-full bg-white border-l border-cream-dark w-full">
       {/* Tabs */}
       <div className="flex border-b border-cream-dark shrink-0">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab(tab.id); }}
+            onClick={() => setActiveTab(tab.id)}
             className={`flex-1 py-3 text-xs font-medium transition-colors relative ${
               activeTab === tab.id
                 ? "text-gold"
@@ -51,12 +51,12 @@ export default function SidePanel({
         ))}
       </div>
 
-      {/* Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
-        {activeTab === "commentary" && (
+      {/* Content — all tabs stay mounted, only active one visible */}
+      <div className="flex-1 min-h-0 relative">
+        <TabPane visible={activeTab === "commentary"}>
           <CommentaryTab book={book} chapter={chapter} />
-        )}
-        {activeTab === "notes" && (
+        </TabPane>
+        <TabPane visible={activeTab === "notes"}>
           <NotesTab
             book={book}
             chapter={chapter}
@@ -64,11 +64,23 @@ export default function SidePanel({
             onSaveNote={onSaveNote}
             onDeleteNote={onDeleteNote}
           />
-        )}
-        {activeTab === "wordstudy" && (
+        </TabPane>
+        <TabPane visible={activeTab === "wordstudy"}>
           <WordStudyTab wordInfo={displayedWord} />
-        )}
+        </TabPane>
       </div>
+    </div>
+  );
+}
+
+// Keep tab mounted but hidden when not active — preserves state & scroll
+function TabPane({ visible, children }) {
+  return (
+    <div
+      className="absolute inset-0 overflow-y-auto overscroll-contain"
+      style={{ visibility: visible ? "visible" : "hidden", zIndex: visible ? 1 : 0 }}
+    >
+      {children}
     </div>
   );
 }
@@ -78,11 +90,16 @@ function CommentaryTab({ book, chapter }) {
   const [commentaries, setCommentaries] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expandedCards, setExpandedCards] = useState({});
+  const loadedRef = useRef("");
 
   useEffect(() => {
+    const key = `${book}-${chapter}`;
+    if (loadedRef.current === key) return; // already loaded this chapter
+    loadedRef.current = key;
+
     let cancelled = false;
     setLoading(true);
-    setCommentaries([]);
+    setExpandedCards({});
     fetchCommentaries(book, chapter).then((results) => {
       if (!cancelled) {
         setCommentaries(results);
@@ -118,9 +135,13 @@ function CommentaryTab({ book, chapter }) {
 
   return (
     <div className="divide-y divide-cream-dark">
+      <div className="px-4 py-2 bg-cream/50">
+        <p className="text-[10px] text-warm-brown-light">{commentaries.length} commentaries for {book} {chapter}</p>
+      </div>
       {commentaries.map((c, i) => (
         <div key={i} className="px-4 py-3">
           <button
+            type="button"
             onClick={() => setExpandedCards((p) => ({ ...p, [i]: !p[i] }))}
             className="w-full text-left"
           >
@@ -135,14 +156,21 @@ function CommentaryTab({ book, chapter }) {
           <p className={`text-xs text-warm-brown leading-relaxed ${expandedCards[i] ? "" : "line-clamp-3"}`}>
             {c.quote}
           </p>
-          {c.quote.length > 150 && (
-            <button
-              onClick={() => setExpandedCards((p) => ({ ...p, [i]: !p[i] }))}
-              className="text-[10px] text-gold mt-1"
-            >
-              {expandedCards[i] ? "Show less" : "Read more"}
-            </button>
-          )}
+          <div className="flex items-center gap-3 mt-1">
+            {c.quote.length > 150 && (
+              <button type="button" onClick={() => setExpandedCards((p) => ({ ...p, [i]: !p[i] }))} className="text-[10px] text-gold">
+                {expandedCards[i] ? "Less" : "More"}
+              </button>
+            )}
+            {expandedCards[i] && (
+              <button type="button" onClick={() => saveCommentary(c, book, chapter)} className="text-[10px] text-warm-brown-light hover:text-gold flex items-center gap-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                </svg>
+                Save
+              </button>
+            )}
+          </div>
         </div>
       ))}
       {bibleHubUrl && (
@@ -198,8 +226,8 @@ function NotesTab({ book, chapter, notes, onSaveNote, onDeleteNote }) {
             autoFocus
           />
           <div className="flex justify-end gap-2 mt-2">
-            <button onClick={() => setEditingVerse(null)} className="text-[10px] text-warm-brown-light">Cancel</button>
-            <button onClick={save} className="text-[10px] text-gold font-medium">Save</button>
+            <button type="button" onClick={() => setEditingVerse(null)} className="text-[10px] text-warm-brown-light">Cancel</button>
+            <button type="button" onClick={save} className="text-[10px] text-gold font-medium">Save</button>
           </div>
         </div>
       )}
@@ -210,18 +238,8 @@ function NotesTab({ book, chapter, notes, onSaveNote, onDeleteNote }) {
               {book} {chapter}:{note.verseNumber}
             </span>
             <div className="flex gap-2">
-              <button
-                onClick={() => startEdit(note.verseNumber, note.text)}
-                className="text-[10px] text-warm-brown-light hover:text-warm-brown"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => onDeleteNote(note.verseNumber)}
-                className="text-[10px] text-red-400 hover:text-red-500"
-              >
-                Delete
-              </button>
+              <button type="button" onClick={() => startEdit(note.verseNumber, note.text)} className="text-[10px] text-warm-brown-light hover:text-warm-brown">Edit</button>
+              <button type="button" onClick={() => onDeleteNote(note.verseNumber)} className="text-[10px] text-red-400 hover:text-red-500">Delete</button>
             </div>
           </div>
           <p className="text-xs text-warm-brown leading-relaxed">{note.text}</p>
@@ -261,9 +279,11 @@ function WordStudyTab({ wordInfo }) {
     );
   }
 
+  // Clean HTML entities
+  const clean = (t) => t?.replace(/&#39\s+s\b/g, "'s").replace(/&#(\d+);?/g, (_, c) => String.fromCharCode(parseInt(c))).replace(/&amp;/g, "&") || "";
+
   return (
     <div className="p-4 space-y-4">
-      {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-lg font-bold text-warm-brown">{wordInfo.word}</span>
@@ -285,39 +305,52 @@ function WordStudyTab({ wordInfo }) {
         )}
       </div>
 
-      {/* Strong's Definition */}
       {wordInfo.strongs_def && (
         <StudySection title="Strong's Definition">
-          <p>{wordInfo.strongs_def}</p>
+          <p>{clean(wordInfo.strongs_def)}</p>
         </StudySection>
       )}
 
-      {/* KJV Definition */}
       {wordInfo.kjv_def && (
         <StudySection title="KJV Translations">
-          <p className="font-mono text-xs">{wordInfo.kjv_def}</p>
+          <div className="flex flex-wrap gap-1">
+            {wordInfo.kjv_def.split(",").map((t, i) => (
+              <span key={i} className="text-[10px] bg-cream-dark px-2 py-0.5 rounded-full text-warm-brown">{t.trim()}</span>
+            ))}
+          </div>
         </StudySection>
       )}
 
-      {/* Derivation / Etymology */}
       {wordInfo.derivation && (
         <StudySection title="Derivation">
-          <p>{wordInfo.derivation}</p>
+          <p>{clean(wordInfo.derivation)}</p>
         </StudySection>
       )}
 
-      {/* Usage */}
       {wordInfo.outline_usage && (
         <StudySection title="Usage">
-          <p>{wordInfo.outline_usage}</p>
+          <p>{clean(wordInfo.outline_usage)}</p>
         </StudySection>
       )}
 
-      {/* Occurrences */}
       {wordInfo.occurrences && (
         <StudySection title="Occurrences">
           <p className="text-xs">{wordInfo.occurrences}</p>
         </StudySection>
+      )}
+
+      {/* External links */}
+      {wordInfo.biblehub_url && (
+        <div className="pt-2 border-t border-cream-dark space-y-1.5">
+          <a href={wordInfo.biblehub_url} target="_blank" rel="noopener noreferrer" className="block text-[10px] text-gold hover:text-gold/80">
+            BibleHub: {wordInfo.strongs}
+          </a>
+          {wordInfo.blb_url && (
+            <a href={wordInfo.blb_url} target="_blank" rel="noopener noreferrer" className="block text-[10px] text-gold hover:text-gold/80">
+              Blue Letter Bible: {wordInfo.strongs}
+            </a>
+          )}
+        </div>
       )}
     </div>
   );

@@ -16,14 +16,14 @@ export default function VerseList({
   onWordTap,
   chapterWords,
 }) {
-  const { fontSize, studyMode } = useApp();
+  const { fontSize, studyMode, fontFamily } = useApp();
 
   if (!verses || verses.length === 0) return null;
 
   return (
     <div
       className="font-scripture px-5 py-4 bg-scripture-bg rounded-xl mx-2"
-      style={{ fontSize: `${fontSize}px` }}
+      style={{ fontSize: `${fontSize}px`, fontFamily }}
     >
       {verses.map((v) => {
         const highlight = getHighlight(v.verse);

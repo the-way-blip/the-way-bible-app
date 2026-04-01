@@ -10,7 +10,10 @@ export function AppProvider({ children }) {
     () => localStorage.getItem("darkMode") === "true"
   );
   const [studyMode, setStudyMode] = useState(
-    () => localStorage.getItem("studyMode") !== "false" // default to study mode
+    () => localStorage.getItem("studyMode") !== "false"
+  );
+  const [fontFamily, setFontFamilyState] = useState(
+    () => localStorage.getItem("fontFamily") || "Georgia, 'Times New Roman', serif"
   );
 
   useEffect(() => {
@@ -32,11 +35,17 @@ export function AppProvider({ children }) {
     });
   };
 
+  const setFontFamily = (family) => {
+    setFontFamilyState(family);
+    localStorage.setItem("fontFamily", family);
+  };
+
   return (
     <AppContext.Provider value={{
       fontSize, setFontSize: updateFontSize,
       darkMode, toggleDarkMode,
       studyMode, toggleStudyMode,
+      fontFamily, setFontFamily,
     }}>
       {children}
     </AppContext.Provider>

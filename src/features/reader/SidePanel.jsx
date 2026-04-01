@@ -35,7 +35,8 @@ export default function SidePanel({
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab(tab.id); }}
             className={`flex-1 py-3 text-xs font-medium transition-colors relative ${
               activeTab === tab.id
                 ? "text-gold"

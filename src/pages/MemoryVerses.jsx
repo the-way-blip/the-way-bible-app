@@ -1,8 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import useMemoryVerses from "../hooks/useMemoryVerses";
+import ShareSheet from "../components/ShareSheet";
 
 export default function MemoryVerses() {
   const { verses, removeVerse } = useMemoryVerses();
+  const [shareData, setShareData] = useState(null);
 
   const learning = verses.filter((v) => v.status === "learning");
   const mastered = verses.filter((v) => v.status !== "learning");
@@ -50,7 +53,7 @@ export default function MemoryVerses() {
               </h2>
               <div className="space-y-2">
                 {learning.map((v) => (
-                  <VerseCard key={v.id} verse={v} onRemove={removeVerse} />
+                  <VerseCard key={v.id} verse={v} onRemove={removeVerse} onShare={(v) => setShareData({ content: v.text, reference: `${v.book} ${v.chapter}:${v.verseNumber}` })} />
                 ))}
               </div>
             </div>
@@ -63,18 +66,22 @@ export default function MemoryVerses() {
               </h2>
               <div className="space-y-2">
                 {mastered.map((v) => (
-                  <VerseCard key={v.id} verse={v} onRemove={removeVerse} />
+                  <VerseCard key={v.id} verse={v} onRemove={removeVerse} onShare={(v) => setShareData({ content: v.text, reference: `${v.book} ${v.chapter}:${v.verseNumber}` })} />
                 ))}
               </div>
             </div>
           )}
         </>
       )}
+
+      {shareData && (
+        <ShareSheet content={shareData.content} reference={shareData.reference} onClose={() => setShareData(null)} />
+      )}
     </div>
   );
 }
 
-function VerseCard({ verse, onRemove }) {
+function VerseCard({ verse, onRemove, onShare }) {
   return (
     <div className="bg-white rounded-xl p-4 border border-cream-dark">
       <div className="flex items-start justify-between gap-3">
@@ -96,12 +103,24 @@ function VerseCard({ verse, onRemove }) {
           </svg>
         </button>
       </div>
-      <Link
-        to={`/read/${encodeURIComponent(verse.book)}/${verse.chapter}`}
-        className="text-xs text-warm-brown-light hover:text-gold mt-2 inline-block"
-      >
-        Read in context
-      </Link>
+      <div className="flex items-center gap-3 mt-2">
+        <Link
+          to={`/read/${encodeURIComponent(verse.book)}/${verse.chapter}`}
+          className="text-xs text-warm-brown-light hover:text-gold"
+        >
+          Read in context
+        </Link>
+        <button
+          onClick={() => onShare(verse)}
+          className="text-xs text-warm-brown-light/50 hover:text-gold flex items-center gap-1"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+            <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+          Share
+        </button>
+      </div>
     </div>
   );
 }

@@ -1,122 +1,141 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-
-const PLANS = [
-  {
-    id: "whole-bible",
-    name: "Read the Bible in a Year",
-    desc: "3-4 chapters per day, Genesis to Revelation",
-    duration: "365 days",
-    daily: 3,
-    books: null, // all books
-  },
-  {
-    id: "new-testament",
-    name: "New Testament in 90 Days",
-    desc: "The Gospels through Revelation",
-    duration: "90 days",
-    daily: 3,
-    books: ["Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"],
-  },
-  {
-    id: "psalms-proverbs",
-    name: "Psalms & Proverbs",
-    desc: "Wisdom and worship daily",
-    duration: "60 days",
-    daily: 3,
-    books: ["Psalms", "Proverbs"],
-  },
-  {
-    id: "gospels",
-    name: "The Four Gospels",
-    desc: "Walk with Jesus through Matthew, Mark, Luke, John",
-    duration: "30 days",
-    daily: 3,
-    books: ["Matthew", "Mark", "Luke", "John"],
-  },
-  {
-    id: "romans-deep",
-    name: "Romans Deep Dive",
-    desc: "One chapter per day through Paul's masterwork",
-    duration: "16 days",
-    daily: 1,
-    books: ["Romans"],
-  },
-];
+import { PLANS, getTodaysReading } from "../data/readingPlanData";
 
 export default function ReadingPlan() {
-  const [activePlan, setActivePlan] = useState(null);
-  const [planProgress, setPlanProgress] = useState({});
+  const [planState, setPlanState] = useState(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem("readingPlan");
-    if (stored) {
-      const parsed = JSON.parse(stored);
-      setActivePlan(parsed.planId);
-      setPlanProgress(parsed);
-    }
+    const stored = localStorage.getItem("activePlan");
+    if (stored) setPlanState(JSON.parse(stored));
   }, []);
 
   const startPlan = (planId) => {
-    const plan = { planId, startDate: new Date().toISOString().split("T")[0], day: 1 };
-    localStorage.setItem("readingPlan", JSON.stringify(plan));
-    setActivePlan(planId);
-    setPlanProgress(plan);
+    const state = {
+      planId,
+      startDate: new Date().toISOString().split("T")[0],
+      completedDays: [],
+    };
+    localStorage.setItem("activePlan", JSON.stringify(state));
+    setPlanState(state);
   };
 
-  const currentPlan = PLANS.find((p) => p.id === activePlan);
-  const today = planProgress.day || 1;
+  const endPlan = () => {
+    localStorage.removeItem("activePlan");
+    setPlanState(null);
+  };
+
+  const markDayComplete = (dayNum) => {
+    if (!planState) return;
+    const updated = {
+      ...planState,
+      completedDays: [...new Set([...planState.completedDays, dayNum])],
+    };
+    localStorage.setItem("activePlan", JSON.stringify(updated));
+    setPlanState(updated);
+  };
+
+  const today = planState ? getTodaysReading(planState.planId, planState.startDate) : null;
+  const activePlan = planState ? PLANS.find((p) => p.id === planState.planId) : null;
+  const isDayComplete = today ? planState.completedDays.includes(today.day) : false;
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
       <h1 className="text-xl font-bold text-warm-brown mb-1">Reading Plans</h1>
-      <p className="text-sm text-warm-brown-light mb-6">Structured daily reading to guide your study</p>
+      <p className="text-sm text-warm-brown-light mb-6">Structured daily reading</p>
 
-      {currentPlan && (
+      {/* Active plan — today's reading */}
+      {activePlan && today && (
         <div className="bg-scripture-bg rounded-2xl p-5 mb-6 border border-cream-dark">
-          <p className="text-xs font-medium text-gold uppercase tracking-wider mb-2">Current Plan</p>
-          <h2 className="text-lg font-semibold text-warm-brown">{currentPlan.name}</h2>
-          <p className="text-sm text-warm-brown-light mt-1">Day {today} of {currentPlan.duration}</p>
-          <div className="h-2 bg-cream-dark rounded-full mt-3 overflow-hidden">
-            <div className="h-full bg-gold rounded-full" style={{ width: `${Math.min((today / parseInt(currentPlan.duration)) * 100, 100)}%` }} />
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-xs font-medium text-gold uppercase tracking-wider">{activePlan.name}</p>
+              <p className="text-sm text-warm-brown-light">Day {today.day} of {today.totalDays}</p>
+            </div>
+            <button onClick={endPlan} className="text-[10px] text-warm-brown-light hover:text-red-400">End Plan</button>
           </div>
-          <div className="mt-4 flex gap-2">
-            <Link
-              to={`/read/${encodeURIComponent(currentPlan.books?.[0] || "Genesis")}/1`}
-              className="flex-1 bg-gold text-white rounded-lg py-2 text-center text-sm font-medium hover:bg-gold/90 transition-colors"
-            >
-              Today's Reading
-            </Link>
-            <button
-              onClick={() => { localStorage.removeItem("readingPlan"); setActivePlan(null); }}
-              className="text-xs text-warm-brown-light hover:text-red-400 px-3"
-            >
-              End Plan
-            </button>
+
+          {/* Progress bar */}
+          <div className="h-2 bg-cream-dark rounded-full mb-4 overflow-hidden">
+            <div className="h-full bg-gold rounded-full transition-all" style={{ width: `${(today.day / today.totalDays) * 100}%` }} />
           </div>
+
+          {/* Today's readings */}
+          <p className="text-xs font-semibold text-warm-brown uppercase tracking-wider mb-2">Today's Reading</p>
+          <div className="space-y-2 mb-4">
+            {today.readings.map((r, i) => (
+              <Link
+                key={i}
+                to={`/read/${encodeURIComponent(r.book)}/${r.chapter}`}
+                className="flex items-center justify-between bg-white rounded-lg px-4 py-3 border border-cream-dark hover:border-gold/30 transition-colors"
+              >
+                <span className="text-sm font-medium text-warm-brown">{r.book} {r.chapter}</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-gold">
+                  <polyline points="9 6 15 12 9 18" />
+                </svg>
+              </Link>
+            ))}
+          </div>
+
+          {/* Mark complete */}
+          <button
+            onClick={() => markDayComplete(today.day)}
+            disabled={isDayComplete}
+            className={`w-full py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isDayComplete
+                ? "bg-green-100 text-green-600"
+                : "bg-gold text-white hover:bg-gold/90"
+            }`}
+          >
+            {isDayComplete ? "Day Complete" : "Mark Day as Complete"}
+          </button>
+
+          <p className="text-[10px] text-warm-brown-light/50 text-center mt-2">
+            {planState.completedDays.length} of {today.totalDays} days completed
+          </p>
         </div>
       )}
 
+      {/* Plan ended or no reading today */}
+      {activePlan && !today && (
+        <div className="bg-green-50 rounded-2xl p-5 mb-6 border border-green-200 text-center">
+          <p className="text-lg font-semibold text-green-700 mb-1">Plan Complete!</p>
+          <p className="text-sm text-green-600">You finished {activePlan.name}</p>
+          <button onClick={endPlan} className="mt-3 text-xs text-green-500 hover:text-green-700">Start a new plan</button>
+        </div>
+      )}
+
+      {/* Available plans */}
+      <p className="text-xs font-semibold text-warm-brown-light uppercase tracking-wider mb-3">
+        {planState ? "Other Plans" : "Choose a Plan"}
+      </p>
       <div className="space-y-3">
-        {PLANS.map((plan) => (
-          <div key={plan.id} className={`bg-white rounded-xl p-4 border transition-colors ${activePlan === plan.id ? "border-gold" : "border-cream-dark"}`}>
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="font-medium text-warm-brown">{plan.name}</h3>
-                <p className="text-xs text-warm-brown-light mt-0.5">{plan.desc}</p>
-                <p className="text-[10px] text-warm-brown-light/60 mt-1">{plan.duration} · ~{plan.daily} chapters/day</p>
+        {PLANS.map((plan) => {
+          const isActive = planState?.planId === plan.id;
+          const days = plan.getDays();
+          return (
+            <div key={plan.id} className={`bg-white rounded-xl p-4 border transition-colors ${isActive ? "border-gold" : "border-cream-dark"}`}>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h3 className="font-medium text-warm-brown">{plan.name}</h3>
+                  <p className="text-xs text-warm-brown-light mt-0.5">{plan.desc}</p>
+                  <p className="text-[10px] text-warm-brown-light/60 mt-1">{days.length} days</p>
+                </div>
+                {!isActive && (
+                  <button
+                    onClick={() => startPlan(plan.id)}
+                    className="text-xs bg-gold/10 text-gold px-3 py-1.5 rounded-full font-medium hover:bg-gold/20 transition-colors"
+                  >
+                    Start
+                  </button>
+                )}
+                {isActive && (
+                  <span className="text-[10px] bg-gold text-white px-2 py-1 rounded-full">Active</span>
+                )}
               </div>
-              {activePlan !== plan.id && (
-                <button
-                  onClick={() => startPlan(plan.id)}
-                  className="text-xs bg-gold/10 text-gold px-3 py-1.5 rounded-full font-medium hover:bg-gold/20 transition-colors"
-                >
-                  Start
-                </button>
-              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

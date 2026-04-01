@@ -19,6 +19,7 @@ import BibleMaps from "../features/reader/BibleMaps";
 import YouTubeLinks from "../features/reader/YouTubeLinks";
 import AIChat from "../features/reader/AIChat";
 import AudioBible from "../features/reader/AudioBible";
+import ParallelPassages from "../features/reader/ParallelPassages";
 import ShareSheet from "../components/ShareSheet";
 import { getHeaderQuote } from "../data/headerQuotes";
 import { useApp } from "../stores/AppContext";
@@ -253,6 +254,7 @@ export default function Reader() {
               </div>
 
               {/* Study tools below text */}
+              <ParallelPassages book={book} chapter={chapterNum} />
               <AudioBible book={book} chapter={chapterNum} />
               <BibleMaps book={book} />
               <YouTubeLinks book={book} chapter={chapterNum} />
@@ -344,6 +346,9 @@ export default function Reader() {
             } else {
               addBookmark(book, chapterNum, selectedVerse, selectedVerseData.text);
             }
+          }}
+          onAddToJournal={() => {
+            navigate(`/journal/new?book=${encodeURIComponent(book)}&chapter=${chapterNum}&verse=${selectedVerse}&text=${encodeURIComponent(selectedVerseData.text)}`);
           }}
           onShare={() => {
             setShareData({ content: selectedVerseData.text, reference: `${book} ${chapterNum}:${selectedVerse}` });

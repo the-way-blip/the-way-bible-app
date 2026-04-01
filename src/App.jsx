@@ -15,6 +15,7 @@ import Login from "./pages/Login";
 import Search from "./pages/Search";
 import ReadingPlan from "./pages/ReadingPlan";
 import PrayerList from "./pages/PrayerList";
+import Topics from "./pages/Topics";
 import CommentaryLibrary from "./pages/CommentaryLibrary";
 import Settings from "./pages/Settings";
 
@@ -40,6 +41,7 @@ export default function App() {
               <Route path="/prayers" element={<PrayerList />} />
               <Route path="/commentaries" element={<CommentaryLibrary />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/topics" element={<Topics />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

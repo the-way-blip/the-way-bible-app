@@ -22,6 +22,8 @@ import AudioBible from "../features/reader/AudioBible";
 import ShareSheet from "../components/ShareSheet";
 import { getHeaderQuote } from "../data/headerQuotes";
 import { useApp } from "../stores/AppContext";
+import useSwipe from "../hooks/useSwipe";
+import useBookmarks from "../hooks/useBookmarks";
 
 export default function Reader() {
   const { book, chapter } = useParams();
@@ -34,7 +36,14 @@ export default function Reader() {
   const { addVerse, isMemoryVerse } = useMemoryVerses();
   const { wordData, loading: wordLoading, error: wordError, getWordStudy, clear: clearWordStudy } = useWordStudy();
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapterNum, data?.verses);
-  const { studyMode, toggleStudyMode } = useApp();
+  const { studyMode, toggleStudyMode, fontSize, setFontSize } = useApp();
+  const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
+
+  // Swipe navigation
+  const swipeHandlers = useSwipe(
+    () => next && goTo(next),   // swipe left → next chapter
+    () => prev && goTo(prev),   // swipe right → prev chapter
+  );
 
   const [selectedVerse, setSelectedVerse] = useState(null);
   const [showNav, setShowNav] = useState(false);
@@ -131,7 +140,7 @@ export default function Reader() {
   return (
     <div className="flex h-[calc(100svh-4rem)]">
       {/* ─── Left: Scripture Reader ─── */}
-      <div className="flex-1 min-w-0 overflow-y-auto">
+      <div className="flex-1 min-w-0 overflow-y-auto" {...swipeHandlers}>
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <header className="sticky top-0 bg-cream/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-between">
@@ -145,7 +154,21 @@ export default function Reader() {
               </svg>
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {/* Font size quick-adjust */}
+              <div className="flex items-center bg-cream-dark rounded-full">
+                <button
+                  onClick={() => setFontSize(Math.max(14, fontSize - 2))}
+                  className="px-1.5 py-1 text-[10px] text-warm-brown-light hover:text-warm-brown"
+                  title="Smaller text"
+                >A</button>
+                <button
+                  onClick={() => setFontSize(Math.min(28, fontSize + 2))}
+                  className="px-1.5 py-1 text-xs font-medium text-warm-brown-light hover:text-warm-brown"
+                  title="Larger text"
+                >A</button>
+              </div>
+
               {/* Read / Study mode toggle */}
               <button
                 onClick={toggleStudyMode}
@@ -310,10 +333,18 @@ export default function Reader() {
           currentHighlight={getHighlight(selectedVerse)}
           currentNote={getNote(selectedVerse)}
           isMemoryVerse={isMemoryVerse(book, chapterNum, selectedVerse)}
+          isBookmarkedVerse={isBookmarked(book, chapterNum, selectedVerse)}
           onHighlight={addHighlight}
           onSaveNote={saveNote}
           onDeleteNote={deleteNote}
           onAddMemoryVerse={addVerse}
+          onToggleBookmark={() => {
+            if (isBookmarked(book, chapterNum, selectedVerse)) {
+              removeBookmark(book, chapterNum, selectedVerse);
+            } else {
+              addBookmark(book, chapterNum, selectedVerse, selectedVerseData.text);
+            }
+          }}
           onShare={() => {
             setShareData({ content: selectedVerseData.text, reference: `${book} ${chapterNum}:${selectedVerse}` });
             setSelectedVerse(null);

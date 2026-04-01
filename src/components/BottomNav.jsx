@@ -37,6 +37,8 @@ const moreLinks = [
     icon: <Icon d={<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></>} className="w-4.5 h-4.5" /> },
   { to: "/plans", label: "Reading Plans",
     icon: <Icon d={<><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></>} className="w-4.5 h-4.5" /> },
+  { to: "/topics", label: "Topics",
+    icon: <Icon d={<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></>} className="w-4.5 h-4.5" /> },
   { to: "/commentaries", label: "Commentary Library",
     icon: <Icon d={<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></>} className="w-4.5 h-4.5" /> },
   { to: "/progress", label: "Progress & Badges",

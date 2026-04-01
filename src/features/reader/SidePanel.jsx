@@ -6,6 +6,7 @@ const TABS = [
   { id: "commentary", label: "Commentary" },
   { id: "notes", label: "Notes" },
   { id: "wordstudy", label: "Word Study" },
+  { id: "journal", label: "Journal" },
 ];
 
 export default function SidePanel({
@@ -67,6 +68,9 @@ export default function SidePanel({
         </TabPane>
         <TabPane visible={activeTab === "wordstudy"}>
           <WordStudyTab wordInfo={displayedWord} />
+        </TabPane>
+        <TabPane visible={activeTab === "journal"}>
+          <JournalTab book={book} chapter={chapter} />
         </TabPane>
       </div>
     </div>
@@ -352,6 +356,57 @@ function WordStudyTab({ wordInfo }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+/* ─── Journal Tab ─── */
+function JournalTab({ book, chapter }) {
+  const [text, setText] = useState("");
+  const [saved, setSaved] = useState(false);
+
+  const saveJournalEntry = async () => {
+    if (!text.trim()) return;
+    const { dbPut } = await import("../../hooks/useDB");
+    await dbPut("journal", {
+      id: `journal-${Date.now()}`,
+      title: `${book} ${chapter} reflection`,
+      content: text.trim(),
+      book,
+      chapter,
+      tags: [],
+      mood: "reflective",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    setSaved(true);
+    setTimeout(() => { setText(""); setSaved(false); }, 2000);
+  };
+
+  return (
+    <div className="p-4">
+      <p className="text-xs text-warm-brown-light mb-3">
+        Write your reflections on {book} {chapter}
+      </p>
+      <textarea
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder="What stood out to you? What is God speaking to your heart?"
+        className="w-full h-32 bg-cream rounded-lg px-3 py-2 text-sm text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-1 focus:ring-gold/30 font-scripture leading-relaxed"
+      />
+      <button
+        type="button"
+        onClick={saveJournalEntry}
+        disabled={!text.trim() || saved}
+        className={`w-full mt-2 py-2 rounded-lg text-sm font-medium transition-colors ${
+          saved ? "bg-green-100 text-green-600" : "bg-gold text-white hover:bg-gold/90 disabled:opacity-40"
+        }`}
+      >
+        {saved ? "Saved!" : "Save to Journal"}
+      </button>
+      <a href="/journal" className="block text-center text-[10px] text-warm-brown-light hover:text-gold mt-2">
+        View all journal entries
+      </a>
     </div>
   );
 }

@@ -170,21 +170,32 @@ export default function Home() {
         </div>
       )}
 
-      {/* Quick Start / Onboarding */}
+      {/* Quick Start */}
       {!progress.lastRead && (
         <div className="space-y-3">
-          <Link
-            to="/onboarding"
-            className="block bg-gold text-white rounded-2xl p-4 text-center font-semibold hover:bg-gold/90 transition-colors"
-          >
-            Get Started
-          </Link>
-          <Link
-            to="/read/Genesis/1"
-            className="block text-center text-sm text-warm-brown-light hover:text-warm-brown"
-          >
-            or jump straight to reading
-          </Link>
+          {localStorage.getItem("onboardingComplete") ? (
+            <Link
+              to="/read/Genesis/1"
+              className="block bg-gold text-white rounded-2xl p-4 text-center font-semibold hover:bg-gold/90 transition-colors"
+            >
+              Read the Word
+            </Link>
+          ) : (
+            <>
+              <Link
+                to="/onboarding"
+                className="block bg-gold text-white rounded-2xl p-4 text-center font-semibold hover:bg-gold/90 transition-colors"
+              >
+                Get Started
+              </Link>
+              <Link
+                to="/read/Genesis/1"
+                className="block text-center text-sm text-warm-brown-light hover:text-warm-brown"
+              >
+                or jump straight to reading
+              </Link>
+            </>
+          )}
         </div>
       )}
 

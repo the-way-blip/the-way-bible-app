@@ -16,11 +16,17 @@ export default function SidePanel({
   onDeleteNote,
 }) {
   const [activeTab, setActiveTab] = useState("commentary");
+  // Keep a local copy so the word study persists after the popup closes
+  const [lastWordInfo, setLastWordInfo] = useState(null);
 
-  // Auto-switch to word study when a word is tapped
   useEffect(() => {
-    if (activeWordInfo) setActiveTab("wordstudy");
+    if (activeWordInfo) {
+      setLastWordInfo(activeWordInfo);
+      setActiveTab("wordstudy");
+    }
   }, [activeWordInfo]);
+
+  const displayedWord = activeWordInfo || lastWordInfo;
 
   return (
     <div className="flex flex-col h-full bg-white border-l border-cream-dark">
@@ -59,7 +65,7 @@ export default function SidePanel({
           />
         )}
         {activeTab === "wordstudy" && (
-          <WordStudyTab wordInfo={activeWordInfo} />
+          <WordStudyTab wordInfo={displayedWord} />
         )}
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { fetchCommentaries, getBibleHubUrl } from "../../services/commentaryService";
+import { saveCommentary } from "../../pages/CommentaryLibrary";
 
 export default function CommentaryPanel({ book, chapter }) {
   const [commentaries, setCommentaries] = useState([]);
@@ -119,11 +120,20 @@ export default function CommentaryPanel({ book, chapter }) {
                   <p className="text-sm text-warm-brown leading-relaxed whitespace-pre-line">
                     {c.quote}
                   </p>
-                  {c.source && (
-                    <p className="text-[10px] text-warm-brown-light/60 mt-2 italic">
-                      Source: {c.source}
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-[10px] text-warm-brown-light/60 italic">
+                      {c.source ? `Source: ${c.source}` : ""}
                     </p>
-                  )}
+                    <button
+                      onClick={() => saveCommentary(c, book, chapter)}
+                      className="text-[10px] text-gold hover:text-gold/80 flex items-center gap-1"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                      </svg>
+                      Save
+                    </button>
+                  </div>
                 </div>
               )}
             </div>

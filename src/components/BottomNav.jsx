@@ -52,6 +52,7 @@ const moreLinks = [
   { to: "/journal", label: "Journal", icon: "✏️" },
   { to: "/prayers", label: "Prayer List", icon: "🙏" },
   { to: "/plans", label: "Reading Plans", icon: "📅" },
+  { to: "/commentaries", label: "Commentary Library", icon: "📚" },
   { to: "/progress", label: "Progress & Badges", icon: "📊" },
   { to: "/login", label: "Account", icon: "👤" },
 ];

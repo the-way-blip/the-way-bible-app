@@ -21,6 +21,7 @@ import AIChat from "../features/reader/AIChat";
 import AudioBible from "../features/reader/AudioBible";
 import ShareSheet from "../components/ShareSheet";
 import { getHeaderQuote } from "../data/headerQuotes";
+import { useApp } from "../stores/AppContext";
 
 export default function Reader() {
   const { book, chapter } = useParams();
@@ -33,9 +34,13 @@ export default function Reader() {
   const { addVerse, isMemoryVerse } = useMemoryVerses();
   const { wordData, loading: wordLoading, error: wordError, getWordStudy, clear: clearWordStudy } = useWordStudy();
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapterNum, data?.verses);
+  const { studyMode, toggleStudyMode } = useApp();
 
   const [selectedVerse, setSelectedVerse] = useState(null);
   const [showNav, setShowNav] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(
+    () => parseInt(localStorage.getItem("sidebarWidth")) || 380
+  );
   const [activeWordInfo, setActiveWordInfo] = useState(null);
   const [wordStudyVerse, setWordStudyVerse] = useState(null);
   const [loadingVerse, setLoadingVerse] = useState(null);
@@ -140,17 +145,47 @@ export default function Reader() {
               </svg>
             </button>
 
-            {/* Toggle side panel (desktop only) */}
-            <button
-              onClick={() => setSidePanelOpen(!sidePanelOpen)}
-              className="hidden md:flex items-center gap-1.5 text-xs text-warm-brown-light hover:text-warm-brown transition-colors"
-              title={sidePanelOpen ? "Close study panel" : "Open study panel"}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <line x1="15" y1="3" x2="15" y2="21" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Read / Study mode toggle */}
+              <button
+                onClick={toggleStudyMode}
+                className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-medium transition-colors ${
+                  studyMode
+                    ? "bg-gold/10 text-gold"
+                    : "bg-cream-dark text-warm-brown-light"
+                }`}
+                title={studyMode ? "Switch to Read mode" : "Switch to Study mode"}
+              >
+                {studyMode ? (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    Study
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                    </svg>
+                    Read
+                  </>
+                )}
+              </button>
+
+              {/* Toggle side panel (desktop only) */}
+              <button
+                onClick={() => setSidePanelOpen(!sidePanelOpen)}
+                className="hidden md:flex items-center text-warm-brown-light hover:text-warm-brown transition-colors"
+                title={sidePanelOpen ? "Close study panel" : "Open study panel"}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                  <rect x="3" y="3" width="18" height="18" rx="2" />
+                  <line x1="15" y1="3" x2="15" y2="21" />
+                </svg>
+              </button>
+            </div>
           </header>
 
           {/* Header quote */}
@@ -227,9 +262,31 @@ export default function Reader() {
         </div>
       </div>
 
-      {/* ─── Right: Side Panel (desktop only) ─── */}
+      {/* ─── Right: Side Panel (desktop only, resizable) ─── */}
       {sidePanelOpen && (
-        <div className="hidden md:flex w-[380px] shrink-0">
+        <div className="hidden md:flex shrink-0 relative" style={{ width: sidebarWidth }}>
+          {/* Drag handle */}
+          <div
+            className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-gold/30 active:bg-gold/50 z-10 group"
+            onMouseDown={(e) => {
+              e.preventDefault();
+              const startX = e.clientX;
+              const startWidth = sidebarWidth;
+              const onMove = (ev) => {
+                const newWidth = Math.max(280, Math.min(600, startWidth - (ev.clientX - startX)));
+                setSidebarWidth(newWidth);
+              };
+              const onUp = () => {
+                localStorage.setItem("sidebarWidth", sidebarWidth);
+                document.removeEventListener("mousemove", onMove);
+                document.removeEventListener("mouseup", onUp);
+              };
+              document.addEventListener("mousemove", onMove);
+              document.addEventListener("mouseup", onUp);
+            }}
+          >
+            <div className="w-0.5 h-8 bg-cream-dark group-hover:bg-gold/50 rounded-full absolute top-1/2 -translate-y-1/2 left-0" />
+          </div>
           <SidePanel
             book={book}
             chapter={chapterNum}

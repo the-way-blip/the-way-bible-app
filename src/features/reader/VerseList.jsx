@@ -16,7 +16,7 @@ export default function VerseList({
   onWordTap,
   chapterWords,
 }) {
-  const { fontSize } = useApp();
+  const { fontSize, studyMode } = useApp();
 
   if (!verses || verses.length === 0) return null;
 
@@ -49,10 +49,10 @@ export default function VerseList({
             >
               {v.verse}
             </sup>
-            {wordsForVerse ? (
+            {studyMode && wordsForVerse ? (
               <EnrichedText words={wordsForVerse} onWordTap={onWordTap} />
             ) : (
-              <PlainText text={v.text} verseNumber={v.verse} onWordTap={onWordTap} />
+              <ReadText text={v.text} />
             )}
             {" "}
             {note && (
@@ -72,28 +72,12 @@ export default function VerseList({
   );
 }
 
-// Plain text fallback while word data loads
-function PlainText({ text, verseNumber, onWordTap }) {
-  const words = text.split(/\s+/);
-  return (
-    <>
-      {words.map((word, i) => (
-        <span
-          key={i}
-          className="cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            onWordTap(word, verseNumber, text);
-          }}
-        >
-          {word}{" "}
-        </span>
-      ))}
-    </>
-  );
+// Read mode — clean text, no interactivity on words
+function ReadText({ text }) {
+  return <span>{text}</span>;
 }
 
-// Enriched view — original words tappable with underline, added words italic
+// Study mode — original words tappable with underline, added words italic
 function EnrichedText({ words, onWordTap }) {
   return (
     <>

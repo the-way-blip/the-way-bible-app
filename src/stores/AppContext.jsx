@@ -9,6 +9,9 @@ export function AppProvider({ children }) {
   const [darkMode, setDarkMode] = useState(
     () => localStorage.getItem("darkMode") === "true"
   );
+  const [studyMode, setStudyMode] = useState(
+    () => localStorage.getItem("studyMode") !== "false" // default to study mode
+  );
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
@@ -22,8 +25,19 @@ export function AppProvider({ children }) {
 
   const toggleDarkMode = () => setDarkMode((d) => !d);
 
+  const toggleStudyMode = () => {
+    setStudyMode((s) => {
+      localStorage.setItem("studyMode", !s);
+      return !s;
+    });
+  };
+
   return (
-    <AppContext.Provider value={{ fontSize, setFontSize: updateFontSize, darkMode, toggleDarkMode }}>
+    <AppContext.Provider value={{
+      fontSize, setFontSize: updateFontSize,
+      darkMode, toggleDarkMode,
+      studyMode, toggleStudyMode,
+    }}>
       {children}
     </AppContext.Provider>
   );

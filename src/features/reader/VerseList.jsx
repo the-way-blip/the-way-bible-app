@@ -42,9 +42,19 @@ export default function VerseList({
             {/* Verse number — tappable for actions */}
             <sup
               className="verse-number cursor-pointer hover:text-gold/80 select-none"
+              role="button"
+              tabIndex={0}
+              aria-label={`Verse ${v.verse}`}
               onClick={(e) => {
                 e.stopPropagation();
                 onVerseNumberTap(isSelected ? null : v.verse);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onVerseNumberTap(isSelected ? null : v.verse);
+                }
               }}
             >
               {v.verse}

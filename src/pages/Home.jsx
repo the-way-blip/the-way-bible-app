@@ -4,7 +4,10 @@ import useMemoryVerses from "../hooks/useMemoryVerses";
 import { useAuth } from "../stores/AuthContext";
 import { getUnlockedBadges, getNextBadge } from "../data/badges";
 import { getHeaderQuote } from "../data/headerQuotes";
+import { getDueVerses } from "../utils/spaced-repetition";
+import { PLANS, getTodaysReading } from "../data/readingPlanData";
 import ShareSheet from "../components/ShareSheet";
+
 
 const DAILY_VERSES = [
   { ref: "Psalm 119:105", text: "Thy word is a lamp unto my feet, and a light unto my path." },
@@ -34,6 +37,17 @@ export default function Home() {
   const dailyVerse = getDailyVerse();
   const headerQuote = getHeaderQuote();
 
+  // Active reading plan
+  const [planState, setPlanState] = useState(null);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("activePlan");
+      if (stored) setPlanState(JSON.parse(stored));
+    } catch {}
+  }, []);
+  const activePlan = planState ? PLANS.find((p) => p.id === planState.planId) : null;
+  const todaysReading = planState ? getTodaysReading(planState.planId, planState.startDate) : null;
+
   useEffect(() => {
     try {
       const p = JSON.parse(localStorage.getItem("readingProgress") || "{}");
@@ -49,6 +63,7 @@ export default function Home() {
   const unlockedBadges = getUnlockedBadges(progress, verses.length);
   const nextBadge = getNextBadge(progress, verses.length);
 
+
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
       {/* Greeting + Account */}
@@ -57,7 +72,7 @@ export default function Home() {
           <h1 className="text-2xl font-bold text-warm-brown">In The Midst</h1>
           <p className="text-sm text-warm-brown-light mt-1">
             {progress.streak > 0
-              ? `${progress.streak} day reading streak`
+              ? `${progress.streak} day reading streak${progress.lastReadDate !== new Date().toISOString().split("T")[0] ? " — read today!" : ""}`
               : "Start your reading today"}
           </p>
         </div>
@@ -84,10 +99,10 @@ export default function Home() {
       </p>
 
       {/* Daily Verse */}
-      <div className="bg-scripture-bg rounded-2xl p-5 mb-4 border border-cream-dark relative">
-        <p className="text-xs font-medium text-gold uppercase tracking-wider mb-2">
+      <section className="bg-scripture-bg rounded-2xl p-5 mb-4 border border-cream-dark relative" aria-label="Verse of the Day">
+        <h2 className="text-xs font-medium text-gold uppercase tracking-wider mb-2">
           Verse of the Day
-        </p>
+        </h2>
         <p className="font-scripture text-warm-brown text-base leading-relaxed">
           "{dailyVerse.text}"
         </p>
@@ -95,7 +110,8 @@ export default function Home() {
           <p className="text-xs text-warm-brown-light">{dailyVerse.ref} KJV</p>
           <button
             onClick={() => setShareData({ content: dailyVerse.text, reference: dailyVerse.ref })}
-            className="text-warm-brown-light/50 hover:text-gold transition-colors"
+            className="w-[44px] h-[44px] -m-2 flex items-center justify-center text-warm-brown-light/50 hover:text-gold transition-colors"
+            aria-label="Share verse of the day"
           >
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
               <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
@@ -104,7 +120,7 @@ export default function Home() {
             </svg>
           </button>
         </div>
-      </div>
+      </section>
 
       {/* Continue Reading */}
       {progress.lastRead && (
@@ -128,8 +144,34 @@ export default function Home() {
         </Link>
       )}
 
+      {/* Today's Reading Plan */}
+      {activePlan && todaysReading && (
+        <Link
+          to="/plans"
+          className="block bg-white rounded-2xl p-4 mb-4 border border-cream-dark hover:border-gold/30 transition-colors"
+        >
+          <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider">
+            {activePlan.name}
+          </p>
+          <p className="text-warm-brown font-semibold mt-1">
+            Today: {todaysReading.readings.map((c) => `${c.book} ${c.chapter}`).join(", ")}
+          </p>
+          <div className="flex items-center gap-2 mt-2">
+            <div className="flex-1 h-1.5 bg-cream-dark rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gold rounded-full transition-all"
+                style={{ width: `${Math.round((todaysReading.day / todaysReading.totalDays) * 100)}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-warm-brown-light">
+              Day {todaysReading.day}/{todaysReading.totalDays}
+            </span>
+          </div>
+        </Link>
+      )}
+
       {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <section aria-label="Reading statistics" className="grid grid-cols-2 gap-3 mb-4">
         <Link to="/progress" className="bg-white rounded-2xl p-4 border border-cream-dark hover:border-gold/30 transition-colors">
           <p className="text-2xl font-bold text-gold">{totalChaptersRead}</p>
           <p className="text-xs text-warm-brown-light mt-1">Chapters Read</p>
@@ -138,7 +180,27 @@ export default function Home() {
           <p className="text-2xl font-bold text-gold">{verses.length}</p>
           <p className="text-xs text-warm-brown-light mt-1">Memory Verses</p>
         </Link>
-      </div>
+      </section>
+
+      {/* Due for Review */}
+      {getDueVerses(verses).length > 0 && (
+        <Link
+          to="/memory/practice"
+          className="block bg-gold/10 border border-gold/30 rounded-2xl p-4 mb-4 hover:bg-gold/15 transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-semibold text-gold">
+                {getDueVerses(verses).length} {getDueVerses(verses).length === 1 ? "verse" : "verses"} to review
+              </p>
+              <p className="text-xs text-warm-brown-light mt-0.5">Keep your memory fresh</p>
+            </div>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-gold">
+              <polyline points="9 6 15 12 9 18" />
+            </svg>
+          </div>
+        </Link>
+      )}
 
       {/* Progress Badges */}
       {(unlockedBadges.length > 0 || nextBadge) && (

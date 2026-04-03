@@ -65,7 +65,7 @@ export default function BottomNav() {
                   key={link.to}
                   to={link.to}
                   onClick={() => setShowMore(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-cream transition-colors text-warm-brown-light"
+                  className="flex items-center gap-3 px-4 py-2.5 min-h-[44px] rounded-xl hover:bg-cream transition-colors text-warm-brown-light"
                 >
                   {link.icon}
                   <span className="text-sm text-warm-brown">{link.label}</span>
@@ -74,7 +74,7 @@ export default function BottomNav() {
               <div className="border-t border-cream-dark mt-1 pt-1">
                 <button
                   onClick={() => { toggleDarkMode(); setShowMore(false); }}
-                  className="flex items-center gap-3 px-4 py-2.5 rounded-xl hover:bg-cream transition-colors w-full text-warm-brown-light"
+                  className="flex items-center gap-3 px-4 py-2.5 min-h-[44px] rounded-xl hover:bg-cream transition-colors w-full text-warm-brown-light"
                 >
                   {darkMode ? (
                     <Icon d={<><circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" /></>} className="w-4.5 h-4.5" />
@@ -89,13 +89,13 @@ export default function BottomNav() {
         </>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-cream-dark z-50">
-        <div className="max-w-lg mx-auto flex justify-around items-center py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-cream-dark z-50" aria-label="Main navigation">
+        <div className="max-w-lg mx-auto flex justify-around items-center pb-[max(0.25rem,env(safe-area-inset-bottom))]">
           {tabs.map((tab, i) => {
             if (tab.isMenu) {
               return (
                 <button key={i} onClick={() => setShowMore(!showMore)}
-                  className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${showMore ? "text-gold" : "text-warm-brown-light hover:text-warm-brown"}`}>
+                  className={`flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] px-2 rounded-lg transition-colors ${showMore ? "text-gold" : "text-warm-brown-light hover:text-warm-brown"}`}>
                   {tab.icon}
                   <span className="text-[10px] font-medium">{tab.label}</span>
                 </button>
@@ -105,7 +105,7 @@ export default function BottomNav() {
               <NavLink key={tab.to} to={tab.to} onClick={() => setShowMore(false)}
                 className={({ isActive }) => {
                   const active = isActive || (tab.matchPath && location.pathname.startsWith(tab.matchPath));
-                  return `flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${active ? "text-gold" : "text-warm-brown-light hover:text-warm-brown"}`;
+                  return `flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] px-2 rounded-lg transition-colors ${active ? "text-gold" : "text-warm-brown-light hover:text-warm-brown"}`;
                 }}>
                 {tab.icon}
                 <span className="text-[10px] font-medium">{tab.label}</span>

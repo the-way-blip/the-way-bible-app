@@ -6,7 +6,7 @@
   --color-parchment: #f5f0e8;
   --color-warm-brown: #5c4033;
   --color-warm-brown-light: #8b6f5e;
-  --color-gold: #c9a84c;
+  --color-gold: #a88a2e;
   --color-gold-light: #e8d48b;
   --color-scripture-bg: #fdfbf7;
   --color-highlight-yellow: #fff3b0;
@@ -46,13 +46,50 @@ html.dark {
   --color-highlight-pink: #5c2040;
 }
 html.dark .bg-white { background-color: #222 !important; }
+html.dark .bg-white\/95 { background-color: rgba(34,34,34,0.95) !important; }
+html.dark .bg-white\/90 { background-color: rgba(34,34,34,0.90) !important; }
 html.dark .border-cream-dark { border-color: #333 !important; }
 html.dark .bg-cream { background-color: #1a1a1a !important; }
+html.dark .bg-cream\/95 { background-color: rgba(26,26,26,0.95) !important; }
 html.dark .bg-cream-dark { background-color: #252525 !important; }
 html.dark .bg-scripture-bg { background-color: #1e1c18 !important; }
 html.dark .text-warm-brown { color: #d4c5b0 !important; }
 html.dark .text-warm-brown-light { color: #9a8b78 !important; }
 html.dark .shadow-lg, html.dark .shadow-2xl { box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important; }
+html.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+
+/* Dark mode: form element color-scheme so caret/placeholder look native */
+html.dark input, html.dark textarea, html.dark select {
+  color-scheme: dark;
+}
+
+/* Dark mode: gold tint badges */
+html.dark .bg-gold\/10 { background-color: rgba(201,168,76,0.15) !important; }
+
+/* Dark mode: generic borders that don't use custom colors */
+html.dark .border-t { border-color: #333; }
+html.dark .border-b { border-color: #333; }
+
+/* Dark mode: external-link badges in WordStudyPanel */
+html.dark .bg-blue-100 { background-color: rgba(59,130,246,0.15) !important; }
+html.dark .bg-indigo-100 { background-color: rgba(99,102,241,0.15) !important; }
+html.dark .bg-emerald-100 { background-color: rgba(16,185,129,0.15) !important; }
+
+/* Dark mode: scrollbar + selection */
+html.dark ::selection { background-color: rgba(201,168,76,0.3); }
+html.dark ::-webkit-scrollbar { width: 6px; }
+html.dark ::-webkit-scrollbar-track { background: #1a1a1a; }
+html.dark ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+/* ── Focus Visible ── */
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
 
 #root {
   min-height: 100svh;
@@ -73,11 +110,23 @@ html.dark .shadow-lg, html.dark .shadow-2xl { box-shadow: 0 4px 20px rgba(0,0,0,
   vertical-align: super;
   color: var(--color-gold);
   margin-right: 2px;
+  transition: transform 0.1s ease, opacity 0.1s ease;
+  display: inline-block;
+  /* Expand tap target to 44×44px minimum */
+  padding: 8px 4px;
+  margin: -8px 0 -8px -4px;
+  position: relative;
+  z-index: 1;
+}
+.verse-number:active {
+  transform: scale(0.9);
+  opacity: 0.7;
 }
 
 .word-tappable {
   cursor: pointer;
   border-bottom: 1px dotted var(--color-gold-light);
+  transition: background-color 0.1s ease, opacity 0.1s ease;
 }
 .word-tappable:hover {
   background-color: var(--color-highlight-yellow);
@@ -86,6 +135,7 @@ html.dark .shadow-lg, html.dark .shadow-2xl { box-shadow: 0 4px 20px rgba(0,0,0,
 .word-tappable:active {
   background-color: var(--color-gold-light);
   border-radius: 2px;
+  opacity: 0.7;
 }
 
 .word-added {
@@ -118,6 +168,32 @@ html.dark .shadow-lg, html.dark .shadow-2xl { box-shadow: 0 4px 20px rgba(0,0,0,
   font-size: 0.8125rem;
   line-height: 1.7;
   color: var(--color-warm-brown);
+}
+
+/* ── Page Transitions ── */
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition-enter {
+  animation: pageFadeIn 250ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition-enter {
+    animation: none;
+  }
+  .verse-number,
+  .word-tappable {
+    transition: none;
+  }
 }
 
 @media (min-width: 768px) {

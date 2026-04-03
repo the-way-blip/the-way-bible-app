@@ -114,7 +114,7 @@ export default function Settings() {
         >
           <span className="text-sm text-warm-brown">Dark Mode</span>
           <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-0.5 ${darkMode ? "bg-gold" : "bg-cream-dark"}`}>
-            <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${darkMode ? "translate-x-4" : ""}`} />
+            <div className={`w-5 h-5 rounded-full shadow transition-transform ${darkMode ? "translate-x-4" : ""}`} style={{ backgroundColor: "#fff" }} />
           </div>
         </button>
       </SettingsSection>

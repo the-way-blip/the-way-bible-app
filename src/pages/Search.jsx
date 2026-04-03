@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
+let searchIndex = null;
+
 export default function Search() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -39,41 +41,26 @@ export default function Search() {
   };
 
   const keywordSearch = async (q) => {
-    // Search through our bundled KJV tagged data
     try {
-      const booksRes = await fetch("/data/books.json");
-      const booksData = await booksRes.json();
-      const found = [];
-      const lowerQ = q.toLowerCase();
-
-      for (const entry of booksData.books) {
-        if (found.length >= 50) break;
-        const [name, abbrev] = Object.entries(entry)[0];
-
-        try {
-          const bookRes = await fetch(`/data/${abbrev}.json`);
-          const bookData = await bookRes.json();
-          const bookKey = Object.keys(bookData)[0];
-
-          for (const [chKey, chData] of Object.entries(bookData[bookKey])) {
-            if (found.length >= 50) break;
-            for (const [vKey, vData] of Object.entries(chData)) {
-              if (!vData.en) continue;
-              const clean = vData.en.replace(/\[[HG]\d+\]/g, "").replace(/<\/?em>/g, "");
-              if (clean.toLowerCase().includes(lowerQ)) {
-                const parts = vKey.split("|");
-                found.push({
-                  ref: `${name} ${parts[1]}:${parts[2]}`,
-                  book: name, chapter: parseInt(parts[1]), verse: parseInt(parts[2]),
-                  text: highlightMatch(clean.trim(), q),
-                  rawText: clean.trim(),
-                });
-              }
-            }
-          }
-        } catch {}
+      if (!searchIndex) {
+        const res = await fetch("/data/search-index.json");
+        searchIndex = await res.json();
       }
-
+      const lowerQ = q.toLowerCase();
+      const found = [];
+      for (const entry of searchIndex) {
+        if (entry.t.toLowerCase().includes(lowerQ)) {
+          found.push({
+            ref: entry.r,
+            book: entry.b,
+            chapter: entry.c,
+            verse: entry.v,
+            text: highlightMatch(entry.t, q),
+            rawText: entry.t,
+          });
+          if (found.length >= 50) break;
+        }
+      }
       setResults(found);
     } catch { setResults([]); }
   };

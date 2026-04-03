@@ -239,11 +239,19 @@ export async function getLocalWordStudy(book, chapter, verseNumber) {
   if (!bookData) return null;
 
   // Navigate to the verse — format: {"Gen": {"Gen|1": {"Gen|1|1": {"en": "..."}}}}
+  // Some books have full name as top-level key but abbreviation in chapter keys
   const bookKey = Object.keys(bookData)[0];
-  const chapterKey = `${bookKey}|${chapter}`;
-  const verseKey = `${bookKey}|${chapter}|${verseNumber}`;
+  const chapters = bookData[bookKey];
+  if (!chapters) return null;
 
-  const chapterData = bookData[bookKey]?.[chapterKey];
+  // Detect the prefix used in chapter keys (may differ from bookKey)
+  const firstChapterKey = Object.keys(chapters)[0];
+  const chapterPrefix = firstChapterKey ? firstChapterKey.split("|")[0] : bookKey;
+
+  const chapterKey = `${chapterPrefix}|${chapter}`;
+  const verseKey = `${chapterPrefix}|${chapter}|${verseNumber}`;
+
+  const chapterData = chapters[chapterKey];
   if (!chapterData) return null;
 
   const verseData = chapterData[verseKey];

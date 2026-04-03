@@ -30,15 +30,17 @@ export default function SidePanel({
   const displayedWord = activeWordInfo || lastWordInfo;
 
   return (
-    <div className="flex flex-col h-full bg-white border-l border-cream-dark w-full">
+    <aside className="flex flex-col h-full bg-white border-l border-cream-dark w-full" aria-label="Study panel">
       {/* Tabs */}
-      <div className="flex border-b border-cream-dark shrink-0">
+      <div className="flex border-b border-cream-dark shrink-0" role="tablist">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex-1 py-3 text-xs font-medium transition-colors relative ${
+            className={`flex-1 min-h-[44px] text-xs font-medium transition-colors relative ${
               activeTab === tab.id
                 ? "text-gold"
                 : "text-warm-brown-light hover:text-warm-brown"
@@ -55,25 +57,33 @@ export default function SidePanel({
       {/* Content — all tabs stay mounted, only active one visible */}
       <div className="flex-1 min-h-0 relative">
         <TabPane visible={activeTab === "commentary"}>
-          <CommentaryTab book={book} chapter={chapter} />
+          <section aria-label="Commentary">
+            <CommentaryTab book={book} chapter={chapter} />
+          </section>
         </TabPane>
         <TabPane visible={activeTab === "notes"}>
-          <NotesTab
-            book={book}
-            chapter={chapter}
-            notes={notes}
-            onSaveNote={onSaveNote}
-            onDeleteNote={onDeleteNote}
-          />
+          <section aria-label="Notes">
+            <NotesTab
+              book={book}
+              chapter={chapter}
+              notes={notes}
+              onSaveNote={onSaveNote}
+              onDeleteNote={onDeleteNote}
+            />
+          </section>
         </TabPane>
         <TabPane visible={activeTab === "wordstudy"}>
-          <WordStudyTab wordInfo={displayedWord} />
+          <section aria-label="Word Study">
+            <WordStudyTab wordInfo={displayedWord} />
+          </section>
         </TabPane>
         <TabPane visible={activeTab === "journal"}>
-          <JournalTab book={book} chapter={chapter} />
+          <section aria-label="Journal">
+            <JournalTab book={book} chapter={chapter} />
+          </section>
         </TabPane>
       </div>
-    </div>
+    </aside>
   );
 }
 
@@ -126,10 +136,25 @@ function CommentaryTab({ book, chapter }) {
 
   if (commentaries.length === 0) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-sm text-warm-brown-light mb-3">No commentaries available.</p>
+      <div className="p-8 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-cream-dark mb-3">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+        <p className="text-sm text-warm-brown-light mb-1">No commentaries loaded yet</p>
+        <p className="text-xs text-warm-brown-light/60 mb-4">Commentaries for this chapter haven't been added yet.</p>
         {bibleHubUrl && (
-          <a href={bibleHubUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-gold hover:text-gold/80">
+          <a
+            href={bibleHubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 bg-gold/10 text-gold text-sm font-medium px-4 min-h-[44px] rounded-lg hover:bg-gold/20 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
             View on BibleHub
           </a>
         )}
@@ -345,12 +370,18 @@ function WordStudyTab({ wordInfo }) {
 
       {/* External links */}
       {wordInfo.biblehub_url && (
-        <div className="pt-2 border-t border-cream-dark space-y-1.5">
-          <a href={wordInfo.biblehub_url} target="_blank" rel="noopener noreferrer" className="block text-[10px] text-gold hover:text-gold/80">
+        <div className="pt-2 border-t border-cream-dark space-y-1">
+          <a href={wordInfo.biblehub_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 min-h-[44px] text-xs text-gold hover:text-gold/80">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 shrink-0">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
             BibleHub: {wordInfo.strongs}
           </a>
           {wordInfo.blb_url && (
-            <a href={wordInfo.blb_url} target="_blank" rel="noopener noreferrer" className="block text-[10px] text-gold hover:text-gold/80">
+            <a href={wordInfo.blb_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 min-h-[44px] text-xs text-gold hover:text-gold/80">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 shrink-0">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
               Blue Letter Bible: {wordInfo.strongs}
             </a>
           )}

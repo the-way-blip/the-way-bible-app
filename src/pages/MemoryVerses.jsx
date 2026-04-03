@@ -7,8 +7,11 @@ export default function MemoryVerses() {
   const { verses, removeVerse } = useMemoryVerses();
   const [shareData, setShareData] = useState(null);
 
+  const now = Date.now();
+  const dueCount = verses.filter((v) => v.nextReview <= now).length;
   const learning = verses.filter((v) => v.status === "learning");
-  const mastered = verses.filter((v) => v.status !== "learning");
+  const reviewing = verses.filter((v) => v.status === "reviewing");
+  const mastered = verses.filter((v) => v.status === "mastered");
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
@@ -22,9 +25,14 @@ export default function MemoryVerses() {
         {verses.length > 0 && (
           <Link
             to="/memory/practice"
-            className="bg-gold text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gold/90 transition-colors"
+            className="bg-gold text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gold/90 transition-colors relative"
           >
             Practice
+            {dueCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-red-400 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {dueCount > 9 ? "9+" : dueCount}
+              </span>
+            )}
           </Link>
         )}
       </div>
@@ -46,31 +54,34 @@ export default function MemoryVerses() {
         </div>
       ) : (
         <>
-          {learning.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">
-                Learning ({learning.length})
-              </h2>
-              <div className="space-y-2">
-                {learning.map((v) => (
-                  <VerseCard key={v.id} verse={v} onRemove={removeVerse} onShare={(v) => setShareData({ content: v.text, reference: `${v.book} ${v.chapter}:${v.verseNumber}` })} />
-                ))}
-              </div>
-            </div>
+          {dueCount > 0 && (
+            <Link
+              to="/memory/practice"
+              className="block bg-gold/10 border border-gold/30 rounded-xl p-3 mb-5 text-center"
+            >
+              <p className="text-sm font-medium text-gold">
+                {dueCount} {dueCount === 1 ? "verse" : "verses"} due for review
+              </p>
+              <p className="text-[11px] text-warm-brown-light mt-0.5">Tap to practice now</p>
+            </Link>
           )}
 
-          {mastered.length > 0 && (
-            <div>
+          {[
+            { label: "Learning", items: learning },
+            { label: "Reviewing", items: reviewing },
+            { label: "Mastered", items: mastered },
+          ].map(({ label, items }) => items.length > 0 && (
+            <div key={label} className="mb-6">
               <h2 className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">
-                Mastered ({mastered.length})
+                {label} ({items.length})
               </h2>
               <div className="space-y-2">
-                {mastered.map((v) => (
+                {items.map((v) => (
                   <VerseCard key={v.id} verse={v} onRemove={removeVerse} onShare={(v) => setShareData({ content: v.text, reference: `${v.book} ${v.chapter}:${v.verseNumber}` })} />
                 ))}
               </div>
             </div>
-          )}
+          ))}
         </>
       )}
 
@@ -82,13 +93,23 @@ export default function MemoryVerses() {
 }
 
 function VerseCard({ verse, onRemove, onShare }) {
+  const isDue = verse.nextReview <= Date.now();
+  const nextReviewLabel = isDue
+    ? "Due now"
+    : `Review ${new Date(verse.nextReview).toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
+
   return (
-    <div className="bg-white rounded-xl p-4 border border-cream-dark">
+    <div className={`bg-white rounded-xl p-4 border ${isDue ? "border-gold/40" : "border-cream-dark"}`}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-gold mb-1">
-            {verse.book} {verse.chapter}:{verse.verseNumber}
-          </p>
+          <div className="flex items-center gap-2 mb-1">
+            <p className="text-xs font-medium text-gold">
+              {verse.book} {verse.chapter}:{verse.verseNumber}
+            </p>
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${isDue ? "bg-gold/15 text-gold font-medium" : "bg-cream-dark text-warm-brown-light"}`}>
+              {nextReviewLabel}
+            </span>
+          </div>
           <p className="font-scripture text-sm text-warm-brown leading-relaxed line-clamp-3">
             {verse.text}
           </p>

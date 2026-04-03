@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PLANS, getTodaysReading } from "../data/readingPlanData";
+import devotionals from "../data/devotionals";
 
 export default function ReadingPlan() {
   const [planState, setPlanState] = useState(null);
+  const [devotionalOpen, setDevotionalOpen] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("activePlan");
@@ -38,6 +40,15 @@ export default function ReadingPlan() {
   const today = planState ? getTodaysReading(planState.planId, planState.startDate) : null;
   const activePlan = planState ? PLANS.find((p) => p.id === planState.planId) : null;
   const isDayComplete = today ? planState.completedDays.includes(today.day) : false;
+
+  // Find the first matching devotional for today's readings
+  const todaysDevotional = today
+    ? today.readings.reduce((found, r) => {
+        if (found) return found;
+        const key = `${r.book} ${r.chapter}`;
+        return devotionals[key] ? { key, ...devotionals[key] } : null;
+      }, null)
+    : null;
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
@@ -93,6 +104,58 @@ export default function ReadingPlan() {
           <p className="text-[10px] text-warm-brown-light/50 text-center mt-2">
             {planState.completedDays.length} of {today.totalDays} days completed
           </p>
+
+          {/* Today's Devotional */}
+          {todaysDevotional && (
+            <div className="mt-4">
+              <button
+                onClick={() => setDevotionalOpen((o) => !o)}
+                className="w-full flex items-center justify-between bg-gold/10 rounded-lg px-4 py-3 hover:bg-gold/15 transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-gold">
+                    <path d="M12 3v1m0 16v1m8.66-13.66l-.71.71M4.05 19.07l-.71.71M21 12h-1M4 12H3m16.66 7.66l-.71-.71M4.05 4.93l-.71-.71" />
+                    <circle cx="12" cy="12" r="5" />
+                  </svg>
+                  <span className="text-sm font-medium text-warm-brown">Today's Reflection</span>
+                </div>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={`w-4 h-4 text-gold transition-transform ${devotionalOpen ? "rotate-180" : ""}`}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+
+              {devotionalOpen && (
+                <div className="mt-2 bg-white rounded-xl border border-cream-dark p-4 space-y-4">
+                  <p className="text-[10px] font-semibold text-gold uppercase tracking-wider">{todaysDevotional.key}</p>
+
+                  {/* Thought */}
+                  <div>
+                    <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider mb-1">Meditation</p>
+                    <p className="text-sm text-warm-brown leading-relaxed">{todaysDevotional.thought}</p>
+                  </div>
+
+                  {/* Prayer */}
+                  <div className="border-t border-cream-dark pt-3">
+                    <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider mb-1">Prayer Prompt</p>
+                    <p className="text-sm text-warm-brown leading-relaxed italic">{todaysDevotional.prayer}</p>
+                  </div>
+
+                  {/* Application */}
+                  <div className="border-t border-cream-dark pt-3">
+                    <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider mb-1">Apply It</p>
+                    <p className="text-sm text-warm-brown leading-relaxed">{todaysDevotional.application}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

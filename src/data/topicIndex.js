@@ -60,6 +60,58 @@ const topics = [
     name: "Eternal Life",
     verses: ["John 3:16", "John 11:25-26", "Romans 6:23", "John 10:28", "1 John 5:11-13", "John 5:24", "Revelation 21:4", "2 Corinthians 5:1", "Philippians 3:20-21", "1 Thessalonians 4:17"],
   },
+  {
+    name: "The Blood of Christ",
+    verses: ["Hebrews 9:22", "1 Peter 1:18-19", "Ephesians 1:7", "Revelation 1:5", "Colossians 1:20", "Romans 5:9", "Hebrews 9:12", "1 John 1:7", "Revelation 12:11", "Hebrews 10:19"],
+  },
+  {
+    name: "The Resurrection",
+    verses: ["1 Corinthians 15:3-4", "Romans 6:9", "John 11:25", "1 Peter 1:3", "Philippians 3:10-11", "1 Corinthians 15:20", "Romans 8:11", "Acts 2:32", "1 Corinthians 15:55-57", "2 Corinthians 4:14"],
+  },
+  {
+    name: "The Return of Christ",
+    verses: ["Acts 1:11", "1 Thessalonians 4:16-17", "Revelation 22:12", "Matthew 24:30", "Titus 2:13", "James 5:8", "2 Peter 3:10", "1 John 3:2", "Revelation 1:7", "Philippians 3:20"],
+  },
+  {
+    name: "Scripture & God's Word",
+    verses: ["2 Timothy 3:16-17", "Hebrews 4:12", "Psalm 119:105", "Isaiah 40:8", "Romans 15:4", "Psalm 119:11", "Joshua 1:8", "Matthew 4:4", "John 17:17", "Psalm 19:7-8"],
+  },
+  {
+    name: "Worship & Praise",
+    verses: ["Psalm 150:6", "John 4:24", "Psalm 95:1-2", "Romans 12:1", "Hebrews 13:15", "Psalm 100:1-2", "Revelation 4:11", "Psalm 34:1", "Colossians 3:16", "Psalm 63:3-4"],
+  },
+  {
+    name: "Patience & Endurance",
+    verses: ["James 1:2-4", "Romans 5:3-4", "Hebrews 12:1", "Galatians 6:9", "Isaiah 40:31", "Psalm 27:14", "Romans 12:12", "2 Peter 3:9", "Colossians 1:11", "Hebrews 10:36"],
+  },
+  {
+    name: "Grace & Mercy",
+    verses: ["Ephesians 2:8-9", "2 Corinthians 12:9", "Romans 3:23-24", "Titus 2:11", "Hebrews 4:16", "Lamentations 3:22-23", "Psalm 103:8", "Romans 9:16", "James 4:6", "2 Corinthians 9:8"],
+  },
+  {
+    name: "Obedience",
+    verses: ["John 14:15", "1 Samuel 15:22", "James 1:22", "Deuteronomy 11:1", "Acts 5:29", "John 15:10", "Romans 6:16", "1 John 5:3", "Hebrews 5:8", "Luke 6:46"],
+  },
+  {
+    name: "The Armor of God",
+    verses: ["Ephesians 6:10-11", "Ephesians 6:13", "Ephesians 6:14", "Ephesians 6:15", "Ephesians 6:16", "Ephesians 6:17", "Ephesians 6:18", "2 Corinthians 10:4", "Romans 13:12", "1 Thessalonians 5:8"],
+  },
+  {
+    name: "Humility",
+    verses: ["Philippians 2:3-4", "James 4:6", "1 Peter 5:5-6", "Proverbs 11:2", "Micah 6:8", "Matthew 23:12", "Colossians 3:12", "Proverbs 22:4", "James 4:10", "Isaiah 66:2"],
+  },
+  {
+    name: "Heaven & Eternity",
+    verses: ["John 14:2-3", "Revelation 21:1-4", "2 Corinthians 5:8", "Philippians 1:21", "1 Corinthians 2:9", "Revelation 22:1-5", "Matthew 6:20", "Colossians 3:2", "1 Peter 1:4", "Hebrews 11:16"],
+  },
+  {
+    name: "Giving & Generosity",
+    verses: ["2 Corinthians 9:7", "Proverbs 11:25", "Luke 6:38", "Acts 20:35", "Malachi 3:10", "Matthew 6:3-4", "1 Timothy 6:18", "Proverbs 19:17", "Hebrews 13:16", "2 Corinthians 8:9"],
+  },
+  {
+    name: "Identity in Christ",
+    verses: ["2 Corinthians 5:17", "Galatians 2:20", "Ephesians 2:10", "1 Peter 2:9", "Romans 8:17", "John 1:12", "Colossians 3:3", "Philippians 4:13", "Romans 8:37", "Ephesians 1:4-5"],
+  },
 ];
 
 export default topics;

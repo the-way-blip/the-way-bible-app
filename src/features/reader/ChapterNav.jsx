@@ -5,9 +5,13 @@ import bibleBooks from "../../data/bibleBooks";
 export default function ChapterNav({ currentBook, currentChapter, onClose }) {
   const [selectedBook, setSelectedBook] = useState(null);
   const [tab, setTab] = useState("OT");
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  const filteredBooks = bibleBooks.filter((b) => b.testament === tab);
+  const searchLower = search.toLowerCase().trim();
+  const filteredBooks = searchLower
+    ? bibleBooks.filter((b) => b.name.toLowerCase().includes(searchLower))
+    : bibleBooks.filter((b) => b.testament === tab);
 
   if (selectedBook) {
     const chapters = Array.from({ length: selectedBook.chapters }, (_, i) => i + 1);
@@ -68,21 +72,32 @@ export default function ChapterNav({ currentBook, currentChapter, onClose }) {
           </button>
         </div>
 
-        <div className="flex gap-2 mb-4">
-          {["OT", "NT"].map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === t
-                  ? "bg-gold text-white"
-                  : "bg-cream-dark text-warm-brown hover:bg-gold-light"
-              }`}
-            >
-              {t === "OT" ? "Old Testament" : "New Testament"}
-            </button>
-          ))}
-        </div>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search books..."
+          aria-label="Search books"
+          className="w-full bg-white border border-cream-dark rounded-lg px-3 py-2.5 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30 mb-3"
+        />
+
+        {!searchLower && (
+          <div className="flex gap-2 mb-4">
+            {["OT", "NT"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  tab === t
+                    ? "bg-gold text-white"
+                    : "bg-cream-dark text-warm-brown hover:bg-gold-light"
+                }`}
+              >
+                {t === "OT" ? "Old Testament" : "New Testament"}
+              </button>
+            ))}
+          </div>
+        )}
 
         <div className="grid grid-cols-2 gap-2">
           {filteredBooks.map((book) => (

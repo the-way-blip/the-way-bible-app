@@ -53,6 +53,38 @@ const BIBLEHUB_SLUGS = {
   "2 john": "2_john", "3 john": "3_john", "jude": "jude", "revelation": "revelation",
 };
 
+// ── Doctrinal filter ──
+// Exclude authors with heterodox views that contradict the fundamentals
+// (virgin birth, blood atonement, bodily resurrection, physical return of Christ,
+// inerrancy of Scripture) as compiled by R.A. Torrey in "The Fundamentals" (1910-1915).
+const EXCLUDED_AUTHORS = new Set([
+  // Condemned for pre-existence of souls, universalism, allegorizing bodily resurrection
+  "origen", "origen of alexandria", "pseudo-origen",
+  // Denied original sin and necessity of grace; undermines substitutionary atonement
+  "pelagius", "julian of eclanum",
+  // Denied deity of Christ
+  "arius",
+  // Gnostic heretics
+  "valentinus", "heracleon",
+  // Denied full humanity of Christ
+  "apollinaris", "apollinaris of laodicea",
+  // Condemned for Nestorianism; denied unity of Christ's person
+  "theodore of mopsuestia",
+  // Jewish philosopher, not a Christian
+  "philo", "philo of alexandria",
+  // Condemned alongside Origen for Origenist views
+  "didymus the blind", "didymus", "evagrius ponticus", "evagrius",
+]);
+
+function isApprovedAuthor(authorName) {
+  if (!authorName) return false;
+  const lower = authorName.toLowerCase().trim();
+  for (const excluded of EXCLUDED_AUTHORS) {
+    if (lower === excluded || lower.includes(excluded)) return false;
+  }
+  return true;
+}
+
 export function getBibleHubUrl(book, chapter, verse) {
   const slug = BIBLEHUB_SLUGS[book.toLowerCase()];
   if (!slug) return null;
@@ -66,7 +98,7 @@ export async function fetchCommentaries(book, chapter) {
   try {
     const cached = await dbGet("cachedChapters", cacheKey);
     if (cached && Date.now() - cached.fetchedAt < 7 * 24 * 60 * 60 * 1000) {
-      return cached.commentaries;
+      return cached.commentaries.filter((c) => isApprovedAuthor(c.author));
     }
   } catch {}
 
@@ -79,7 +111,7 @@ export async function fetchCommentaries(book, chapter) {
     if (!res.ok) return [];
 
     const html = await res.text();
-    const commentaries = parseCommentaryHTML(html);
+    const commentaries = parseCommentaryHTML(html).filter((c) => isApprovedAuthor(c.author));
 
     // Cache
     try {

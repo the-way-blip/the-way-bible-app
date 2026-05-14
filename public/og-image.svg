@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#1a1611"/>
+  <rect x="0" y="0" width="1200" height="4" fill="#c9a84c"/>
+  <rect x="0" y="626" width="1200" height="4" fill="#c9a84c"/>
+  <!-- Cross/path icon -->
+  <line x1="600" y1="120" x2="600" y2="260" stroke="#c9a84c" stroke-width="4"/>
+  <line x1="560" y1="160" x2="640" y2="160" stroke="#c9a84c" stroke-width="4"/>
+  <!-- Diverging path lines -->
+  <line x1="580" y1="260" x2="540" y2="300" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <line x1="620" y1="260" x2="660" y2="300" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <!-- Title -->
+  <text x="600" y="380" text-anchor="middle" font-family="Georgia, serif" font-size="72" fill="#c9a84c" font-weight="bold" letter-spacing="8">THE WAY</text>
+  <!-- Subtitle -->
+  <text x="600" y="430" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="#d4c5a0" letter-spacing="3">READ THE BIBLE. FOLLOW JESUS.</text>
+  <!-- Description -->
+  <text x="600" y="500" text-anchor="middle" font-family="Georgia, serif" font-size="18" fill="#8b7d5e">KJV Bible Study with Strong's Word Study</text>
+  <!-- Verse -->
+  <text x="600" y="560" text-anchor="middle" font-family="Georgia, serif" font-size="16" fill="#c9a84c" font-style="italic" opacity="0.7">"I am the way, the truth, and the life" — John 14:6</text>
+</svg>

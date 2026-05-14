@@ -1,0 +1,26 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["NG6DBB2567.app.theway.bible"],
+        "components": [
+          {
+            "/": "/reset-password",
+            "comment": "Matches password reset URLs"
+          },
+          {
+            "/": "/auth/callback",
+            "comment": "Matches Supabase auth callback URLs"
+          },
+          {
+            "/": "/auth/*",
+            "comment": "Matches all auth routes"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["NG6DBB2567.app.theway.bible"]
+  }
+}

@@ -40,7 +40,9 @@ export default function useChapterWordStudy(book, chapter, verses) {
               fetchedAt: Date.now(),
             });
           }
-        } catch {}
+        } catch (err) {
+          console.warn(`[WordStudy] Failed to load ${key}:`, err);
+        }
       }
 
       if (!cancelled) {

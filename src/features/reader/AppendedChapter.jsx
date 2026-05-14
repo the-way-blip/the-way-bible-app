@@ -31,13 +31,24 @@ export default function AppendedChapter({
 
   return (
     <div data-chapter-ref={`${book}-${chapter}`}>
-      {/* Chapter divider */}
-      <div className="flex items-center gap-3 px-5 pt-8 pb-3">
-        <div className="flex-1 h-px bg-warm-brown/10" />
-        <span className="text-sm font-semibold text-warm-brown/60 whitespace-nowrap">
-          {bookInfo?.name || book} {chapter}
-        </span>
-        <div className="flex-1 h-px bg-warm-brown/10" />
+      {/* Chapter boundary divider */}
+      <div className="mx-4 mt-12 mb-4 bg-cream-dark rounded-xl p-4">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex-1 h-px bg-gold/30" />
+          <h2 className="text-sm font-bold text-warm-brown whitespace-nowrap">
+            {bookInfo?.name || book} {chapter}
+          </h2>
+          <div className="flex-1 h-px bg-gold/30" />
+        </div>
+        <div className="flex items-center justify-center gap-4 text-[10px]">
+          <a href={`/read/${encodeURIComponent(book)}/${chapter}`} className="text-gold hover:text-gold/80 font-medium">
+            Open chapter
+          </a>
+          <span className="text-warm-brown-light/30">|</span>
+          <span className="text-warm-brown-light/60">
+            {verses.length} verses
+          </span>
+        </div>
       </div>
 
       <VerseList
@@ -48,6 +59,8 @@ export default function AppendedChapter({
         onVerseNumberTap={handleVerseNumberTap}
         onWordTap={onWordTap}
         chapterWords={chapterWords}
+        book={book}
+        chapter={chapter}
       />
     </div>
   );

@@ -191,7 +191,7 @@ export default function WelcomeTour({ onComplete }) {
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  });
+  }, [current]);
 
   const slide = slides[current];
 

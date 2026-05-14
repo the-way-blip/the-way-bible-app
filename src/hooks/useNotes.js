@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbGetByIndex, dbPut, dbDelete, dbGet } from "./useDB";
+import { syncPush, syncDelete } from "../services/supabaseSync";
+import { useAuth } from "../stores/AuthContext";
 
 export default function useNotes(book, chapter) {
   const [notes, setNotes] = useState([]);
+  const { user } = useAuth();
 
   const load = useCallback(async () => {
     if (!book || !chapter) return;
@@ -15,7 +18,7 @@ export default function useNotes(book, chapter) {
   const saveNote = async (verseNumber, text, tags = []) => {
     const id = `${book}-${chapter}-${verseNumber}`;
     const existing = await dbGet("notes", id);
-    await dbPut("notes", {
+    const record = {
       id,
       book,
       chapter,
@@ -24,13 +27,16 @@ export default function useNotes(book, chapter) {
       tags,
       createdAt: existing?.createdAt || Date.now(),
       updatedAt: Date.now(),
-    });
+    };
+    await dbPut("notes", record);
+    syncPush("notes", record, user?.id);
     await load();
   };
 
   const deleteNote = async (verseNumber) => {
     const id = `${book}-${chapter}-${verseNumber}`;
     await dbDelete("notes", id);
+    syncDelete("notes", id, user?.id);
     await load();
   };
 

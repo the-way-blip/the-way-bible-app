@@ -2,8 +2,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import useMemoryVerses from "../hooks/useMemoryVerses";
 import ShareSheet from "../components/ShareSheet";
+import useDocumentTitle from "../hooks/useDocumentTitle";
 
 export default function MemoryVerses() {
+  useDocumentTitle("Memory Verses");
   const { verses, removeVerse } = useMemoryVerses();
   const [shareData, setShareData] = useState(null);
 

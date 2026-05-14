@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../stores/AuthContext";
+import { useApp } from "../stores/AppContext";
+import { submitOnboardingComplete } from "../services/ghlService";
 
-const STEPS = [
+const SURVEY_STEPS = [
   {
     title: "Where are you in your faith journey?",
     key: "faithStage",
@@ -41,6 +43,8 @@ const STEPS = [
   },
 ];
 
+const TOTAL_STEPS = SURVEY_STEPS.length + 2; // +2 for reading prefs + theme
+
 const READING_PLANS = {
   searching: { plan: "Gospel of John", book: "John", desc: "Start with the heart of the gospel" },
   new_believer: { plan: "Romans", book: "Romans", desc: "The foundation of Christian doctrine" },
@@ -48,9 +52,16 @@ const READING_PLANS = {
   mature: { plan: "Genesis to Revelation", book: "Genesis", desc: "Read through the entire Bible" },
 };
 
+const FONT_OPTIONS = [
+  { value: "Georgia, 'Times New Roman', serif", label: "Georgia", sample: "In the beginning God created the heaven and the earth." },
+  { value: "'Palatino Linotype', Palatino, serif", label: "Palatino", sample: "In the beginning God created the heaven and the earth." },
+  { value: "system-ui, -apple-system, sans-serif", label: "Sans-Serif", sample: "In the beginning God created the heaven and the earth." },
+];
+
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { saveProfile } = useAuth();
+  const { saveProfile, user, profile } = useAuth();
+  const { toggleStudyMode, studyMode, toggleDarkMode, darkMode, setFontFamily, fontFamily, showVerseNumbers, toggleVerseNumbers } = useApp();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({
     faithStage: "",
@@ -58,43 +69,67 @@ export default function Onboarding() {
     topics: [],
   });
 
-  const currentStep = STEPS[step];
-  const isLastStep = step === STEPS.length - 1;
+  const isSurveyStep = step < SURVEY_STEPS.length;
+  const isReadingPrefsStep = step === SURVEY_STEPS.length;
+  const isThemeStep = step === SURVEY_STEPS.length + 1;
+  const isLastStep = step === TOTAL_STEPS - 1;
+
+  const currentSurvey = isSurveyStep ? SURVEY_STEPS[step] : null;
 
   const handleSelect = (value) => {
-    if (currentStep.multi) {
+    if (currentSurvey.multi) {
       setAnswers((prev) => ({
         ...prev,
-        [currentStep.key]: prev[currentStep.key].includes(value)
-          ? prev[currentStep.key].filter((v) => v !== value)
-          : [...prev[currentStep.key], value],
+        [currentSurvey.key]: prev[currentSurvey.key].includes(value)
+          ? prev[currentSurvey.key].filter((v) => v !== value)
+          : [...prev[currentSurvey.key], value],
       }));
     } else {
-      setAnswers((prev) => ({ ...prev, [currentStep.key]: value }));
+      setAnswers((prev) => ({ ...prev, [currentSurvey.key]: value }));
     }
   };
 
   const isSelected = (value) => {
-    if (currentStep.multi) {
-      return answers[currentStep.key].includes(value);
+    if (currentSurvey.multi) {
+      return answers[currentSurvey.key].includes(value);
     }
-    return answers[currentStep.key] === value;
+    return answers[currentSurvey.key] === value;
   };
 
-  const canProceed = currentStep.multi
-    ? answers[currentStep.key].length > 0
-    : answers[currentStep.key] !== "";
+  const canProceed = isSurveyStep
+    ? (currentSurvey.multi ? answers[currentSurvey.key].length > 0 : answers[currentSurvey.key] !== "")
+    : true; // Reading prefs and theme always allow proceeding
+
+  const handleFinish = () => {
+    const plan = READING_PLANS[answers.faithStage] || READING_PLANS.growing;
+    const profileData = {
+      ...answers,
+      readingPlan: plan.plan,
+      suggestedBook: plan.book,
+    };
+    saveProfile(profileData);
+    localStorage.setItem("onboardingComplete", "true");
+
+    // Push the survey results to GHL so we can segment by faith stage,
+    // goals, and topic interest. Fire-and-forget — never blocks the UI.
+    if (user?.email) {
+      submitOnboardingComplete({
+        email: user.email,
+        name: profile?.name || user?.user_metadata?.name || "",
+        faithStage: answers.faithStage,
+        goals: answers.goals || [],
+        topics: answers.topics || [],
+        readingPlan: plan.plan,
+        suggestedBook: plan.book,
+      });
+    }
+
+    navigate(`/read/${encodeURIComponent(plan.book)}/1`);
+  };
 
   const handleNext = () => {
     if (isLastStep) {
-      const plan = READING_PLANS[answers.faithStage] || READING_PLANS.growing;
-      const profileData = {
-        ...answers,
-        readingPlan: plan.plan,
-        suggestedBook: plan.book,
-      };
-      saveProfile(profileData);
-      navigate(`/read/${encodeURIComponent(plan.book)}/1`);
+      handleFinish();
     } else {
       setStep((s) => s + 1);
     }
@@ -104,7 +139,7 @@ export default function Onboarding() {
     <div className="max-w-lg mx-auto px-4 py-8">
       {/* Progress dots */}
       <div className="flex items-center justify-center gap-2 mb-8">
-        {STEPS.map((_, i) => (
+        {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
           <div
             key={i}
             className={`h-2 rounded-full transition-all ${
@@ -114,47 +149,200 @@ export default function Onboarding() {
         ))}
       </div>
 
-      <h1 className="text-xl font-bold text-warm-brown text-center mb-8">
-        {currentStep.title}
-      </h1>
+      {/* Survey steps (faith stage, goals, topics) */}
+      {isSurveyStep && (
+        <>
+          <h1 className="text-xl font-bold text-warm-brown text-center mb-8">
+            {currentSurvey.title}
+          </h1>
+          <div className={`grid ${currentSurvey.multi && currentSurvey.options.length > 4 ? "grid-cols-2" : "grid-cols-1"} gap-3 mb-8`}>
+            {currentSurvey.options.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => handleSelect(opt.value)}
+                className={`text-left px-4 py-3 rounded-xl border-2 transition-colors ${
+                  isSelected(opt.value)
+                    ? "border-gold bg-gold/5"
+                    : "border-cream-dark bg-white hover:border-gold/30"
+                }`}
+              >
+                <span className={`text-sm font-medium ${isSelected(opt.value) ? "text-gold" : "text-warm-brown"}`}>
+                  {opt.label}
+                </span>
+                {opt.desc && (
+                  <p className="text-xs text-warm-brown-light mt-0.5">{opt.desc}</p>
+                )}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
-      <div className={`grid ${currentStep.multi && currentStep.options.length > 4 ? "grid-cols-2" : "grid-cols-1"} gap-3 mb-8`}>
-        {currentStep.options.map((opt) => (
-          <button
-            key={opt.value}
-            onClick={() => handleSelect(opt.value)}
-            className={`text-left px-4 py-3 rounded-xl border-2 transition-colors ${
-              isSelected(opt.value)
-                ? "border-gold bg-gold/5"
-                : "border-cream-dark bg-white hover:border-gold/30"
-            }`}
-          >
-            <span className={`text-sm font-medium ${isSelected(opt.value) ? "text-gold" : "text-warm-brown"}`}>
-              {opt.label}
-            </span>
-            {opt.desc && (
-              <p className="text-xs text-warm-brown-light mt-0.5">{opt.desc}</p>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Reading Preferences step */}
+      {isReadingPrefsStep && (
+        <>
+          <h1 className="text-xl font-bold text-warm-brown text-center mb-2">
+            How would you like to read?
+          </h1>
+          <p className="text-sm text-warm-brown-light text-center mb-8">
+            You can always change this later in Settings.
+          </p>
 
-      <div className="flex items-center justify-between">
-        {step > 0 ? (
+          {/* Read vs Study mode */}
+          <div className="mb-6">
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Default Mode</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { if (studyMode) toggleStudyMode(); }}
+                className={`px-4 py-4 rounded-xl border-2 transition-colors text-center ${
+                  !studyMode ? "border-gold bg-gold/5" : "border-cream-dark bg-white hover:border-gold/30"
+                }`}
+              >
+                <span className={`text-sm font-medium ${!studyMode ? "text-gold" : "text-warm-brown"}`}>
+                  Read Mode
+                </span>
+                <p className="text-[11px] text-warm-brown-light mt-1">Clean, flowing text</p>
+              </button>
+              <button
+                onClick={() => { if (!studyMode) toggleStudyMode(); }}
+                className={`px-4 py-4 rounded-xl border-2 transition-colors text-center ${
+                  studyMode ? "border-gold bg-gold/5" : "border-cream-dark bg-white hover:border-gold/30"
+                }`}
+              >
+                <span className={`text-sm font-medium ${studyMode ? "text-gold" : "text-warm-brown"}`}>
+                  Study Mode
+                </span>
+                <p className="text-[11px] text-warm-brown-light mt-1">Tap words for definitions</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Verse numbers toggle */}
+          <div className="mb-8">
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Verse Numbers</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { if (!showVerseNumbers) toggleVerseNumbers(); }}
+                className={`px-4 py-4 rounded-xl border-2 transition-colors text-center ${
+                  showVerseNumbers ? "border-gold bg-gold/5" : "border-cream-dark bg-white hover:border-gold/30"
+                }`}
+              >
+                <span className={`text-sm font-medium ${showVerseNumbers ? "text-gold" : "text-warm-brown"}`}>
+                  Show Numbers
+                </span>
+                <p className="text-[11px] text-warm-brown-light mt-1">Traditional verse format</p>
+              </button>
+              <button
+                onClick={() => { if (showVerseNumbers) toggleVerseNumbers(); }}
+                className={`px-4 py-4 rounded-xl border-2 transition-colors text-center ${
+                  !showVerseNumbers ? "border-gold bg-gold/5" : "border-cream-dark bg-white hover:border-gold/30"
+                }`}
+              >
+                <span className={`text-sm font-medium ${!showVerseNumbers ? "text-gold" : "text-warm-brown"}`}>
+                  Hide Numbers
+                </span>
+                <p className="text-[11px] text-warm-brown-light mt-1">Read like a book</p>
+              </button>
+            </div>
+          </div>
+
+          {/* Preview */}
+          <div className="bg-scripture-bg rounded-xl p-4 border border-cream-dark">
+            <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">Preview</p>
+            <p className="font-scripture text-warm-brown leading-relaxed text-base" style={{ fontFamily }}>
+              {showVerseNumbers && <sup className="text-[10px] text-gold mr-1 font-sans font-bold">1</sup>}
+              In the beginning God created the heaven and the earth.{" "}
+              {showVerseNumbers && <sup className="text-[10px] text-gold mr-1 font-sans font-bold">2</sup>}
+              And the earth was without form, and void; and darkness was upon the face of the deep.
+            </p>
+          </div>
+        </>
+      )}
+
+      {/* Theme & Appearance step */}
+      {isThemeStep && (
+        <>
+          <h1 className="text-xl font-bold text-warm-brown text-center mb-2">
+            Choose your look
+          </h1>
+          <p className="text-sm text-warm-brown-light text-center mb-8">
+            You can always change this later in Settings.
+          </p>
+
+          {/* Light / Dark */}
+          <div className="mb-6">
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Theme</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => { if (darkMode) toggleDarkMode(); }}
+                className={`px-4 py-4 rounded-xl border-2 transition-colors text-center ${
+                  !darkMode ? "border-gold bg-gold/5" : "border-cream-dark bg-white hover:border-gold/30"
+                }`}
+              >
+                <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-[#faf7f2] border-2 border-[#f0ebe3]" />
+                <span className={`text-sm font-medium ${!darkMode ? "text-gold" : "text-warm-brown"}`}>
+                  Light
+                </span>
+              </button>
+              <button
+                onClick={() => { if (!darkMode) toggleDarkMode(); }}
+                className={`px-4 py-4 rounded-xl border-2 transition-colors text-center ${
+                  darkMode ? "border-gold bg-gold/5" : "border-cream-dark bg-white hover:border-gold/30"
+                }`}
+              >
+                <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-[#1a1a1a] border-2 border-[#333]" />
+                <span className={`text-sm font-medium ${darkMode ? "text-gold" : "text-warm-brown"}`}>
+                  Dark
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Font choice */}
+          <div className="mb-8">
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Font Style</p>
+            <div className="space-y-2">
+              {FONT_OPTIONS.map((font) => (
+                <button
+                  key={font.value}
+                  onClick={() => setFontFamily(font.value)}
+                  className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
+                    fontFamily === font.value
+                      ? "border-gold bg-gold/5"
+                      : "border-cream-dark bg-white hover:border-gold/30"
+                  }`}
+                >
+                  <p className={`text-xs font-medium mb-1 ${fontFamily === font.value ? "text-gold" : "text-warm-brown"}`}>
+                    {font.label}
+                  </p>
+                  <p className="text-sm text-warm-brown-light" style={{ fontFamily: font.value }}>
+                    {font.sample}
+                  </p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Navigation */}
+      <div className="flex items-center justify-between mt-4">
+        <div className="flex items-center gap-4">
+          {step > 0 && (
+            <button
+              onClick={() => setStep((s) => s - 1)}
+              className="text-sm text-warm-brown-light hover:text-warm-brown"
+            >
+              Back
+            </button>
+          )}
           <button
-            onClick={() => setStep((s) => s - 1)}
-            className="text-sm text-warm-brown-light hover:text-warm-brown"
-          >
-            Back
-          </button>
-        ) : (
-          <button
-            onClick={() => navigate("/")}
-            className="text-sm text-warm-brown-light hover:text-warm-brown"
+            onClick={() => { localStorage.setItem("onboardingComplete", "true"); navigate("/"); }}
+            className="text-sm text-warm-brown-light/60 hover:text-warm-brown-light"
           >
             Skip
           </button>
-        )}
+        </div>
         <button
           onClick={handleNext}
           disabled={!canProceed}

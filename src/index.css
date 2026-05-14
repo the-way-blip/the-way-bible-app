@@ -1,3 +1,6 @@
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
 @import "tailwindcss";
 
 @theme {
@@ -5,8 +8,8 @@
   --color-cream-dark: #f0ebe3;
   --color-parchment: #f5f0e8;
   --color-warm-brown: #5c4033;
-  --color-warm-brown-light: #8b6f5e;
-  --color-gold: #a88a2e;
+  --color-warm-brown-light: #806252;
+  --color-gold: #c9a84c;
   --color-gold-light: #e8d48b;
   --color-scripture-bg: #fdfbf7;
   --color-highlight-yellow: #fff3b0;
@@ -47,6 +50,7 @@ html.dark {
 }
 html.dark .bg-white { background-color: #222 !important; }
 html.dark .bg-white\/95 { background-color: rgba(34,34,34,0.95) !important; }
+html.dark .bg-white\/50 { background-color: rgba(34,34,34,0.5) !important; }
 html.dark .bg-white\/90 { background-color: rgba(34,34,34,0.90) !important; }
 html.dark .border-cream-dark { border-color: #333 !important; }
 html.dark .bg-cream { background-color: #1a1a1a !important; }
@@ -70,16 +74,79 @@ html.dark .bg-gold\/10 { background-color: rgba(201,168,76,0.15) !important; }
 html.dark .border-t { border-color: #333; }
 html.dark .border-b { border-color: #333; }
 
-/* Dark mode: external-link badges in WordStudyPanel */
+/* Dark mode: standard Tailwind color overrides for badges & indicators */
+html.dark .bg-red-50 { background-color: rgba(220,50,50,0.12) !important; }
+html.dark .bg-red-100 { background-color: rgba(220,50,50,0.2) !important; }
+html.dark .text-red-400 { color: #ff8787 !important; }
+html.dark .text-red-500 { color: #ff6b6b !important; }
+html.dark .text-red-600 { color: #ff5252 !important; }
+
+html.dark .bg-green-50 { background-color: rgba(76,175,80,0.12) !important; }
+html.dark .bg-green-100 { background-color: rgba(76,175,80,0.2) !important; }
+html.dark .border-green-200 { border-color: rgba(76,175,80,0.35) !important; }
+html.dark .border-green-500 { border-color: #4caf50 !important; }
+html.dark .bg-green-500 { background-color: #4caf50 !important; }
+html.dark .text-green-600 { color: #66bb6a !important; }
+html.dark .text-green-700 { color: #43a047 !important; }
+
+html.dark .bg-blue-50 { background-color: rgba(59,130,246,0.12) !important; }
 html.dark .bg-blue-100 { background-color: rgba(59,130,246,0.15) !important; }
+html.dark .text-blue-700 { color: #64b5f6 !important; }
 html.dark .bg-indigo-100 { background-color: rgba(99,102,241,0.15) !important; }
 html.dark .bg-emerald-100 { background-color: rgba(16,185,129,0.15) !important; }
+
+html.dark .bg-orange-50 { background-color: rgba(255,152,0,0.12) !important; }
+html.dark .bg-orange-100 { background-color: rgba(255,152,0,0.2) !important; }
+html.dark .text-orange-500 { color: #ffb74d !important; }
+html.dark .text-orange-700 { color: #ffa726 !important; }
+
+html.dark .bg-yellow-100 { background-color: rgba(255,193,7,0.2) !important; }
+html.dark .text-yellow-700 { color: #fbc02d !important; }
+
+html.dark .bg-purple-100 { background-color: rgba(156,39,176,0.2) !important; }
+html.dark .text-purple-700 { color: #ab47bc !important; }
+
+html.dark .bg-amber-100 { background-color: rgba(255,152,0,0.15) !important; }
+html.dark .bg-amber-500 { background-color: #e68900 !important; }
+html.dark .text-amber-700 { color: #ffb74d !important; }
+
+html.dark .bg-gray-100 { background-color: #333 !important; }
+html.dark .text-gray-600 { color: #999 !important; }
 
 /* Dark mode: scrollbar + selection */
 html.dark ::selection { background-color: rgba(201,168,76,0.3); }
 html.dark ::-webkit-scrollbar { width: 6px; }
 html.dark ::-webkit-scrollbar-track { background: #1a1a1a; }
 html.dark ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+/* ── Skip Link & Screen Reader ── */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-gold);
+  color: white;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 0 0 0.5rem 0;
+  transition: top 0.2s;
+}
+.skip-link:focus {
+  top: 0;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
 
 /* ── Focus Visible ── */
 :focus-visible {
@@ -95,6 +162,10 @@ html.dark ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
   min-height: 100svh;
   display: flex;
   flex-direction: column;
+  /* iOS safe areas — notch + home indicator */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 .font-scripture {
@@ -103,24 +174,49 @@ html.dark ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
   letter-spacing: 0.01em;
 }
 
-.verse-number {
-  font-family: var(--font-sans);
-  font-size: 0.65em;
+/* ── Drop Cap ── */
+.drop-cap::first-letter {
+  float: left;
+  font-size: 3.2em;
+  line-height: 0.8;
+  padding-right: 0.08em;
+  margin-top: 0.05em;
   font-weight: 700;
-  vertical-align: super;
   color: var(--color-gold);
-  margin-right: 2px;
-  transition: transform 0.1s ease, opacity 0.1s ease;
-  display: inline-block;
-  /* Expand tap target to 44×44px minimum */
-  padding: 8px 4px;
-  margin: -8px 0 -8px -4px;
-  position: relative;
-  z-index: 1;
 }
-.verse-number:active {
-  transform: scale(0.9);
+html.dark .drop-cap::first-letter {
+  color: #c9a84c;
+}
+
+/* Verse number button — inline button with 44×44 tap target */
+.verse-number-btn {
+  all: unset;
+  display: inline;
+  cursor: pointer;
+  position: relative;
+  vertical-align: baseline;
+  -webkit-tap-highlight-color: transparent;
+  /* Invisible padding creates the 44×44 tap area */
+  padding: 14px 10px;
+  margin: -14px -6px -14px -10px;
+}
+.verse-number-btn:hover .verse-number-text {
+  background-color: var(--color-gold-light);
+  border-radius: 50%;
+  box-shadow: 0 0 0 4px var(--color-gold-light);
+}
+.verse-number-btn:active .verse-number-text {
   opacity: 0.7;
+}
+.verse-number-text {
+  font-family: var(--font-sans);
+  font-size: 0.55em;
+  font-weight: 600;
+  vertical-align: super;
+  color: var(--color-warm-brown-light);
+  margin-right: 2px;
+  pointer-events: none;
+  transition: background-color 0.15s, box-shadow 0.15s;
 }
 
 .word-tappable {
@@ -194,6 +290,14 @@ html.dark ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
   .word-tappable {
     transition: none;
   }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-toast-in {
+  animation: toastIn 0.2s ease-out both;
 }
 
 @media (min-width: 768px) {

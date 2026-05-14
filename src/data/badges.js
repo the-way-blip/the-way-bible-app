@@ -1,12 +1,15 @@
 // Progress badges — unlocked based on reading milestones
 const badges = [
   { id: "first_chapter", name: "First Steps", desc: "Read your first chapter", icon: "🌱", condition: (p) => getTotalChapters(p) >= 1 },
+  { id: "first_memory", name: "Memorizer", desc: "Save your first memory verse", icon: "💡", condition: (_, m) => m >= 1 },
+  { id: "three_streak", name: "Consistent", desc: "3-day reading streak", icon: "✨", condition: (p) => (p.streak || 0) >= 3 },
+  { id: "five_chapters", name: "Exploring", desc: "Read 5 chapters", icon: "📚", condition: (p) => getTotalChapters(p) >= 5 },
   { id: "week_streak", name: "Faithful Week", desc: "7-day reading streak", icon: "🔥", condition: (p) => (p.streak || 0) >= 7 },
   { id: "ten_chapters", name: "Digging In", desc: "Read 10 chapters", icon: "📖", condition: (p) => getTotalChapters(p) >= 10 },
+  { id: "five_memory", name: "Hidden in Heart", desc: "Save 5 memory verses", icon: "💎", condition: (_, m) => m >= 5 },
   { id: "month_streak", name: "Steadfast", desc: "30-day reading streak", icon: "⭐", condition: (p) => (p.streak || 0) >= 30 },
   { id: "fifty_chapters", name: "Scholar", desc: "Read 50 chapters", icon: "🎓", condition: (p) => getTotalChapters(p) >= 50 },
   { id: "whole_book", name: "Completionist", desc: "Finish an entire book", icon: "✅", condition: (p) => hasFinishedABook(p) },
-  { id: "five_memory", name: "Hidden in Heart", desc: "Save 5 memory verses", icon: "💎", condition: (_, m) => m >= 5 },
   { id: "hundred_chapters", name: "Devoted", desc: "Read 100 chapters", icon: "🏆", condition: (p) => getTotalChapters(p) >= 100 },
   { id: "year_streak", name: "Pillar of Faith", desc: "365-day reading streak", icon: "👑", condition: (p) => (p.streak || 0) >= 365 },
   { id: "full_nt", name: "New Testament", desc: "Read all 260 NT chapters", icon: "📜", condition: (p) => getNTChapters(p) >= 260 },

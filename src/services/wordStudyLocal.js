@@ -31,15 +31,18 @@ async function getBookData(abbrev) {
 }
 
 // Parse the tagged KJV text: "In the beginning[H7225] God[H430] created[H1254]..."
+// Also handles [G1161]word format (tag before word)
 // Returns array of word objects
 function parseTaggedText(taggedText) {
   const words = [];
-  // Remove <em> tags and track which words are added
-  // Pattern: word[H####] or word[G####] for original, <em>word</em> for added
   let remaining = taggedText;
 
-  // Split into tokens: either <em>...</em> blocks or word[code] or plain words
-  const regex = /<em>(.*?)<\/em>|(\S+?)(\[([HG]\d+)\](?:\[([HG]\d+)\])?(?:\[([HG]\d+)\])?)|(\S+)/g;
+  // Split into tokens:
+  // 1. <em>...</em> — translator added words
+  // 2. word[Hxxxx] — original word with Strong's tag after
+  // 3. [Hxxxx]word — original word with Strong's tag before
+  // 4. plain word — no tag, treated as added
+  const regex = /<em>(.*?)<\/em>|(\S+?)(\[([HG]\d+)\](?:\[([HG]\d+)\])?(?:\[([HG]\d+)\])?)|(\[([HG]\d+)\])(\S+)|(\S+)/g;
   let match;
 
   while ((match = regex.exec(remaining)) !== null) {
@@ -50,7 +53,7 @@ function parseTaggedText(taggedText) {
         added: true,
       });
     } else if (match[2] !== undefined) {
-      // word[H####] — original language word with Strong's tag(s)
+      // word[H####] — original language word with Strong's tag(s) after
       const strongsNums = [match[4], match[5], match[6]].filter(Boolean);
       words.push({
         word: match[2].replace(/[.,;:!?]/g, ""),
@@ -59,12 +62,22 @@ function parseTaggedText(taggedText) {
         strongs_extra: strongsNums.slice(1),
         punctuation: match[2].match(/[.,;:!?]$/)?.[0] || "",
       });
-    } else if (match[7] !== undefined) {
+    } else if (match[7] !== undefined && match[9] !== undefined) {
+      // [H####]word — Strong's tag before word
+      words.push({
+        word: match[9].replace(/[.,;:!?]/g, ""),
+        added: false,
+        strongs: match[8] || null,
+        strongs_extra: [],
+        punctuation: match[9].match(/[.,;:!?]$/)?.[0] || "",
+      });
+    } else if (match[10] !== undefined) {
       // Plain word with no tag — likely added or punctuation
-      const clean = match[7].replace(/[.,;:!?]/g, "");
-      if (clean) {
+      // Also clean any stray [Hxxxx] tags that weren't caught
+      const cleaned = match[10].replace(/\[[HG]\d+\]/g, "").replace(/[.,;:!?]/g, "");
+      if (cleaned) {
         words.push({
-          word: clean,
+          word: cleaned,
           added: true,
         });
       }
@@ -168,11 +181,29 @@ async function enrichWithOpenScriptures(words) {
 
 function cleanDef(def) {
   if (!def) return null;
-  return decodeEntities(def)
+  let cleaned = decodeEntities(def)
     .replace(/-+$/, "")
     .replace(/^\s+/, "")
     .replace(/^null/, "")
     .trim();
+  // Deduplicate: if the definition text is repeated (e.g., "foo bar foo bar")
+  // Try splitting at comma or semicolon boundaries too
+  if (cleaned.length > 10) {
+    const half = Math.floor(cleaned.length / 2);
+    // Check exact repeat
+    for (let splitAt = half - 5; splitAt <= half + 5; splitAt++) {
+      if (splitAt <= 0 || splitAt >= cleaned.length) continue;
+      const first = cleaned.substring(0, splitAt).trim();
+      const second = cleaned.substring(splitAt).trim();
+      // Remove leading comma/semicolon from second part
+      const secondClean = second.replace(/^[,;\s]+/, "").trim();
+      if (first.length > 5 && first === secondClean) {
+        cleaned = first;
+        break;
+      }
+    }
+  }
+  return cleaned;
 }
 
 function cleanHtml(text) {

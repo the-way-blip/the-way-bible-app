@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbGetAll, dbPut, dbDelete } from "./useDB";
+import { syncPush, syncDelete } from "../services/supabaseSync";
+import { useAuth } from "../stores/AuthContext";
 
 export default function useMemoryVerses() {
   const [verses, setVerses] = useState([]);
+  const { user } = useAuth();
 
   const load = useCallback(async () => {
     const items = await dbGetAll("memoryVerses");
@@ -16,7 +19,7 @@ export default function useMemoryVerses() {
     const existing = verses.find((v) => v.id === id);
     if (existing) return;
 
-    await dbPut("memoryVerses", {
+    const record = {
       id,
       book,
       chapter,
@@ -30,12 +33,21 @@ export default function useMemoryVerses() {
       practiceCount: 0,
       topics: [],
       createdAt: Date.now(),
-    });
+    };
+    await dbPut("memoryVerses", record);
+    syncPush("memoryVerses", record, user?.id);
     await load();
   };
 
   const removeVerse = async (id) => {
     await dbDelete("memoryVerses", id);
+    syncDelete("memoryVerses", id, user?.id);
+    await load();
+  };
+
+  const updateVerse = async (verse) => {
+    await dbPut("memoryVerses", verse);
+    syncPush("memoryVerses", verse, user?.id);
     await load();
   };
 
@@ -43,5 +55,5 @@ export default function useMemoryVerses() {
     return verses.some((v) => v.id === `${book}-${chapter}-${verseNumber}`);
   };
 
-  return { verses, addVerse, removeVerse, isMemoryVerse, reload: load };
+  return { verses, addVerse, removeVerse, updateVerse, isMemoryVerse, reload: load };
 }

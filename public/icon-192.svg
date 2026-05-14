@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="32" fill="#faf7f2"/>
+  <rect x="24" y="24" width="144" height="144" rx="24" fill="#c9a84c" opacity="0.15"/>
+  <!-- Open book -->
+  <path d="M96 60 C96 60 68 48 44 52 C44 52 40 52 40 56 L40 128 C40 132 44 132 44 132 C68 128 96 140 96 140 C96 140 124 128 148 132 C148 132 152 132 152 128 L152 56 C152 52 148 52 148 52 C124 48 96 60 96 60Z" fill="none" stroke="#8a6d22" stroke-width="4" stroke-linejoin="round"/>
+  <!-- Center spine -->
+  <line x1="96" y1="60" x2="96" y2="140" stroke="#8a6d22" stroke-width="3"/>
+  <!-- Page lines left -->
+  <line x1="52" y1="72" x2="88" y2="78" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <line x1="52" y1="86" x2="88" y2="92" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <line x1="52" y1="100" x2="88" y2="106" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <line x1="52" y1="114" x2="88" y2="120" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <!-- Page lines right -->
+  <line x1="104" y1="78" x2="140" y2="72" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <line x1="104" y1="92" x2="140" y2="86" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <line x1="104" y1="106" x2="140" y2="100" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <line x1="104" y1="120" x2="140" y2="114" stroke="#c9a84c" stroke-width="2" opacity="0.5"/>
+  <!-- Cross -->
+  <line x1="96" y1="30" x2="96" y2="50" stroke="#8a6d22" stroke-width="3" stroke-linecap="round"/>
+  <line x1="88" y1="38" x2="104" y2="38" stroke="#8a6d22" stroke-width="3" stroke-linecap="round"/>
+  <!-- App name -->
+  <text x="96" y="170" text-anchor="middle" font-family="Georgia, serif" font-size="14" fill="#8a6d22" font-weight="bold">IN THE MIDST</text>
+</svg>

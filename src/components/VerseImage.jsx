@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 const THEMES = [
   { bg: "#faf7f2", text: "#5c4033", accent: "#c9a84c", name: "Parchment" },
@@ -8,72 +8,103 @@ const THEMES = [
   { bg: "#f5f0ff", text: "#3a2d5c", accent: "#7c5cbf", name: "Royal" },
 ];
 
-export default function VerseImage({ text, reference, onClose }) {
-  const canvasRef = useRef(null);
+const SIZES = [
+  { w: 1080, h: 1080, label: "Square", desc: "Instagram / Facebook", icon: "1:1" },
+  { w: 1080, h: 1920, label: "Story", desc: "Instagram / TikTok Story", icon: "9:16" },
+  { w: 1200, h: 630, label: "Landscape", desc: "Facebook / Twitter / LinkedIn", icon: "16:9" },
+  { w: 1080, h: 1350, label: "Portrait", desc: "Instagram Portrait", icon: "4:5" },
+  { w: 1170, h: 2532, label: "iPhone", desc: "Phone Wallpaper", icon: "phone" },
+  { w: 2560, h: 1440, label: "Desktop", desc: "Desktop Wallpaper", icon: "monitor" },
+];
+
+export default function VerseImage({ content, reference, onClose }) {
+  const text = content;
   const [theme, setTheme] = useState(0);
+  const [sizeIdx, setSizeIdx] = useState(0);
   const [downloading, setDownloading] = useState(false);
 
   const t = THEMES[theme];
+  const size = SIZES[sizeIdx];
 
   const drawAndDownload = async () => {
     setDownloading(true);
+    const { w, h } = size;
     const canvas = document.createElement("canvas");
-    canvas.width = 1080;
-    canvas.height = 1080;
+    canvas.width = w;
+    canvas.height = h;
     const ctx = canvas.getContext("2d");
+
+    // Scale factor relative to 1080 base
+    const s = Math.min(w, h) / 1080;
+    const pad = Math.round(40 * s);
+    const innerPad = Math.round(100 * s);
 
     // Background
     ctx.fillStyle = t.bg;
-    ctx.fillRect(0, 0, 1080, 1080);
+    ctx.fillRect(0, 0, w, h);
 
     // Decorative border
     ctx.strokeStyle = t.accent;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(40, 40, 1000, 1000);
-    ctx.strokeRect(50, 50, 980, 980);
+    ctx.lineWidth = Math.max(1, 2 * s);
+    ctx.strokeRect(pad, pad, w - pad * 2, h - pad * 2);
+    ctx.strokeRect(pad + Math.round(10 * s), pad + Math.round(10 * s), w - (pad + Math.round(10 * s)) * 2, h - (pad + Math.round(10 * s)) * 2);
 
     // Quote marks
     ctx.fillStyle = t.accent;
-    ctx.font = "120px Georgia";
+    const quoteSize = Math.round(120 * s);
+    ctx.font = `${quoteSize}px Georgia`;
     ctx.globalAlpha = 0.15;
-    ctx.fillText("\u201C", 70, 200);
+    ctx.fillText("\u201C", innerPad - Math.round(20 * s), pad + quoteSize + Math.round(40 * s));
     ctx.globalAlpha = 1;
 
-    // Verse text
+    // Verse text — centered vertically
+    const fontSize = Math.round(36 * s);
+    const lineHeight = Math.round(52 * s);
     ctx.fillStyle = t.text;
-    ctx.font = "36px Georgia";
-    const words = text.split(" ");
-    let line = "";
-    let y = 260;
-    const maxWidth = 880;
+    ctx.font = `${fontSize}px Georgia`;
+    const maxWidth = w - innerPad * 2;
 
+    // Pre-calculate lines for vertical centering
+    const words = text.split(" ");
+    const lines = [];
+    let line = "";
     for (const word of words) {
       const test = line + word + " ";
       if (ctx.measureText(test).width > maxWidth && line) {
-        ctx.fillText(line.trim(), 100, y);
+        lines.push(line.trim());
         line = word + " ";
-        y += 52;
       } else {
         line = test;
       }
     }
-    ctx.fillText(line.trim(), 100, y);
+    if (line.trim()) lines.push(line.trim());
+
+    // Total block height: lines + ref + branding
+    const refSize = Math.round(28 * s);
+    const refGap = Math.round(80 * s);
+    const totalTextHeight = lines.length * lineHeight + refGap + refSize;
+    const startY = Math.max(pad + quoteSize + Math.round(60 * s), (h - totalTextHeight) / 2);
+
+    for (let i = 0; i < lines.length; i++) {
+      ctx.fillText(lines[i], innerPad, startY + i * lineHeight);
+    }
 
     // Reference
     ctx.fillStyle = t.accent;
-    ctx.font = "italic 28px Georgia";
-    ctx.fillText("— " + reference + " (KJV)", 100, y + 80);
+    ctx.font = `italic ${refSize}px Georgia`;
+    ctx.fillText("— " + reference + " (KJV)", innerPad, startY + lines.length * lineHeight + refGap);
 
     // Branding
     ctx.fillStyle = t.text;
     ctx.globalAlpha = 0.3;
-    ctx.font = "18px system-ui";
-    ctx.fillText("In The Midst", 100, 980);
+    const brandSize = Math.round(18 * s);
+    ctx.font = `${brandSize}px system-ui`;
+    ctx.fillText("The Way", innerPad, h - pad - Math.round(20 * s));
     ctx.globalAlpha = 1;
 
     // Download
     const link = document.createElement("a");
-    link.download = `${reference.replace(/\s/g, "_")}.png`;
+    link.download = `${reference.replace(/\s/g, "_")}_${size.label.toLowerCase()}.png`;
     link.href = canvas.toDataURL("image/png");
     link.click();
 
@@ -96,7 +127,10 @@ export default function VerseImage({ text, reference, onClose }) {
 
           {/* Preview */}
           <div className="mx-5 rounded-xl overflow-hidden border border-cream-dark" style={{ backgroundColor: t.bg }}>
-            <div className="p-6 aspect-square flex flex-col justify-center">
+            <div
+              className="p-6 flex flex-col justify-center"
+              style={{ aspectRatio: `${size.w} / ${size.h}`, maxHeight: "280px" }}
+            >
               <p className="text-3xl opacity-10 mb-2" style={{ color: t.accent }}>"</p>
               <p className="leading-relaxed mb-4" style={{ color: t.text, fontFamily: "Georgia", fontSize: "14px" }}>
                 {text}
@@ -107,28 +141,49 @@ export default function VerseImage({ text, reference, onClose }) {
             </div>
           </div>
 
-          {/* Theme picker */}
-          <div className="px-5 py-3 flex items-center gap-2">
-            {THEMES.map((th, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setTheme(i)}
-                className={`w-8 h-8 rounded-full border-2 transition-transform ${theme === i ? "border-gold scale-110" : "border-transparent"}`}
-                style={{ backgroundColor: th.bg }}
-                title={th.name}
-              />
-            ))}
+          <div className="px-5 pt-3 max-h-[220px] overflow-y-auto">
+            {/* Size picker */}
+            <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">Size</p>
+            <div className="grid grid-cols-3 gap-1.5 mb-3">
+              {SIZES.map((sz, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setSizeIdx(i)}
+                  className={`px-2 py-2 rounded-lg border text-left transition-colors ${sizeIdx === i ? "border-gold bg-gold/5" : "border-cream-dark hover:border-gold/30"}`}
+                >
+                  <span className={`text-xs font-medium block ${sizeIdx === i ? "text-gold" : "text-warm-brown"}`}>
+                    {sz.label}
+                  </span>
+                  <span className="text-[10px] text-warm-brown-light leading-tight block">{sz.desc}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Theme picker */}
+            <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">Theme</p>
+            <div className="flex items-center gap-2 mb-1">
+              {THEMES.map((th, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => setTheme(i)}
+                  className={`w-8 h-8 rounded-full border-2 transition-transform ${theme === i ? "border-gold scale-110" : "border-transparent"}`}
+                  style={{ backgroundColor: th.bg }}
+                  title={th.name}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Download */}
-          <div className="px-5 pb-5">
+          <div className="px-5 py-4">
             <button
               onClick={drawAndDownload}
               disabled={downloading}
               className="w-full bg-gold text-white rounded-xl py-3 text-sm font-medium hover:bg-gold/90 disabled:opacity-50 transition-colors"
             >
-              {downloading ? "Generating..." : "Download Image"}
+              {downloading ? "Generating..." : `Download ${size.label} (${size.w}×${size.h})`}
             </button>
           </div>
         </div>

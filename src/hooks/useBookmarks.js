@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbGetAll, dbPut, dbDelete } from "./useDB";
+import { syncPush, syncDelete } from "../services/supabaseSync";
+import { useAuth } from "../stores/AuthContext";
 
 export default function useBookmarks() {
   const [bookmarks, setBookmarks] = useState([]);
+  const { user } = useAuth();
 
   const load = useCallback(async () => {
     const all = await dbGetAll("journal");
@@ -17,7 +20,7 @@ export default function useBookmarks() {
 
   const addBookmark = async (book, chapter, verse, text) => {
     const id = `bookmark-${book}-${chapter}-${verse}`;
-    await dbPut("journal", {
+    const record = {
       id,
       title: `${book} ${chapter}:${verse}`,
       content: text,
@@ -27,13 +30,16 @@ export default function useBookmarks() {
       tags: ["bookmark"],
       createdAt: Date.now(),
       updatedAt: Date.now(),
-    });
+    };
+    await dbPut("journal", record);
+    syncPush("journal", record, user?.id);
     await load();
   };
 
   const removeBookmark = async (book, chapter, verse) => {
     const id = `bookmark-${book}-${chapter}-${verse}`;
     await dbDelete("journal", id);
+    syncDelete("journal", id, user?.id);
     await load();
   };
 

@@ -1,30 +1,42 @@
 import { useState, useEffect } from "react";
 import { fetchCommentaries, getBibleHubUrl } from "../../services/commentaryService";
 import { saveCommentary } from "../../pages/CommentaryLibrary";
+import { useApp } from "../../stores/AppContext";
 
 export default function CommentaryPanel({ book, chapter }) {
+  const { pinnedCommentator } = useApp();
   const [commentaries, setCommentaries] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [error, setError] = useState(null);
   const [expandedCards, setExpandedCards] = useState({});
 
-  const handleLoad = async () => {
-    if (commentaries.length > 0) {
-      setExpanded(!expanded);
-      return;
-    }
+  // Auto-load commentaries on mount / chapter change
+  useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setError(null);
-    try {
-      const results = await fetchCommentaries(book, chapter);
-      setCommentaries(results);
-      setExpanded(true);
-    } catch (err) {
-      setError("Failed to load commentaries");
-    } finally {
-      setLoading(false);
-    }
+    setExpandedCards({});
+    fetchCommentaries(book, chapter).then((results) => {
+      if (!cancelled) {
+        setCommentaries(
+          pinnedCommentator
+            ? results.filter((c) => c.author === pinnedCommentator)
+            : results
+        );
+        setLoading(false);
+      }
+    }).catch(() => {
+      if (!cancelled) {
+        setError("Failed to load commentaries");
+        setLoading(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [book, chapter, pinnedCommentator]);
+
+  const handleLoad = () => {
+    setExpanded(!expanded);
   };
 
   const toggleCard = (i) => {
@@ -45,7 +57,7 @@ export default function CommentaryPanel({ book, chapter }) {
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           </svg>
-          {loading ? "Loading commentaries..." : "Commentaries"}
+          {loading ? "Loading commentaries..." : pinnedCommentator ? `${pinnedCommentator}` : "Commentaries"}
           {commentaries.length > 0 && (
             <span className="text-[10px] bg-gold/10 text-gold px-1.5 py-0.5 rounded-full">
               {commentaries.length}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, lazy, Suspense } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import useBible from "../hooks/useBible";
 import useHighlights from "../hooks/useHighlights";
@@ -7,24 +7,26 @@ import useMemoryVerses from "../hooks/useMemoryVerses";
 import useWordStudy from "../hooks/useWordStudy";
 import useChapterWordStudy from "../hooks/useChapterWordStudy";
 import { getBook, getNextChapter, getPrevChapter } from "../data/bibleBooks";
-import ChapterNav from "../features/reader/ChapterNav";
-import ChapterOutline from "../features/reader/ChapterOutline";
 import VerseList from "../features/reader/VerseList";
 import VerseActions from "../features/reader/VerseActions";
 import WordStudyPanel from "../features/reader/WordStudyPanel";
-import AISummary from "../features/reader/AISummary";
-import CommentaryPanel from "../features/reader/CommentaryPanel";
-import SidePanel from "../features/reader/SidePanel";
-import BibleMaps from "../features/reader/BibleMaps";
-import YouTubeLinks from "../features/reader/YouTubeLinks";
-import AIChat from "../features/reader/AIChat";
-import AudioBible from "../features/reader/AudioBible";
-import ParallelPassages from "../features/reader/ParallelPassages";
-import ShareSheet from "../components/ShareSheet";
 import SkeletonVerses from "../components/SkeletonVerses";
+
+// Lazy loaded (below fold / modals / panels)
+const ChapterNav = lazy(() => import("../features/reader/ChapterNav"));
+const SidePanel = lazy(() => import("../features/reader/SidePanel"));
+const BibleMaps = lazy(() => import("../features/reader/BibleMaps"));
+const YouTubeLinks = lazy(() => import("../features/reader/YouTubeLinks"));
+const AudioBible = lazy(() => import("../features/reader/AudioBible"));
+const ParallelPassages = lazy(() => import("../features/reader/ParallelPassages"));
+const ShareSheet = lazy(() => import("../components/ShareSheet"));
 import { useApp } from "../stores/AppContext";
+import { useToast } from "../components/Toast";
+import { useAuth } from "../stores/AuthContext";
 import useSwipe from "../hooks/useSwipe";
 import useBookmarks from "../hooks/useBookmarks";
+import { syncReadingProgressUpdate } from "../services/supabaseSync";
+import { submitReadingMilestone } from "../services/ghlService";
 import useInfiniteScroll from "../hooks/useInfiniteScroll";
 import AppendedChapter from "../features/reader/AppendedChapter";
 
@@ -39,8 +41,10 @@ export default function Reader() {
   const { addVerse, isMemoryVerse } = useMemoryVerses();
   const { wordData, loading: wordLoading, error: wordError, getWordStudy, clear: clearWordStudy } = useWordStudy();
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapterNum, data?.verses);
-  const { studyMode, toggleStudyMode, fontSize, setFontSize } = useApp();
+  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers } = useApp();
+  const { user, profile } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
+  const showToast = useToast();
 
   // Swipe navigation
   const swipeHandlers = useSwipe(
@@ -50,6 +54,7 @@ export default function Reader() {
 
   const [selectedVerse, setSelectedVerse] = useState(null);
   const [activeChapterCtx, setActiveChapterCtx] = useState({ book, chapter: chapterNum });
+  const [displayedChapter, setDisplayedChapter] = useState({ book, chapter: chapterNum });
   const [showNav, setShowNav] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(
@@ -61,11 +66,18 @@ export default function Reader() {
   const [pendingWord, setPendingWord] = useState(null);
   const [shareData, setShareData] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(true);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
   // These need to be declared before the keyboard shortcuts effect
   const bookInfo = getBook(book);
   const prev = getPrevChapter(book, chapterNum);
   const next = getNextChapter(book, chapterNum);
+
+  // Set document title and displayed chapter on direct navigation
+  useEffect(() => {
+    document.title = `${bookInfo?.name || book} ${chapterNum} — The Way`;
+    setDisplayedChapter({ book: bookInfo?.name || book, chapter: chapterNum });
+  }, [book, chapterNum, bookInfo]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -75,11 +87,9 @@ export default function Reader() {
 
       switch (e.key) {
         case "ArrowLeft":
-        case "p":
           if (prev) goTo(prev);
           break;
         case "ArrowRight":
-        case "n":
           if (next) goTo(next);
           break;
         case "Escape":
@@ -89,10 +99,16 @@ export default function Reader() {
           setShareData(null);
           break;
         case "b":
+        case "f":
+          e.preventDefault();
           setShowNav(true);
           break;
         case "s":
           toggleStudyMode();
+          break;
+        case "/":
+          e.preventDefault();
+          window.location.href = "/search";
           break;
         default:
           return;
@@ -104,9 +120,11 @@ export default function Reader() {
   }, [prev, next, toggleStudyMode]);
 
   // Infinite / continuous scroll
-  const { extraChapters, loadingNext, loadNextChapter } = useInfiniteScroll(book, chapterNum);
+  const { extraChapters, extraChaptersBefore, loadingNext, loadingPrev, loadNextChapter, loadPrevChapter } = useInfiniteScroll(book, chapterNum);
   const sentinelRef = useRef(null);
+  const topSentinelRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  const prevChaptersLenRef = useRef(0);
   const scrollSaveTimeout = useRef(null);
   const navigatedDirectly = useRef(true);
 
@@ -129,10 +147,46 @@ export default function Reader() {
     return () => observer.disconnect();
   }, [loadNextChapter, data]);
 
+  // IntersectionObserver for loading previous chapter (scroll up)
+  useEffect(() => {
+    const sentinel = topSentinelRef.current;
+    const root = scrollContainerRef.current;
+    if (!sentinel || !root) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadPrevChapter();
+        }
+      },
+      { root, rootMargin: "200px" }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [loadPrevChapter, data]);
+
+  // Maintain scroll position when prepending chapters
+  useEffect(() => {
+    const container = scrollContainerRef.current;
+    if (!container || extraChaptersBefore.length === 0) return;
+    if (extraChaptersBefore.length > prevChaptersLenRef.current) {
+      // A new chapter was prepended — adjust scroll to keep current content in place
+      requestAnimationFrame(() => {
+        const firstOriginal = container.querySelector(`[data-chapter-ref="${book}-${chapterNum}"]`);
+        if (firstOriginal) {
+          const offset = firstOriginal.offsetTop - 60; // account for sticky header
+          container.scrollTop = offset;
+        }
+      });
+    }
+    prevChaptersLenRef.current = extraChaptersBefore.length;
+  }, [extraChaptersBefore.length, book, chapterNum]);
+
   // Update URL as user scrolls into appended chapters (replaceState to avoid history pollution)
   useEffect(() => {
     const container = scrollContainerRef.current;
-    if (!container || extraChapters.length === 0) return;
+    if (!container || (extraChapters.length === 0 && extraChaptersBefore.length === 0)) return;
 
     const handleScroll = () => {
       const markers = container.querySelectorAll("[data-chapter-ref]");
@@ -152,12 +206,16 @@ export default function Reader() {
       const expectedPath = `/read/${encodeURIComponent(scrollBook)}/${scrollChapter}`;
       if (window.location.pathname !== expectedPath) {
         window.history.replaceState(null, "", expectedPath);
+        // Update displayed header title and document title
+        const chNum = parseInt(scrollChapter);
+        setDisplayedChapter({ book: scrollBook, chapter: chNum });
+        document.title = `${scrollBook} ${chNum} — The Way`;
       }
     };
 
     container.addEventListener("scroll", handleScroll, { passive: true });
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [book, chapterNum, extraChapters]);
+  }, [book, chapterNum, extraChapters, extraChaptersBefore]);
 
   // Debounced scroll position saving
   useEffect(() => {
@@ -182,13 +240,18 @@ export default function Reader() {
     };
   }, [book, chapterNum]);
 
-  // Show/hide scroll-to-top button based on scroll position
+  // Show/hide scroll-to-top button + track progress
   useEffect(() => {
     const container = scrollContainerRef.current;
     if (!container) return;
 
     const handleScroll = () => {
       setShowScrollTop(container.scrollTop > 500);
+      // Calculate scroll progress
+      const scrollHeight = container.scrollHeight - container.clientHeight;
+      if (scrollHeight > 0) {
+        setScrollProgress(Math.min(1, container.scrollTop / scrollHeight));
+      }
     };
 
     container.addEventListener("scroll", handleScroll, { passive: true });
@@ -230,20 +293,62 @@ export default function Reader() {
 
   const saveProgress = () => {
     try {
-      const progress = JSON.parse(localStorage.getItem("readingProgress") || "{}");
+      const prevProgress = JSON.parse(localStorage.getItem("readingProgress") || "{}");
+      const totalChaptersBefore = Object.values(prevProgress.completedChapters || {})
+        .reduce((sum, arr) => sum + (arr?.length || 0), 0);
+
+      const progress = { ...prevProgress };
       if (!progress.completedChapters) progress.completedChapters = {};
       if (!progress.completedChapters[book]) progress.completedChapters[book] = [];
-      if (!progress.completedChapters[book].includes(chapterNum)) {
+      const wasCompleted = progress.completedChapters[book].includes(chapterNum);
+      if (!wasCompleted) {
         progress.completedChapters[book].push(chapterNum);
       }
       const today = new Date().toISOString().split("T")[0];
+      const prevStreak = progress.streak || 0;
       if (progress.lastReadDate !== today) {
         const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-        progress.streak = progress.lastReadDate === yesterday ? (progress.streak || 0) + 1 : 1;
+        progress.streak = progress.lastReadDate === yesterday ? prevStreak + 1 : 1;
       }
       progress.lastReadDate = today;
       progress.lastRead = { book, chapter: chapterNum };
       localStorage.setItem("readingProgress", JSON.stringify(progress));
+      syncReadingProgressUpdate(user?.id);
+
+      // ---- Reading milestones → GHL (fire-and-forget, deduped client-side)
+      if (user?.email) {
+        const milestoneArgs = {
+          email: user.email,
+          name: profile?.name || user?.user_metadata?.name || "",
+        };
+        // First chapter ever read on this account/device
+        if (totalChaptersBefore === 0 && !wasCompleted) {
+          submitReadingMilestone({
+            ...milestoneArgs,
+            milestone: "first-chapter",
+            detail: { book, chapter: chapterNum },
+          });
+        }
+        // Whole book complete
+        const bookMeta = getBook(book);
+        if (bookMeta && progress.completedChapters[book].length >= bookMeta.chapters) {
+          submitReadingMilestone({
+            ...milestoneArgs,
+            milestone: `book-complete:${book}`,
+            detail: { book, chapters: bookMeta.chapters },
+          });
+        }
+        // Streak thresholds
+        for (const threshold of [7, 30, 100, 365]) {
+          if (progress.streak === threshold && prevStreak < threshold) {
+            submitReadingMilestone({
+              ...milestoneArgs,
+              milestone: `streak:${threshold}`,
+              detail: { streak: progress.streak },
+            });
+          }
+        }
+      }
     } catch {}
   };
 
@@ -311,17 +416,17 @@ export default function Reader() {
   const showLoadingPanel = !showWordPanel && pendingWord != null;
 
   return (
-    <div className="flex h-[calc(100svh-4rem)]">
+    <div className="flex h-[calc(100svh-3.5rem)]">
       {/* ─── Left: Scripture Reader ─── */}
       <div ref={scrollContainerRef} className="flex-1 min-w-0 overflow-y-auto" {...swipeHandlers}>
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {/* Header */}
           <header className="sticky top-0 bg-cream/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-between">
             <button
               onClick={() => setShowNav(true)}
               className="flex items-center gap-1.5 text-warm-brown font-semibold min-h-[44px]"
             >
-              <h1 className="text-lg font-semibold m-0">{bookInfo?.name || book} {chapterNum}</h1>
+              <h1 className="text-lg font-semibold m-0">{displayedChapter.book} {displayedChapter.chapter}</h1>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                 <polyline points="6 9 12 15 18 9" />
               </svg>
@@ -342,9 +447,21 @@ export default function Reader() {
                 >A</button>
               </div>
 
-              {/* Read / Study mode toggle */}
+              {/* Verse numbers toggle */}
               <button
-                onClick={toggleStudyMode}
+                onClick={toggleVerseNumbers}
+                className={`w-[44px] h-[44px] flex items-center justify-center rounded-full text-xs font-medium transition-colors ${
+                  showVerseNumbers ? "bg-cream-dark text-warm-brown-light" : "bg-gold/10 text-gold"
+                }`}
+                title={showVerseNumbers ? "Hide verse numbers" : "Show verse numbers"}
+                aria-label={showVerseNumbers ? "Hide verse numbers" : "Show verse numbers"}
+              >
+                <span className="text-[10px] font-bold leading-none">1:</span>
+              </button>
+
+              {/* Read / Study mode toggle — preserves scroll position */}
+              <button
+                onClick={() => toggleStudyMode()}
                 className={`flex items-center gap-1 px-3 min-h-[44px] rounded-full text-xs font-medium transition-colors ${
                   studyMode
                     ? "bg-gold/10 text-gold"
@@ -355,17 +472,17 @@ export default function Reader() {
                 {studyMode ? (
                   <>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
-                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                    Study
-                  </>
-                ) : (
-                  <>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
                       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                     </svg>
                     Read
+                  </>
+                ) : (
+                  <>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    Study
                   </>
                 )}
               </button>
@@ -382,23 +499,86 @@ export default function Reader() {
                 </svg>
               </button>
             </div>
+            {/* Reading progress bar */}
+            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cream-dark">
+              <div
+                className="h-full bg-gold transition-[width] duration-150 ease-out"
+                style={{ width: `${scrollProgress * 100}%` }}
+              />
+            </div>
           </header>
-
-          {/* Chapter outline */}
-          <ChapterOutline book={book} chapter={chapterNum} />
 
           {/* Content */}
           {loading && <SkeletonVerses />}
 
           {error && (
-            <div className="mx-4 mt-4 p-4 bg-red-50 rounded-xl text-red-600 text-sm">
-              Failed to load: {error}
+            <div className="mx-4 mt-8 p-6 bg-cream rounded-2xl border border-cream-dark text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto mb-3 text-warm-brown-light/50">
+                {navigator.onLine ? (
+                  <><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></>
+                ) : (
+                  <><line x1="1" y1="1" x2="23" y2="23" /><path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" /><path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" /><path d="M10.71 5.05A16 16 0 0 1 22.56 9" /><path d="M1.42 9a15.91 15.91 0 0 1 4.7-2.88" /><path d="M8.53 16.11a6 6 0 0 1 6.95 0" /><line x1="12" y1="20" x2="12.01" y2="20" /></>
+                )}
+              </svg>
+              <p className="text-sm font-medium text-warm-brown mb-1">
+                {navigator.onLine ? "Couldn't load this chapter" : "You're offline"}
+              </p>
+              <p className="text-xs text-warm-brown-light mb-4">
+                {navigator.onLine
+                  ? "There was a problem reaching the Bible text server."
+                  : "Connect to the internet to load new chapters. Previously read chapters are available offline."}
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-5 py-2 bg-gold text-white text-sm font-medium rounded-lg hover:bg-gold/90 transition-colors"
+              >
+                Try Again
+              </button>
             </div>
           )}
 
           {data && (
             <article aria-label={`${bookInfo?.name || book} chapter ${chapterNum}`}>
+              {/* Sentinel for backward infinite scroll */}
+              <div ref={topSentinelRef} className="h-1" />
+
+              {/* Loading indicator for previous chapter */}
+              {loadingPrev && (
+                <div className="flex items-center justify-center py-6 gap-2">
+                  <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs text-warm-brown-light">Loading previous chapter...</span>
+                </div>
+              )}
+
+              {/* Prepended chapters (continuous scroll backward) */}
+              {extraChaptersBefore.map((ch) => (
+                <AppendedChapter
+                  key={`${ch.book}-${ch.chapter}`}
+                  chapterData={ch}
+                  selectedVerse={activeChapterCtx.book === ch.book && activeChapterCtx.chapter === ch.chapter ? selectedVerse : null}
+                  onVerseNumberTap={handleVerseNumberTap}
+                  onWordTap={handleWordTap}
+                />
+              ))}
+
               <div data-chapter-ref={`${book}-${chapterNum}`}>
+                {/* Show chapter divider when prepended chapters exist above */}
+                {extraChaptersBefore.length > 0 && (
+                  <div className="mx-4 mt-12 mb-4 bg-cream-dark rounded-xl p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="flex-1 h-px bg-gold/30" />
+                      <h2 className="text-sm font-bold text-warm-brown whitespace-nowrap">
+                        {bookInfo?.name || book} {chapterNum}
+                      </h2>
+                      <div className="flex-1 h-px bg-gold/30" />
+                    </div>
+                    <div className="flex items-center justify-center gap-4 text-[10px]">
+                      <span className="text-warm-brown-light/60">
+                        {data.verses.length} verses
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <VerseList
                   verses={data.verses}
                   getHighlight={getHighlight}
@@ -407,6 +587,8 @@ export default function Reader() {
                   onVerseNumberTap={handleVerseNumberTap}
                   onWordTap={handleWordTap}
                   chapterWords={chapterWords}
+                  book={book}
+                  chapter={chapterNum}
                 />
               </div>
 
@@ -432,17 +614,13 @@ export default function Reader() {
                 </div>
               )}
 
-              {/* Mobile-only: Commentary + AI Summary below text */}
-              <div className="md:hidden">
-                <CommentaryPanel book={book} chapter={chapterNum} />
-                <AISummary book={book} chapter={chapterNum} verses={data.verses} />
-              </div>
-
               {/* Study tools below text */}
-              <ParallelPassages book={book} chapter={chapterNum} />
-              <AudioBible book={book} chapter={chapterNum} />
-              <BibleMaps book={book} />
-              <YouTubeLinks book={book} chapter={chapterNum} />
+              <Suspense fallback={null}>
+                <ParallelPassages book={book} chapter={chapterNum} />
+                <AudioBible book={book} chapter={chapterNum} />
+                <BibleMaps book={book} />
+                <YouTubeLinks book={book} chapter={chapterNum} />
+              </Suspense>
 
               {/* Chapter navigation */}
               <nav aria-label="Chapter navigation" className="flex items-center justify-between px-6 py-4">
@@ -472,8 +650,8 @@ export default function Reader() {
         </div>
       </div>
 
-      {/* ─── Right: Side Panel (desktop only, resizable) ─── */}
-      {sidePanelOpen && (
+      {/* ─── Right: Side Panel (desktop only, resizable, hidden in read mode) ─── */}
+      {sidePanelOpen && studyMode && (
         <div className="hidden md:flex shrink-0 relative" style={{ width: sidebarWidth }}>
           {/* Drag handle */}
           <div
@@ -497,14 +675,16 @@ export default function Reader() {
           >
             <div className="w-0.5 h-8 bg-cream-dark group-hover:bg-gold/50 rounded-full absolute top-1/2 -translate-y-1/2 left-0" />
           </div>
-          <SidePanel
-            book={book}
-            chapter={chapterNum}
-            notes={notes}
-            activeWordInfo={activeWordInfo}
-            onSaveNote={saveNote}
-            onDeleteNote={deleteNote}
-          />
+          <Suspense fallback={null}>
+            <SidePanel
+              book={book}
+              chapter={chapterNum}
+              notes={notes}
+              activeWordInfo={activeWordInfo}
+              onSaveNote={saveNote}
+              onDeleteNote={deleteNote}
+            />
+          </Suspense>
         </div>
       )}
 
@@ -529,8 +709,10 @@ export default function Reader() {
             const b = activeChapterCtx.book, c = activeChapterCtx.chapter;
             if (isBookmarked(b, c, selectedVerse)) {
               removeBookmark(b, c, selectedVerse);
+              showToast("Bookmark removed");
             } else {
               addBookmark(b, c, selectedVerse, selectedVerseData.text);
+              showToast("Verse bookmarked");
             }
           }}
           onAddToJournal={() => {
@@ -554,19 +736,24 @@ export default function Reader() {
 
       {/* Share sheet */}
       {shareData && (
-        <ShareSheet content={shareData.content} reference={shareData.reference} onClose={() => setShareData(null)} />
+        <Suspense fallback={null}>
+          <ShareSheet content={shareData.content} reference={shareData.reference} onClose={() => setShareData(null)} />
+        </Suspense>
       )}
 
       {/* Chapter nav overlay */}
       {showNav && (
-        <ChapterNav currentBook={book} currentChapter={chapterNum} onClose={() => setShowNav(false)} />
+        <Suspense fallback={null}>
+          <ChapterNav currentBook={book} currentChapter={chapterNum} onClose={() => setShowNav(false)} />
+        </Suspense>
       )}
 
       {/* Scroll to top FAB */}
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-20 right-4 md:right-6 z-30 w-10 h-10 rounded-full bg-gold/90 text-white shadow-lg flex items-center justify-center hover:bg-gold transition-all duration-200 active:scale-90"
+          className="fixed left-4 md:left-6 z-30 w-10 h-10 rounded-full bg-gold/90 text-white shadow-lg flex items-center justify-center hover:bg-gold transition-all duration-200 active:scale-90"
+          style={{ bottom: "calc(53px + env(safe-area-inset-bottom, 0px) + 16px)" }}
           aria-label="Scroll to top"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
@@ -575,10 +762,6 @@ export default function Reader() {
         </button>
       )}
 
-      {/* AI Chat FAB */}
-      {data && (
-        <AIChat book={book} chapter={chapterNum} verses={data.verses} />
-      )}
     </div>
   );
 }

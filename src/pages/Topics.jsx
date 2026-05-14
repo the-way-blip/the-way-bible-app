@@ -1,58 +1,198 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import topics from "../data/topicIndex";
 import ShareSheet from "../components/ShareSheet";
+import useDocumentTitle from "../hooks/useDocumentTitle";
+
+// Parse "John 3:16" → { book: "John", chapter: "3", verse: "16" }
+function parseRef(ref) {
+  const m = ref.match(/^(.+?)\s+(\d+)(?::(\d+)(?:-(\d+))?)?$/);
+  if (!m) return null;
+  return { book: m[1], chapter: m[2], verse: m[3] || "1", display: ref };
+}
 
 export default function Topics() {
+  useDocumentTitle("Topics");
   const [expanded, setExpanded] = useState(null);
   const [shareData, setShareData] = useState(null);
+  const [search, setSearch] = useState("");
+  const [verseTexts, setVerseTexts] = useState({});
+
+  // Filter topics by search
+  const filtered = search
+    ? topics.filter((t) => {
+        const q = search.toLowerCase();
+        if (t.name.toLowerCase().includes(q)) return true;
+        return t.verses.some((v) => v.toLowerCase().includes(q));
+      })
+    : topics;
+
+  // Lazy-load verse text when a topic is expanded
+  const loadVerseText = useCallback(async (ref) => {
+    const parsed = parseRef(ref);
+    if (!parsed) return;
+    // Use functional setter to check & set atomically, avoiding stale closure
+    let alreadyLoaded = false;
+    setVerseTexts((prev) => {
+      if (prev[ref]) { alreadyLoaded = true; return prev; }
+      return { ...prev, [ref]: { loading: true } };
+    });
+    if (alreadyLoaded) return;
+    try {
+      const res = await fetch(
+        `https://bible-api.com/${encodeURIComponent(ref)}?translation=kjv`
+      );
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setVerseTexts((prev) => ({ ...prev, [ref]: { text: data.text?.trim() } }));
+    } catch {
+      setVerseTexts((prev) => ({ ...prev, [ref]: { text: null } }));
+    }
+  }, []);
+
+  const handleExpand = (i) => {
+    if (expanded === i) {
+      setExpanded(null);
+      return;
+    }
+    setExpanded(i);
+    // Pre-load first few verse texts
+    const topic = filtered[i];
+    topic.verses.slice(0, 4).forEach(loadVerseText);
+  };
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-6">
+    <div className="max-w-lg mx-auto px-4 py-6 pb-24">
       <h1 className="text-xl font-bold text-warm-brown mb-1">Topics</h1>
-      <p className="text-sm text-warm-brown-light mb-6">Browse key verses by topic</p>
+      <p className="text-sm text-warm-brown-light mb-4">Browse key verses by topic</p>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-warm-brown-light/40">
+          <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search topics or verses..."
+          className="w-full bg-white rounded-xl border border-cream-dark pl-10 pr-4 py-2.5 text-sm text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:border-gold/30"
+        />
+      </div>
+
+      {/* Quick topic chips */}
+      <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-hide">
+        {topics.slice(0, 8).map((t, i) => (
+          <button
+            key={t.name}
+            onClick={() => {
+              setSearch("");
+              const idx = filtered.findIndex((f) => f.name === t.name);
+              if (idx >= 0) handleExpand(idx);
+            }}
+            className="whitespace-nowrap text-xs px-3 py-1.5 rounded-full bg-cream text-warm-brown hover:bg-gold/10 hover:text-gold transition-colors"
+          >
+            {t.name}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-[10px] text-warm-brown-light/60 mb-3">
+        {filtered.length} {filtered.length === 1 ? "topic" : "topics"}
+      </p>
 
       <div className="space-y-2">
-        {topics.map((topic, i) => (
-          <div key={i} className="bg-white rounded-xl border border-cream-dark overflow-hidden">
+        {filtered.map((topic, i) => (
+          <div key={topic.name} className="bg-white rounded-xl border border-cream-dark overflow-hidden">
             <button
               type="button"
-              onClick={() => setExpanded(expanded === i ? null : i)}
+              onClick={() => handleExpand(i)}
               className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-cream/50 transition-colors"
             >
               <span className="text-sm font-medium text-warm-brown">{topic.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-warm-brown-light">{topic.verses.length} verses</span>
+                <span className="text-[10px] bg-gold/10 text-gold px-1.5 py-0.5 rounded-full">{topic.verses.length}</span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`w-4 h-4 text-warm-brown-light transition-transform ${expanded === i ? "rotate-180" : ""}`}>
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </div>
             </button>
             {expanded === i && (
-              <div className="px-4 pb-3 border-t border-cream-dark pt-2 space-y-1.5">
-                {topic.verses.map((ref, j) => (
-                  <div key={j} className="flex items-center justify-between py-1.5">
-                    <a
-                      href={`/search?q=${encodeURIComponent(ref)}`}
-                      className="text-xs text-gold hover:text-gold/80"
+              <div className="border-t border-cream-dark">
+                {topic.verses.map((ref, j) => {
+                  const parsed = parseRef(ref);
+                  const vt = verseTexts[ref];
+
+                  // Load text on scroll into view
+                  if (!vt) loadVerseText(ref);
+
+                  return (
+                    <div
+                      key={j}
+                      className="px-4 py-3 border-b border-cream-dark/50 last:border-b-0 hover:bg-cream/30 transition-colors"
                     >
-                      {ref}
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => setShareData({ content: ref, reference: ref })}
-                      className="text-warm-brown-light/30 hover:text-gold"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
-                        <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
-                        <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-                      </svg>
-                    </button>
-                  </div>
-                ))}
+                      <div className="flex items-center justify-between mb-1">
+                        {parsed ? (
+                          <Link
+                            to={`/read/${encodeURIComponent(parsed.book)}/${parsed.chapter}`}
+                            className="text-xs font-medium text-gold hover:text-gold/80"
+                          >
+                            {ref}
+                          </Link>
+                        ) : (
+                          <span className="text-xs font-medium text-gold">{ref}</span>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShareData({ content: vt?.text || ref, reference: ref });
+                            }}
+                            className="text-warm-brown-light/30 hover:text-gold p-1"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                              <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
+                              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" /><line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                            </svg>
+                          </button>
+                          {parsed && (
+                            <Link
+                              to={`/read/${encodeURIComponent(parsed.book)}/${parsed.chapter}`}
+                              className="text-warm-brown-light/30 hover:text-gold p-1"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                                <polyline points="15 3 21 3 21 9" />
+                                <line x1="10" y1="14" x2="21" y2="3" />
+                              </svg>
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Verse text preview */}
+                      {vt?.loading ? (
+                        <div className="flex items-center gap-1.5 py-1">
+                          <div className="w-3 h-3 border border-gold/30 border-t-gold rounded-full animate-spin" />
+                          <span className="text-[10px] text-warm-brown-light/40">Loading...</span>
+                        </div>
+                      ) : vt?.text ? (
+                        <p className="text-xs text-warm-brown-light leading-relaxed line-clamp-3 font-scripture italic">
+                          {vt.text}
+                        </p>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
         ))}
+
+        {filtered.length === 0 && (
+          <p className="text-center text-sm text-warm-brown-light py-8">No topics match your search.</p>
+        )}
       </div>
 
       {shareData && (

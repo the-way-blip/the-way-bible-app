@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import useMemoryVerses from "../hooks/useMemoryVerses";
 import { dbPut } from "../hooks/useDB";
+import { syncPush } from "../services/supabaseSync";
+import { useAuth } from "../stores/AuthContext";
 import { sm2, getDueVerses } from "../utils/spaced-repetition";
 import ShareSheet from "../components/ShareSheet";
 
@@ -21,6 +23,7 @@ const MODES = [
 
 export default function Flashcard() {
   const { verses, reload } = useMemoryVerses();
+  const { user } = useAuth();
   const [dueVerses, setDueVerses] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -38,6 +41,7 @@ export default function Flashcard() {
   const handleRate = async (quality) => {
     const updated = sm2(current, quality);
     await dbPut("memoryVerses", updated);
+    syncPush("memoryVerses", updated, user?.id);
     setFlipped(false);
     setUserInput("");
     setCompleted((c) => c + 1);
@@ -203,7 +207,7 @@ export default function Flashcard() {
       </div>
 
       {/* Rating buttons (show when flipped or in type mode after check) */}
-      {(flipped || (mode === "type-it" && flipped)) && (
+      {flipped && (
         <div className="mt-4">
           <p className="text-xs text-warm-brown-light text-center mb-3">How well did you remember?</p>
           <div className="grid grid-cols-4 gap-2">

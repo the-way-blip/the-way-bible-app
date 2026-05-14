@@ -1,8 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbGetByIndex, dbPut, dbDelete } from "./useDB";
+import { syncPush, syncDelete } from "../services/supabaseSync";
+import { useAuth } from "../stores/AuthContext";
 
 export default function useHighlights(book, chapter) {
   const [highlights, setHighlights] = useState([]);
+  const { user } = useAuth();
 
   const load = useCallback(async () => {
     if (!book || !chapter) return;
@@ -18,15 +21,18 @@ export default function useHighlights(book, chapter) {
 
     if (existing && existing.color === color) {
       await dbDelete("highlights", id);
+      syncDelete("highlights", id, user?.id);
     } else {
-      await dbPut("highlights", {
+      const record = {
         id,
         book,
         chapter,
         verseNumber,
         color,
         createdAt: Date.now(),
-      });
+      };
+      await dbPut("highlights", record);
+      syncPush("highlights", record, user?.id);
     }
     await load();
   };

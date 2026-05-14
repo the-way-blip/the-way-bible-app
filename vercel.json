@@ -2,6 +2,14 @@
   "rewrites": [
     { "source": "/api/commentary/:path*", "destination": "/api/commentary/:path*" },
     { "source": "/api/websters/:path*", "destination": "/api/websters/:path*" },
-    { "source": "/((?!api|data|assets|favicon|manifest|icons).*)", "destination": "/index.html" }
+    { "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known).*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/.well-known/apple-app-site-association",
+      "headers": [
+        { "key": "Content-Type", "value": "application/json" }
+      ]
+    }
   ]
 }

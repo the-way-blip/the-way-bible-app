@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
+import { Analytics } from "@vercel/analytics/react";
 import { AppProvider } from "./stores/AppContext";
 import { AuthProvider, useAuth } from "./stores/AuthContext";
 import { ToastProvider } from "./components/Toast";
@@ -101,6 +102,8 @@ export default function App() {
           </ErrorBoundary>
           </ToastProvider>
         </BrowserRouter>
+        {/* Vercel Analytics — disabled on native iOS where it isn't needed */}
+        {!Capacitor.isNativePlatform() && <Analytics />}
       </AppProvider>
     </AuthProvider>
   );

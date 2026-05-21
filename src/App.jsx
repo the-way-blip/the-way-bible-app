@@ -33,6 +33,7 @@ const Meditation = lazy(() => import("./pages/Meditation"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const Welcome = lazy(() => import("./pages/Welcome"));
 
 function PageLoader() {
   return (
@@ -53,6 +54,8 @@ export default function App() {
             <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               <Routes>
+                {/* Public landing page — sits OUTSIDE the app shell (no sidebar/bottom nav) */}
+                <Route path="/welcome" element={<Welcome />} />
                 <Route element={<Layout />}>
                   <Route path="/" element={<Home />} />
                   <Route path="/read/:book/:chapter" element={<Reader />} />

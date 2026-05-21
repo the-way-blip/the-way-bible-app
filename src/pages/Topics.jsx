@@ -1,8 +1,22 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import topics from "../data/topicIndex";
 import ShareSheet from "../components/ShareSheet";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { useToast } from "../components/Toast";
+import { useAuth } from "../stores/AuthContext";
+import {
+  highlightVerses,
+  unhighlightVerses,
+  countExistingHighlights,
+} from "../utils/topicHighlight";
+
+const HIGHLIGHT_COLORS = [
+  { key: "yellow", label: "Yellow", className: "bg-highlight-yellow" },
+  { key: "green", label: "Green", className: "bg-highlight-green" },
+  { key: "blue", label: "Blue", className: "bg-highlight-blue" },
+  { key: "pink", label: "Pink", className: "bg-highlight-pink" },
+];
 
 // Parse "John 3:16" → { book: "John", chapter: "3", verse: "16" }
 function parseRef(ref) {
@@ -17,6 +31,11 @@ export default function Topics() {
   const [shareData, setShareData] = useState(null);
   const [search, setSearch] = useState("");
   const [verseTexts, setVerseTexts] = useState({});
+  const [picker, setPicker] = useState(null); // topic name when color picker open
+  const [busy, setBusy] = useState(false);
+  const [existingCounts, setExistingCounts] = useState({}); // { topicName: highlightedVerseCount }
+  const showToast = useToast();
+  const { user } = useAuth();
 
   // Filter topics by search
   const filtered = search
@@ -53,12 +72,64 @@ export default function Topics() {
   const handleExpand = (i) => {
     if (expanded === i) {
       setExpanded(null);
+      setPicker(null);
       return;
     }
     setExpanded(i);
+    setPicker(null);
     // Pre-load first few verse texts
     const topic = filtered[i];
     topic.verses.slice(0, 4).forEach(loadVerseText);
+    // Refresh existing-highlight count for this topic
+    refreshHighlightCount(topic);
+  };
+
+  const refreshHighlightCount = useCallback(async (topic) => {
+    const count = await countExistingHighlights(topic.verses);
+    setExistingCounts((prev) => ({ ...prev, [topic.name]: count }));
+  }, []);
+
+  // On mount: load existing highlight counts in the background for currently visible topics
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // Only check the first 8 to avoid hammering on initial render — others refresh on expand
+      for (const topic of topics.slice(0, 8)) {
+        if (cancelled) return;
+        const count = await countExistingHighlights(topic.verses);
+        if (cancelled) return;
+        setExistingCounts((prev) => ({ ...prev, [topic.name]: count }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleHighlightAll = async (topic, color) => {
+    setBusy(true);
+    try {
+      const written = await highlightVerses(topic.verses, color, user?.id);
+      showToast(`Highlighted ${written} verse${written === 1 ? "" : "s"} in ${topic.name}`, { icon: "✨" });
+      await refreshHighlightCount(topic);
+    } catch {
+      showToast("Couldn't apply highlights — please try again.", { icon: "⚠️" });
+    } finally {
+      setBusy(false);
+      setPicker(null);
+    }
+  };
+
+  const handleRemoveAll = async (topic) => {
+    setBusy(true);
+    try {
+      const removed = await unhighlightVerses(topic.verses, user?.id);
+      showToast(`Removed ${removed} highlight${removed === 1 ? "" : "s"} from ${topic.name}`, { icon: "🧹" });
+      await refreshHighlightCount(topic);
+    } catch {
+      showToast("Couldn't remove highlights — please try again.", { icon: "⚠️" });
+    } finally {
+      setBusy(false);
+      setPicker(null);
+    }
   };
 
   return (
@@ -119,6 +190,62 @@ export default function Topics() {
             </button>
             {expanded === i && (
               <div className="border-t border-cream-dark">
+                {/* Bulk-highlight bar */}
+                <div className="px-4 py-2.5 bg-cream/40 border-b border-cream-dark/60 flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-warm-brown-light">
+                    {existingCounts[topic.name] > 0
+                      ? `${existingCounts[topic.name]} verse${existingCounts[topic.name] === 1 ? "" : "s"} already highlighted`
+                      : "Highlight every verse in this topic"}
+                  </span>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      disabled={busy}
+                      onClick={() => setPicker(picker === topic.name ? null : topic.name)}
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-warm-brown bg-white border border-cream-dark rounded-full px-3 py-1.5 hover:bg-gold/10 hover:text-gold disabled:opacity-50 transition-colors"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                        <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                      </svg>
+                      Highlight all
+                    </button>
+
+                    {picker === topic.name && (
+                      <div
+                        className="absolute right-0 top-full mt-1.5 z-20 bg-white rounded-xl border border-cream-dark shadow-lg p-2 w-44"
+                        onMouseLeave={() => setPicker(null)}
+                      >
+                        <p className="text-[10px] text-warm-brown-light/80 px-1.5 pb-1.5">Pick a color</p>
+                        <div className="flex items-center gap-1.5 px-1">
+                          {HIGHLIGHT_COLORS.map((c) => (
+                            <button
+                              key={c.key}
+                              type="button"
+                              disabled={busy}
+                              onClick={() => handleHighlightAll(topic, c.key)}
+                              className={`w-7 h-7 rounded-full border border-cream-dark hover:scale-110 transition-transform disabled:opacity-50 ${c.className}`}
+                              aria-label={`Highlight in ${c.label}`}
+                            />
+                          ))}
+                        </div>
+                        {existingCounts[topic.name] > 0 && (
+                          <>
+                            <div className="border-t border-cream-dark/60 my-2" />
+                            <button
+                              type="button"
+                              disabled={busy}
+                              onClick={() => handleRemoveAll(topic)}
+                              className="w-full text-left text-xs text-warm-brown-light hover:text-red-500 px-1.5 py-1 disabled:opacity-50"
+                            >
+                              Remove all highlights
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 {topic.verses.map((ref, j) => {
                   const parsed = parseRef(ref);
                   const vt = verseTexts[ref];

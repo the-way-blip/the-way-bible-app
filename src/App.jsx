@@ -1,7 +1,8 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import { AppProvider } from "./stores/AppContext";
-import { AuthProvider } from "./stores/AuthContext";
+import { AuthProvider, useAuth } from "./stores/AuthContext";
 import { ToastProvider } from "./components/Toast";
 import Layout from "./components/Layout";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -43,6 +44,20 @@ function PageLoader() {
   );
 }
 
+/**
+ * Smart root route:
+ * - Logged in → show Home (app dashboard)
+ * - Logged out + web → redirect to /welcome (marketing landing page)
+ * - Logged out + native iOS → redirect to /login (skip marketing — they're already in the app)
+ * - Still loading auth state → show loader to avoid flicker
+ */
+function RootRoute() {
+  const { isLoggedIn, loading } = useAuth();
+  if (loading) return <PageLoader />;
+  if (isLoggedIn) return <Home />;
+  return <Navigate to={Capacitor.isNativePlatform() ? "/login" : "/welcome"} replace />;
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -57,7 +72,7 @@ export default function App() {
                 {/* Public landing page — sits OUTSIDE the app shell (no sidebar/bottom nav) */}
                 <Route path="/welcome" element={<Welcome />} />
                 <Route element={<Layout />}>
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<RootRoute />} />
                   <Route path="/read/:book/:chapter" element={<Reader />} />
                   <Route path="/word/:strongsId" element={<WordStudy />} />
                   <Route path="/memory" element={<MemoryVerses />} />

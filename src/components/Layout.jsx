@@ -4,6 +4,7 @@ import BottomNav from "./BottomNav";
 import PageTransition from "./PageTransition";
 import WelcomeTour from "./WelcomeTour";
 import InstallPrompt from "./InstallPrompt";
+import Logo from "./Logo";
 
 const sidebarLinks = [
   { to: "/", label: "Home", icon: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z", end: true },
@@ -83,7 +84,9 @@ function DesktopSidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-56 shrink-0 border-r border-cream-dark bg-white/50 py-6 px-3">
-      <Link to="/" className="text-lg font-bold text-warm-brown px-3 mb-6">The Way</Link>
+      <Link to="/" className="px-3 mb-6 inline-flex" aria-label="The Way home">
+        <Logo className="h-8" />
+      </Link>
       <nav className="space-y-1" aria-label="Desktop navigation">
         {sidebarLinks.map((link) => {
           const to = link.matchPrefix ? readPath : link.to;

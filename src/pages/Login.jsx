@@ -5,6 +5,7 @@ import { submitSignUp } from "../services/ghlService";
 import { getSupabase } from "../services/supabase";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import { Capacitor } from "@capacitor/core";
+import Logo from "../components/Logo";
 
 // Production web URL — emails always link to the public site so universal
 // links can bounce back into the native app.
@@ -81,7 +82,7 @@ export default function Login() {
   return (
     <div className="max-w-sm mx-auto px-4 py-12">
       <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-warm-brown">The Way</h1>
+        <h1 className="flex justify-center"><Logo className="h-10" /><span className="sr-only">The Way</span></h1>
         <p className="text-sm text-warm-brown-light mt-1">
           {isSignUp ? "Create your account" : "Welcome back"}
         </p>

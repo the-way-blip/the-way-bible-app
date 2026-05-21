@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../stores/AuthContext";
 import { submitSignUp } from "../services/ghlService";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import Logo from "../components/Logo";
 
 /**
  * Landing page built on the StoryBrand 7-part framework.
@@ -40,9 +41,8 @@ function Header() {
   return (
     <header className="sticky top-0 z-40 bg-cream/95 backdrop-blur border-b border-cream-dark">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-        <Link to="/welcome" className="flex items-center gap-2">
-          <img src="/Logo%20Black.png" alt="The Way" className="h-8 w-auto" />
-          <span className="font-serif text-lg font-bold text-warm-brown hidden sm:block">The Way</span>
+        <Link to="/welcome" className="flex items-center gap-2" aria-label="The Way home">
+          <Logo className="h-9" />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
           <a href="#features" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">Features</a>

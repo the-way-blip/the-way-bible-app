@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { track } from "@vercel/analytics";
 
 /* ─────────────────── Solid color themes (always free) ─────────────────── */
 const COLOR_THEMES = [
@@ -249,6 +250,13 @@ export default function VerseImage({ content, reference, onClose }) {
     try {
       const canvas = document.createElement("canvas");
       await drawCanvas(canvas, size.w, size.h);
+      // Track which verses get shared so we can see what resonates
+      track("verse_image_downloaded", {
+        reference,
+        mode,
+        size: size.label,
+        category: mode === "photo" ? photoCategory : null,
+      });
       const link = document.createElement("a");
       link.download = `${reference.replace(/[\s:]/g, "_")}_${size.label.toLowerCase()}.png`;
       link.href = canvas.toDataURL("image/png");

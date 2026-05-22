@@ -12,6 +12,7 @@ const TABLE_MAP = {
   notes: "notes",
   memoryVerses: "memory_verses",
   journal: "journal",
+  bookmarks: "bookmarks",
 };
 
 // camelCase → snake_case field mapping
@@ -176,7 +177,7 @@ export async function syncPushAll(storeName, userId) {
 export async function syncAll(userId) {
   if (!isSupabaseConfigured() || !userId) return;
 
-  const stores = ["highlights", "notes", "memoryVerses", "journal"];
+  const stores = ["highlights", "notes", "memoryVerses", "journal", "bookmarks"];
 
   // Push local data first (so offline work isn't lost)
   await Promise.all(stores.map((s) => syncPushAll(s, userId)));

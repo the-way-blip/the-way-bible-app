@@ -9,6 +9,7 @@ import Layout from "./components/Layout";
 import ErrorBoundary from "./components/ErrorBoundary";
 import OfflineBanner from "./components/OfflineBanner";
 import InstallPrompt from "./components/InstallPrompt";
+import UpdatePrompt from "./components/UpdatePrompt";
 
 // Eagerly loaded (critical path)
 import Home from "./pages/Home";
@@ -38,6 +39,7 @@ const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const Welcome = lazy(() => import("./pages/Welcome"));
 const Terms = lazy(() => import("./pages/Terms"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Bookmarks = lazy(() => import("./pages/Bookmarks"));
 
 function PageLoader() {
   return (
@@ -71,6 +73,7 @@ export default function App() {
           <ToastProvider>
             <OfflineBanner />
             <InstallPrompt />
+            {!Capacitor.isNativePlatform() && <UpdatePrompt />}
             <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               <Routes>
@@ -97,6 +100,7 @@ export default function App() {
                   <Route path="/groups" element={<Groups />} />
                   <Route path="/groups/:id" element={<GroupDetail />} />
                   <Route path="/topics" element={<Topics />} />
+                  <Route path="/bookmarks" element={<Bookmarks />} />
                   <Route path="/meditation" element={<Meditation />} />
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/terms" element={<Terms />} />

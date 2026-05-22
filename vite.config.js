@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icon-192.svg', 'og-image.svg', 'icon-192.png', 'icon-512.png', 'app-icon-1024.png'],
       manifest: {
         name: 'The Way — Read the Bible. Follow Jesus.',

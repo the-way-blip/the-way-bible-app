@@ -27,6 +27,35 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png" />
     <title>TheWay Bible App — Read. Study. Grow. Follow Jesus.</title>
+
+    <!-- Structured data for rich Google search results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "TheWay Bible App",
+      "alternateName": "TheWay",
+      "url": "https://thewaybible.app",
+      "description": "A modern Bible study tool for anyone at any level of spiritual maturity. Read, study, memorize, journal, and pray — all in one place.",
+      "applicationCategory": "EducationApplication",
+      "applicationSubCategory": "Religious",
+      "operatingSystem": "Web, iOS",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "creator": {
+        "@type": "Organization",
+        "name": "TheWay Bible App",
+        "url": "https://thewaybible.app"
+      },
+      "potentialAction": {
+        "@type": "ReadAction",
+        "target": "https://thewaybible.app/read/{book}/{chapter}"
+      }
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>

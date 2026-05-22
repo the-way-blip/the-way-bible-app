@@ -5,9 +5,14 @@ export default function ShareSheet({ content, reference, onClose }) {
   const [copied, setCopied] = useState(false);
   const [showImageGen, setShowImageGen] = useState(false);
 
+  // Include a referral URL so we can track shared verses in analytics
+  const shareUrl = reference
+    ? `https://thewaybible.app/?utm_source=share&utm_medium=text&utm_content=${encodeURIComponent(reference)}`
+    : "https://thewaybible.app/?utm_source=share";
+
   const shareText = reference
-    ? `"${content}"\n— ${reference} (KJV)`
-    : content;
+    ? `"${content}"\n— ${reference} (KJV)\n\n${shareUrl}`
+    : `${content}\n\n${shareUrl}`;
 
   const handleCopy = async () => {
     try {

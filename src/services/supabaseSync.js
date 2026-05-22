@@ -13,6 +13,7 @@ const TABLE_MAP = {
   memoryVerses: "memory_verses",
   journal: "journal",
   bookmarks: "bookmarks",
+  readingPlanProgress: "reading_plan_progress",
 };
 
 // camelCase → snake_case field mapping
@@ -24,6 +25,9 @@ function toSnakeCase(obj) {
     easeFactor: "ease_factor",
     nextReview: "next_review",
     practiceCount: "practice_count",
+    startedAt: "started_at",
+    completedDays: "completed_days",
+    isActive: "is_active",
   };
   const result = {};
   for (const [key, value] of Object.entries(obj)) {
@@ -41,6 +45,9 @@ function toCamelCase(obj) {
     ease_factor: "easeFactor",
     next_review: "nextReview",
     practice_count: "practiceCount",
+    started_at: "startedAt",
+    completed_days: "completedDays",
+    is_active: "isActive",
     user_id: null, // strip user_id from local objects
   };
   const result = {};
@@ -177,7 +184,7 @@ export async function syncPushAll(storeName, userId) {
 export async function syncAll(userId) {
   if (!isSupabaseConfigured() || !userId) return;
 
-  const stores = ["highlights", "notes", "memoryVerses", "journal", "bookmarks"];
+  const stores = ["highlights", "notes", "memoryVerses", "journal", "bookmarks", "readingPlanProgress"];
 
   // Push local data first (so offline work isn't lost)
   await Promise.all(stores.map((s) => syncPushAll(s, userId)));

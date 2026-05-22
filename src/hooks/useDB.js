@@ -1,7 +1,7 @@
 import { openDB } from "idb";
 
 const DB_NAME = "scripture-study";
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 
 let dbPromise;
 
@@ -29,6 +29,10 @@ function getDB() {
         // v2: dedicated bookmarks store (cleaner than overloading "journal")
         if (!db.objectStoreNames.contains("bookmarks")) {
           db.createObjectStore("bookmarks", { keyPath: "id" });
+        }
+        // v3: reading plan progress
+        if (!db.objectStoreNames.contains("readingPlanProgress")) {
+          db.createObjectStore("readingPlanProgress", { keyPath: "id" });
         }
       },
     });

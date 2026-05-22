@@ -111,7 +111,7 @@ export default function Home() {
       {/* Greeting + Account */}
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h1><Logo className="h-16 sm:h-20" /><span className="sr-only">The Way</span></h1>
+          <h1><Logo className="h-24 sm:h-28" /><span className="sr-only">The Way</span></h1>
           <p className="text-sm text-warm-brown-light mt-1">
             {progress.streak > 0
               ? `${progress.streak} day reading streak${progress.lastReadDate !== new Date().toISOString().split("T")[0] ? " — read today!" : ""}`

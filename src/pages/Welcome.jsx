@@ -39,10 +39,10 @@ export default function Welcome() {
 /* ───────────────────────────── Header ───────────────────────────── */
 function Header() {
   return (
-    <header className="sticky top-0 z-40 bg-cream/95 backdrop-blur border-b border-cream-dark">
+    <header className="sticky top-0 z-40 bg-cream/95 dark:bg-[#1a1a1a]/95 backdrop-blur border-b border-cream-dark">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2" aria-label="The Way home">
-          <Logo className="h-20 sm:h-24" />
+          <Logo className="h-28 sm:h-36" />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
           <a href="#features" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">Features</a>
@@ -207,16 +207,18 @@ function ValueStack() {
 /* ───────────────────────────── Guide ────────────────────────────── */
 function Guide() {
   return (
-    <section className="bg-warm-brown text-cream">
+    // Use explicit colors here so this stays a dark band in BOTH light AND
+    // dark mode (rather than inverting via the warm-brown theme variable).
+    <section className="bg-[#3a2820] dark:bg-[#0f0a07] text-[#faf7f2]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
         <p className="text-sm font-medium text-gold-light uppercase tracking-wider mb-4">Built for you</p>
-        <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-6">
+        <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-6 text-[#faf7f2]">
           We're walking the same road.
         </h2>
-        <p className="text-lg leading-relaxed text-cream/85 max-w-2xl mx-auto">
+        <p className="text-lg leading-relaxed text-[#faf7f2]/85 max-w-2xl mx-auto">
           The Way wasn't born from a boardroom. It was built because Scripture is the most important book ever written, and we couldn't find a single tool that honored it — simple enough for any reader, deep enough for serious study, and free of the noise that gets between you and the Word.
         </p>
-        <p className="text-lg leading-relaxed text-cream/85 max-w-2xl mx-auto mt-6">
+        <p className="text-lg leading-relaxed text-[#faf7f2]/85 max-w-2xl mx-auto mt-6">
           Our mission is to put that tool in your hands — and keep getting out of the way so Scripture can do what only Scripture can do.
         </p>
       </div>
@@ -351,7 +353,7 @@ function FinalCTA() {
   };
 
   return (
-    <section id="signup" className="bg-gradient-to-b from-cream to-cream-dark/40 border-t border-cream-dark">
+    <section id="signup" className="bg-gradient-to-b from-cream to-cream-dark/40 dark:from-[#1a1a1a] dark:to-[#252525] border-t border-cream-dark">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
         <p className="text-sm font-medium text-gold uppercase tracking-wider mb-4">Start today</p>
         <h2 className="font-serif text-3xl sm:text-5xl font-bold text-warm-brown mb-4">
@@ -419,30 +421,30 @@ function FinalCTA() {
 /* ──────────────────────────── Footer ────────────────────────────── */
 function Footer() {
   return (
-    <footer className="bg-warm-brown text-cream/70">
+    <footer className="bg-[#3a2820] dark:bg-[#0f0a07] text-[#faf7f2]/70">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-3 gap-8 text-sm">
         <div>
-          <img src="/Logo%20White.png" alt="The Way" className="h-20 sm:h-24 w-auto mb-4" />
+          <img src="/Logo%20White.png" alt="The Way" className="h-28 sm:h-36 w-auto mb-4" />
           <p className="leading-relaxed">A modern Bible study app for everyday faith.</p>
         </div>
         <div>
-          <h4 className="font-semibold text-cream mb-3">Product</h4>
+          <h4 className="font-semibold text-[#faf7f2] mb-3">Product</h4>
           <ul className="space-y-2">
-            <li><a href="#features" className="hover:text-cream">Features</a></li>
-            <li><a href="#plan" className="hover:text-cream">How it works</a></li>
-            <li><Link to="/login" className="hover:text-cream">Sign in</Link></li>
+            <li><a href="#features" className="hover:text-[#faf7f2]">Features</a></li>
+            <li><a href="#plan" className="hover:text-[#faf7f2]">How it works</a></li>
+            <li><Link to="/login" className="hover:text-[#faf7f2]">Sign in</Link></li>
           </ul>
         </div>
         <div>
-          <h4 className="font-semibold text-cream mb-3">Legal</h4>
+          <h4 className="font-semibold text-[#faf7f2] mb-3">Legal</h4>
           <ul className="space-y-2">
-            <li><Link to="/privacy" className="hover:text-cream">Privacy Policy</Link></li>
-            <li><a href="mailto:hello@thewaybible.app" className="hover:text-cream">Contact</a></li>
+            <li><Link to="/privacy" className="hover:text-[#faf7f2]">Privacy Policy</Link></li>
+            <li><a href="mailto:hello@thewaybible.app" className="hover:text-[#faf7f2]">Contact</a></li>
           </ul>
         </div>
       </div>
-      <div className="border-t border-cream/10">
-        <p className="text-center text-xs text-cream/40 py-4">
+      <div className="border-t border-[#faf7f2]/10">
+        <p className="text-center text-xs text-[#faf7f2]/40 py-4">
           © {new Date().getFullYear()} The Way. All rights reserved.
         </p>
       </div>

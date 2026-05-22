@@ -85,7 +85,7 @@ function DesktopSidebar() {
   return (
     <aside className="hidden md:flex flex-col w-56 shrink-0 border-r border-cream-dark bg-white/50 py-6 px-3">
       <Link to="/home" className="px-3 mb-6 inline-flex" aria-label="The Way home">
-        <Logo className="h-16" />
+        <Logo className="h-24" />
       </Link>
       <nav className="space-y-1" aria-label="Desktop navigation">
         {sidebarLinks.map((link) => {

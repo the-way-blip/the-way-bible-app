@@ -12,11 +12,13 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment: Capacitor.isNativePlatform() ? "ios" : "web",
+    // Attach IP + user email/identity to events — helps reproduce crashes
+    // from real user reports. Disclosed in our privacy policy.
+    sendDefaultPii: true,
     // Performance traces: sample 10% of sessions (free tier-friendly).
     tracesSampleRate: 0.1,
-    // Capture last 5 console messages with each error for context.
     integrations: [Sentry.browserTracingIntegration()],
-    // Don't capture in dev / on localhost just in case
+    // Skip noisy localhost events
     beforeSend(event) {
       if (window.location.hostname === "localhost") return null;
       return event;

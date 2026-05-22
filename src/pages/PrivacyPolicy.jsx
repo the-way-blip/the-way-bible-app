@@ -51,6 +51,9 @@ export default function PrivacyPolicy() {
             <li><strong>Bible API</strong> — KJV Bible text retrieval. No personal data is sent.</li>
             <li><strong>Anthropic (Claude)</strong> — AI-powered word study generation. Verse text is sent for analysis; no account information is included in those requests.</li>
             <li><strong>Vercel</strong> — app hosting and serverless functions.</li>
+            <li><strong>Vercel Analytics</strong> — aggregate page views and conversion events so we can improve the app. No tracking across other sites.</li>
+            <li><strong>Sentry</strong> — error and crash reporting. When the app encounters an unexpected error, a stack trace plus your IP address and (if signed in) email are sent so we can reproduce and fix the issue. We do not use this data for any purpose other than diagnosing technical problems.</li>
+            <li><strong>Pexels</strong> — stock photo backgrounds for the verse-share image feature. Only the search query you choose (e.g. "mountain") is sent; no personal data.</li>
           </ul>
         </Section>
 

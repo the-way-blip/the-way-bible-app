@@ -9,6 +9,26 @@ import usePageMeta from "../hooks/usePageMeta";
 import { Capacitor } from "@capacitor/core";
 import Logo from "../components/Logo";
 
+/**
+ * Returns true if the given userId already has a profile row in Supabase,
+ * which means they completed onboarding on a previous device/session.
+ * Also backfills localStorage so future checks on this device are instant.
+ */
+async function hasExistingProfile(userId) {
+  if (!userId) return !!localStorage.getItem("onboardingComplete");
+  try {
+    const sb = await getSupabase();
+    if (!sb) return !!localStorage.getItem("onboardingComplete");
+    const { data } = await sb.from("profiles").select("id").eq("id", userId).single();
+    if (data) {
+      localStorage.setItem("onboardingComplete", "true");
+      localStorage.setItem("hasSeenTour", "true");
+      return true;
+    }
+  } catch {}
+  return !!localStorage.getItem("onboardingComplete");
+}
+
 // Production web URL — emails always link to the public site so universal
 // links can bounce back into the native app.
 const REDIRECT_BASE = Capacitor.isNativePlatform()
@@ -63,14 +83,16 @@ export default function Login() {
       track("signup_completed", { source: "login_page", subscribed_to_devo: subscribeToDevo });
       submitSignUp({ email, name, subscribeToDevo });
       if (result.data?.session) {
-        const onboarded = localStorage.getItem("onboardingComplete");
-        navigate(onboarded ? "/" : "/onboarding");
+        // Brand-new sign-up with immediate session — always go to onboarding
+        navigate("/onboarding");
       } else {
         setSuccess("Check your email to confirm your account, then sign in.");
       }
     } else {
       track("signin_completed");
-      const onboarded = localStorage.getItem("onboardingComplete");
+      // Check Supabase profile to determine if this user has already onboarded.
+      // Don't rely on localStorage alone — it's device-specific.
+      const onboarded = await hasExistingProfile(result.data?.session?.user?.id);
       navigate(onboarded ? "/" : "/onboarding");
     }
   };

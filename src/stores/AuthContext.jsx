@@ -111,7 +111,13 @@ export function AuthProvider({ children }) {
       .select("*")
       .eq("id", userId)
       .single();
-    if (data) setProfile(data);
+    if (data) {
+      setProfile(data);
+      // Backfill localStorage so any device that hasn't seen this user's
+      // profile before doesn't send them through onboarding again.
+      localStorage.setItem("onboardingComplete", "true");
+      localStorage.setItem("hasSeenTour", "true");
+    }
   }
 
   function loadLocalProfile() {

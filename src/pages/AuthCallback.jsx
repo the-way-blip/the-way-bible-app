@@ -21,14 +21,27 @@ export default function AuthCallback() {
     let cancelled = false;
     let subscription;
 
-    const route = (session, type) => {
+    const route = async (session, type) => {
       if (cancelled) return;
       if (type === "recovery") {
         navigate("/reset-password", { replace: true });
         return;
       }
-      const onboarded = localStorage.getItem("onboardingComplete");
       if (session?.user) {
+        // Check Supabase profile — source of truth for onboarding status
+        // across devices. Falls back to localStorage if Supabase is unreachable.
+        let onboarded = !!localStorage.getItem("onboardingComplete");
+        try {
+          const sb = await getSupabase();
+          if (sb) {
+            const { data } = await sb.from("profiles").select("id").eq("id", session.user.id).single();
+            if (data) {
+              onboarded = true;
+              localStorage.setItem("onboardingComplete", "true");
+              localStorage.setItem("hasSeenTour", "true");
+            }
+          }
+        } catch {}
         navigate(onboarded ? "/" : "/onboarding", { replace: true });
       } else {
         // No session ever materialized — push to /login with a hint.

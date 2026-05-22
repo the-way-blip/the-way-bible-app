@@ -27,12 +27,18 @@ export default function Home() {
   });
   const headerQuote = getHeaderQuote();
 
-  // Auto-redirect first-time users to onboarding
+  // Auto-redirect first-time users to onboarding.
+  // If the user is logged in and has a profile, they've already onboarded —
+  // skip the redirect even if localStorage was cleared on this device.
   useEffect(() => {
-    if (!localStorage.getItem("onboardingComplete") && !localStorage.getItem("readingProgress")) {
+    const alreadyOnboarded =
+      !!localStorage.getItem("onboardingComplete") ||
+      !!localStorage.getItem("readingProgress") ||
+      !!profile; // profile from Supabase = they completed onboarding previously
+    if (!alreadyOnboarded) {
       navigate("/onboarding", { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, profile]);
 
   useEffect(() => {
     try {

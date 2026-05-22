@@ -33,13 +33,13 @@ export default function Reader() {
   const chapterNum = parseInt(chapter);
   const navigate = useNavigate();
 
+  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers, translation, setTranslation } = useApp();
   const { data, loading, error } = useBible(book, chapterNum, translation);
   const { getHighlight, addHighlight } = useHighlights(book, chapterNum);
   const { notes, getNote, saveNote, deleteNote } = useNotes(book, chapterNum);
   const { addVerse, isMemoryVerse } = useMemoryVerses();
   const { wordData, loading: wordLoading, error: wordError, getWordStudy, clear: clearWordStudy } = useWordStudy();
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapterNum, data?.verses);
-  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers, translation, setTranslation } = useApp();
   const { user, profile } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const showToast = useToast();

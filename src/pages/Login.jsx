@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../stores/AuthContext";
 import { submitSignUp } from "../services/ghlService";
 import { getSupabase } from "../services/supabase";
@@ -14,7 +14,9 @@ const REDIRECT_BASE = Capacitor.isNativePlatform()
   : (typeof window !== "undefined" ? window.location.origin : "https://thewaybible.app");
 
 export default function Login() {
-  const [isSignUp, setIsSignUp] = useState(true);
+  // Default to Sign Up unless URL says ?mode=signin (e.g. landing page "Sign in" link)
+  const [searchParams] = useSearchParams();
+  const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") !== "signin");
   useDocumentTitle(isSignUp ? "Sign Up" : "Sign In");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

@@ -7,7 +7,19 @@
  * Usage: GET /api/photos?query=mountain&orientation=square
  * Returns: { results: [{ id, urls: { full, regular, small }, alt, author, authorUrl, source }] }
  */
+import { rateLimit, checkOrigin } from "./_rateLimit.js";
+
 export default async function handler(req, res) {
+  // Origin check (allows our app, blocks scrapers)
+  if (!checkOrigin(req)) {
+    return res.status(403).json({ error: "Forbidden" });
+  }
+
+  // Throttle: 30 photo lookups per IP per minute (covers heavy browsing)
+  if (rateLimit(req, { windowMs: 60_000, max: 30 })) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   const query = (req.query.query || "nature").toString();
   const orientation = (req.query.orientation || "square").toString();
   const perPage = Math.min(parseInt(req.query.per_page) || 20, 30);

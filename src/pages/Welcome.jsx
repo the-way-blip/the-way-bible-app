@@ -368,10 +368,10 @@ function FinalCTA() {
     <section id="signup" className="bg-gradient-to-b from-cream to-cream-dark/40 dark:from-[#1a1a1a] dark:to-[#252525] border-t border-cream-dark">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
         <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">Start today</p>
-        <h2 className="font-serif text-3xl sm:text-5xl font-bold text-warm-brown mb-4">
+        <h2 className="font-serif text-3xl sm:text-5xl font-bold text-warm-brown dark:text-[#f5e6c8] mb-4">
           Begin your daily walk.
         </h2>
-        <p className="text-lg text-warm-brown-light max-w-xl mx-auto mb-10">
+        <p className="text-lg text-warm-brown-light dark:text-[#d4c5a8] max-w-xl mx-auto mb-10">
           Sign up free in under a minute. Open Scripture today and let the Word shape your tomorrow.
         </p>
 
@@ -382,7 +382,7 @@ function FinalCTA() {
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
             autoComplete="name"
-            className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+            className="w-full bg-white dark:bg-[#2a2a2a] border-2 border-cream-dark dark:border-[#4a4a4a] rounded-xl px-4 py-3 text-base text-warm-brown dark:text-[#f5e6c8] placeholder-warm-brown-light/50 dark:placeholder-[#a89578] focus:outline-none focus:border-gold dark:focus:border-gold focus:ring-2 focus:ring-gold/30 transition-colors"
           />
           <input
             type="email"
@@ -391,7 +391,7 @@ function FinalCTA() {
             placeholder="Email address"
             required
             autoComplete="email"
-            className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+            className="w-full bg-white dark:bg-[#2a2a2a] border-2 border-cream-dark dark:border-[#4a4a4a] rounded-xl px-4 py-3 text-base text-warm-brown dark:text-[#f5e6c8] placeholder-warm-brown-light/50 dark:placeholder-[#a89578] focus:outline-none focus:border-gold dark:focus:border-gold focus:ring-2 focus:ring-gold/30 transition-colors"
           />
           <input
             type="password"
@@ -401,14 +401,14 @@ function FinalCTA() {
             required
             minLength={6}
             autoComplete="new-password"
-            className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+            className="w-full bg-white dark:bg-[#2a2a2a] border-2 border-cream-dark dark:border-[#4a4a4a] rounded-xl px-4 py-3 text-base text-warm-brown dark:text-[#f5e6c8] placeholder-warm-brown-light/50 dark:placeholder-[#a89578] focus:outline-none focus:border-gold dark:focus:border-gold focus:ring-2 focus:ring-gold/30 transition-colors"
           />
-          <label className="flex items-center gap-2 text-sm text-warm-brown-light">
+          <label className="flex items-center gap-2 text-sm text-warm-brown-light dark:text-[#d4c5a8] cursor-pointer">
             <input
               type="checkbox"
               checked={subscribe}
               onChange={(e) => setSubscribe(e.target.checked)}
-              className="w-4 h-4 rounded border-cream-dark text-gold focus:ring-gold/30"
+              className="w-4 h-4 rounded border-2 border-cream-dark dark:border-[#5a5a5a] text-gold focus:ring-gold/30 accent-gold"
             />
             Send me weekly devotionals
           </label>
@@ -420,7 +420,7 @@ function FinalCTA() {
           >
             {loading ? "Creating your account..." : "Create Free Account"}
           </button>
-          <p className="text-xs text-warm-brown-light/60 text-center">
+          <p className="text-xs text-warm-brown-light/70 dark:text-[#c2b094]/90 text-center">
             By signing up, you agree to our <Link to="/privacy" className="underline">Privacy Policy</Link>.<br />
             Already have an account? <Link to="/login" className="text-gold underline">Sign in</Link>.
           </p>

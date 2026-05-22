@@ -422,7 +422,7 @@ function Footer() {
     <footer className="bg-warm-brown text-cream/70">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-3 gap-8 text-sm">
         <div>
-          <img src="/Logo%20White.png" alt="The Way" className="h-8 w-auto mb-3" />
+          <img src="/Logo%20White.png" alt="The Way" className="h-20 sm:h-24 w-auto mb-4" />
           <p className="leading-relaxed">A modern Bible study app for everyday faith.</p>
         </div>
         <div>

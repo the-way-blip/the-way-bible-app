@@ -52,7 +52,9 @@ export function getBibleHubUrl(book, chapter, verse) {
 // ── Fetch one commentary from the proxy ──────────────────────────────────────
 async function fetchOne(commentaryId, bookId, chapter) {
   try {
-    const res = await fetch(`/api/commentary/${commentaryId}/${bookId}/${chapter}`);
+    // Flat route with query param — Vercel's [...path] catch-all in subdirectories
+    // only matches one path segment; using ?p= avoids that limitation.
+    const res = await fetch(`/api/commentary?p=${commentaryId}/${bookId}/${chapter}`);
     if (!res.ok) return null;
     return await res.json();
   } catch {

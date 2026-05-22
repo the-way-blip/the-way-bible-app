@@ -10,6 +10,7 @@ import {
   highlightVerses,
   unhighlightVerses,
   countExistingHighlights,
+  getTopicColor,
 } from "../utils/topicHighlight";
 
 const HIGHLIGHT_COLORS = [
@@ -39,6 +40,7 @@ export default function Topics() {
   const [picker, setPicker] = useState(null); // topic name when color picker open
   const [busy, setBusy] = useState(false);
   const [existingCounts, setExistingCounts] = useState({}); // { topicName: highlightedVerseCount }
+  const [topicColors, setTopicColors] = useState({}); // { topicName: colorKey }
   const showToast = useToast();
   const { user, profile } = useAuth();
 
@@ -107,6 +109,9 @@ export default function Topics() {
   const refreshHighlightCount = useCallback(async (topic) => {
     const count = await countExistingHighlights(topic.verses);
     setExistingCounts((prev) => ({ ...prev, [topic.name]: count }));
+    // Also refresh the active color so verse rows update
+    const color = await getTopicColor(topic.verses);
+    setTopicColors((prev) => ({ ...prev, [topic.name]: color || null }));
   }, []);
 
   // On mount: load existing highlight counts in the background for currently visible topics
@@ -126,11 +131,14 @@ export default function Topics() {
 
   const handleHighlightAll = async (topic, color) => {
     setBusy(true);
+    // Optimistically apply color immediately so verse rows turn highlighted right away
+    setTopicColors((prev) => ({ ...prev, [topic.name]: color }));
     try {
       const written = await highlightVerses(topic.verses, color, user?.id);
       showToast(`Highlighted ${written} verse${written === 1 ? "" : "s"} in ${topic.name}`, { icon: "✨" });
       await refreshHighlightCount(topic);
     } catch {
+      setTopicColors((prev) => ({ ...prev, [topic.name]: null }));
       showToast("Couldn't apply highlights — please try again.", { icon: "⚠️" });
     } finally {
       setBusy(false);
@@ -140,6 +148,7 @@ export default function Topics() {
 
   const handleRemoveAll = async (topic) => {
     setBusy(true);
+    setTopicColors((prev) => ({ ...prev, [topic.name]: null }));
     try {
       const removed = await unhighlightVerses(topic.verses, user?.id);
       showToast(`Removed ${removed} highlight${removed === 1 ? "" : "s"} from ${topic.name}`, { icon: "🧹" });
@@ -284,6 +293,12 @@ export default function Topics() {
                 {topic.verses.map((ref, j) => {
                   const parsed = parseRef(ref);
                   const vt = verseTexts[ref];
+                  const activeColor = topicColors[topic.name];
+                  const hlBg = activeColor === "yellow" ? "bg-highlight-yellow"
+                    : activeColor === "green" ? "bg-highlight-green"
+                    : activeColor === "blue" ? "bg-highlight-blue"
+                    : activeColor === "pink" ? "bg-highlight-pink"
+                    : "";
 
                   // Load text on scroll into view
                   if (!vt) loadVerseText(ref);
@@ -291,7 +306,7 @@ export default function Topics() {
                   return (
                     <div
                       key={j}
-                      className="px-4 py-3 border-b border-cream-dark/50 last:border-b-0 hover:bg-cream/30 transition-colors"
+                      className={`px-4 py-3 border-b border-cream-dark/50 last:border-b-0 transition-colors ${hlBg || "hover:bg-cream/30"}`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         {parsed ? (

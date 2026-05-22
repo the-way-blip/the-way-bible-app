@@ -5,6 +5,19 @@ import { Capacitor } from "@capacitor/core";
 
 export const isNative = Capacitor.isNativePlatform();
 
+// Open external URL — uses Capacitor Browser (SFSafariViewController on iOS)
+// so the user stays in-app. Falls back to window.open on web.
+export async function openUrl(url) {
+  if (isNative) {
+    try {
+      const { Browser } = await import("@capacitor/browser");
+      await Browser.open({ url });
+      return;
+    } catch {}
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
 // Haptic feedback — light tap for UI interactions
 export async function hapticTap() {
   if (!isNative) return;

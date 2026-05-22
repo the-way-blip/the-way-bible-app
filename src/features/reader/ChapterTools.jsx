@@ -1,25 +1,17 @@
 import { lazy, Suspense } from "react";
 
-const BibleMaps = lazy(() => import("./BibleMaps"));
-const YouTubeLinks = lazy(() => import("./YouTubeLinks"));
 const ParallelPassages = lazy(() => import("./ParallelPassages"));
 
 /**
- * Study tools shown at the bottom of EACH chapter (Parallel passages,
- * maps, YouTube). Rendering this per-chapter (rather than once at the
- * bottom of the infinite-scroll feed) prevents the visual "glitch" where
- * tools flashed in between chapters as new ones loaded.
- *
- * AudioBible is temporarily removed until the FCBH/Bible Brain API is
- * approved — at that point swap in a proper narrated-audio component here.
+ * Study tools shown at the bottom of each chapter.
+ * Maps & video teachings have been removed — commentary and translation
+ * compare now live in the study side panel.
  */
 export default function ChapterTools({ book, chapter }) {
   return (
     <div className="mt-6">
       <Suspense fallback={null}>
         <ParallelPassages book={book} chapter={chapter} />
-        <BibleMaps book={book} />
-        <YouTubeLinks book={book} chapter={chapter} />
       </Suspense>
     </div>
   );

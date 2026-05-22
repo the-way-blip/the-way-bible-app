@@ -6,6 +6,7 @@ import { syncPush } from "../services/supabaseSync";
 import { useAuth } from "../stores/AuthContext";
 import { sm2, getDueVerses } from "../utils/spaced-repetition";
 import ShareSheet from "../components/ShareSheet";
+import useT from "../hooks/useT";
 
 // Research-backed memorization modes:
 // 1. Classic flashcard (SM-2 spaced repetition)
@@ -14,16 +15,10 @@ import ShareSheet from "../components/ShareSheet";
 // 4. Type it out — user types the verse from memory
 // 5. Ordering — scrambled words to put in order
 
-const MODES = [
-  { id: "flashcard", name: "Flashcard", desc: "See reference, recall the verse" },
-  { id: "first-letter", name: "First Letter", desc: "Only first letters shown as hints" },
-  { id: "fill-blank", name: "Fill in Blank", desc: "Key words are hidden" },
-  { id: "type-it", name: "Type It", desc: "Type the verse from memory" },
-];
-
 export default function Flashcard() {
   const { verses, reload } = useMemoryVerses();
   const { user } = useAuth();
+  const t = useT();
   const [dueVerses, setDueVerses] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -31,6 +26,13 @@ export default function Flashcard() {
   const [mode, setMode] = useState("flashcard");
   const [userInput, setUserInput] = useState("");
   const [shareData, setShareData] = useState(null);
+
+  const MODES = [
+    { id: "flashcard", name: t("memory.modeFlashcard"), desc: "See reference, recall the verse" },
+    { id: "first-letter", name: t("memory.modeFirstLetter"), desc: "Only first letters shown as hints" },
+    { id: "fill-blank", name: t("memory.modeFillBlank"), desc: "Key words are hidden" },
+    { id: "type-it", name: t("memory.modeTypeIt"), desc: "Type the verse from memory" },
+  ];
 
   useEffect(() => {
     setDueVerses(getDueVerses(verses));
@@ -59,7 +61,7 @@ export default function Flashcard() {
       <div className="max-w-lg mx-auto px-4 py-6">
         <Link to="/memory" className="text-sm text-warm-brown-light hover:text-warm-brown flex items-center gap-1 mb-6">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><polyline points="15 18 9 12 15 6" /></svg>
-          Memory Verses
+          {t("memory.title")}
         </Link>
         <div className="text-center py-16">
           {completed > 0 ? (
@@ -67,14 +69,14 @@ export default function Flashcard() {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-8 h-8 text-green-500"><polyline points="20 6 9 17 4 12" /></svg>
               </div>
-              <h2 className="text-lg font-semibold text-warm-brown mb-2">Session Complete</h2>
-              <p className="text-sm text-warm-brown-light">{completed} {completed === 1 ? "verse" : "verses"} reviewed.</p>
+              <h2 className="text-lg font-semibold text-warm-brown mb-2">{t("memory.sessionComplete")}</h2>
+              <p className="text-sm text-warm-brown-light">{completed} {completed === 1 ? t("memory.verseReviewed") : t("memory.versesReviewed")}.</p>
             </>
           ) : (
             <>
-              <p className="text-warm-brown-light text-sm mb-2">No verses due for review.</p>
+              <p className="text-warm-brown-light text-sm mb-2">{t("memory.noDue")}</p>
               <p className="text-warm-brown-light/60 text-xs">
-                {verses.length > 0 ? "Check back later." : "Save some memory verses first."}
+                {verses.length > 0 ? t("memory.checkBack") : t("memory.saveFirst")}
               </p>
             </>
           )}
@@ -100,7 +102,7 @@ export default function Flashcard() {
       <div className="flex items-center justify-between mb-4">
         <Link to="/memory" className="text-sm text-warm-brown-light hover:text-warm-brown flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4"><polyline points="15 18 9 12 15 6" /></svg>
-          Back
+          {t("general.back")}
         </Link>
         <span className="text-xs text-warm-brown-light">{currentIndex + 1} of {dueVerses.length}</span>
       </div>
@@ -145,7 +147,7 @@ export default function Flashcard() {
         {mode === "flashcard" && (
           <div className="text-center cursor-pointer w-full" onClick={() => !flipped && setFlipped(true)}>
             {!flipped ? (
-              <p className="text-warm-brown-light text-sm">Tap to reveal the verse</p>
+              <p className="text-warm-brown-light text-sm">{t("memory.tapReveal")}</p>
             ) : (
               <p className="font-scripture text-warm-brown text-center leading-relaxed">{current.text}</p>
             )}
@@ -161,7 +163,7 @@ export default function Flashcard() {
             ) : (
               <p className="font-scripture text-warm-brown text-center leading-relaxed">{current.text}</p>
             )}
-            <p className="text-[10px] text-warm-brown-light/50 mt-3">Tap to {flipped ? "hide" : "reveal"}</p>
+            <p className="text-[10px] text-warm-brown-light/50 mt-3">{flipped ? t("memory.tapHide") : t("memory.tapReveal")}</p>
           </div>
         )}
 
@@ -172,7 +174,7 @@ export default function Flashcard() {
             ) : (
               <p className="font-scripture text-warm-brown text-center leading-relaxed">{current.text}</p>
             )}
-            <p className="text-[10px] text-warm-brown-light/50 mt-3">Tap to {flipped ? "hide" : "reveal"}</p>
+            <p className="text-[10px] text-warm-brown-light/50 mt-3">{flipped ? t("memory.tapHide") : t("memory.tapReveal")}</p>
           </div>
         )}
 
@@ -181,7 +183,7 @@ export default function Flashcard() {
             <textarea
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Type the verse from memory..."
+              placeholder={t("memory.typePlaceholder")}
               className="w-full h-24 bg-cream rounded-lg px-3 py-2 text-sm text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30 font-scripture"
             />
             {!flipped ? (
@@ -189,15 +191,15 @@ export default function Flashcard() {
                 onClick={() => setFlipped(true)}
                 className="w-full mt-2 py-2 bg-gold text-white rounded-lg text-sm font-medium hover:bg-gold/90 transition-colors"
               >
-                Check Answer
+                {t("memory.checkAnswer")}
               </button>
             ) : (
               <div className="mt-2 bg-cream rounded-lg p-3">
-                <p className="text-[10px] font-medium text-warm-brown-light uppercase mb-1">Correct verse:</p>
+                <p className="text-[10px] font-medium text-warm-brown-light uppercase mb-1">{t("memory.correctVerse")}</p>
                 <p className="font-scripture text-sm text-warm-brown leading-relaxed">{current.text}</p>
                 {userInput.trim() && (
                   <p className="text-[10px] mt-2 text-warm-brown-light">
-                    Similarity: {Math.round(similarity(userInput.trim(), current.text) * 100)}%
+                    {t("memory.similarity")} {Math.round(similarity(userInput.trim(), current.text) * 100)}%
                   </p>
                 )}
               </div>
@@ -209,12 +211,12 @@ export default function Flashcard() {
       {/* Rating buttons (show when flipped or in type mode after check) */}
       {flipped && (
         <div className="mt-4">
-          <p className="text-xs text-warm-brown-light text-center mb-3">How well did you remember?</p>
+          <p className="text-xs text-warm-brown-light text-center mb-3">{t("memory.howWell")}</p>
           <div className="grid grid-cols-4 gap-2">
-            <button onClick={() => handleRate(1)} className="py-3 rounded-xl text-sm font-medium bg-red-50 text-red-500 hover:bg-red-100 transition-colors">Again</button>
-            <button onClick={() => handleRate(2)} className="py-3 rounded-xl text-sm font-medium bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors">Hard</button>
-            <button onClick={() => handleRate(3)} className="py-3 rounded-xl text-sm font-medium bg-green-50 text-green-600 hover:bg-green-100 transition-colors">Good</button>
-            <button onClick={() => handleRate(5)} className="py-3 rounded-xl text-sm font-medium bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors">Easy</button>
+            <button onClick={() => handleRate(1)} className="py-3 rounded-xl text-sm font-medium bg-red-50 text-red-500 hover:bg-red-100 transition-colors">{t("memory.again")}</button>
+            <button onClick={() => handleRate(2)} className="py-3 rounded-xl text-sm font-medium bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors">{t("memory.hard")}</button>
+            <button onClick={() => handleRate(3)} className="py-3 rounded-xl text-sm font-medium bg-green-50 text-green-600 hover:bg-green-100 transition-colors">{t("memory.good")}</button>
+            <button onClick={() => handleRate(5)} className="py-3 rounded-xl text-sm font-medium bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors">{t("memory.easy")}</button>
           </div>
         </div>
       )}

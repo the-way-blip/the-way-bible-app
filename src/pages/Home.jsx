@@ -9,9 +9,11 @@ import ShareSheet from "../components/ShareSheet";
 import Logo from "../components/Logo";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import { getSmartDailyVerse } from "../data/dailyVerses";
+import useT from "../hooks/useT";
 
 export default function Home() {
   useDocumentTitle("Home");
+  const t = useT();
   const { verses } = useMemoryVerses();
   const { user, isLoggedIn, signOut, profile } = useAuth();
   const navigate = useNavigate();
@@ -107,8 +109,8 @@ export default function Home() {
           <h1><Logo className="h-24 sm:h-28" /><span className="sr-only">TheWay Bible App</span></h1>
           <p className="text-sm text-warm-brown-light mt-1">
             {progress.streak > 0
-              ? `${progress.streak} day reading streak${progress.lastReadDate !== new Date().toISOString().split("T")[0] ? " — read today!" : ""}`
-              : "Start your reading today"}
+              ? `${progress.streak} ${t("home.dayStreak")}${progress.lastReadDate !== new Date().toISOString().split("T")[0] ? ` — ${t("home.readTodayPrompt")}` : ""}`
+              : t("home.startReadingToday")}
           </p>
         </div>
         {isLoggedIn ? (
@@ -118,7 +120,7 @@ export default function Home() {
             to="/login"
             className="text-xs text-gold hover:text-gold/80 bg-gold/10 rounded-full px-3 py-1.5 font-medium"
           >
-            Sign In
+            {t("auth.signIn")}
           </Link>
         )}
       </div>
@@ -132,8 +134,8 @@ export default function Home() {
       {progress.streak > 0 && (
         <div className="bg-white rounded-2xl p-4 mb-4 border border-cream-dark">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider">This Week</p>
-            <p className="text-xs text-gold font-semibold">{progress.streak} day streak</p>
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider">{t("home.thisWeek")}</p>
+            <p className="text-xs text-gold font-semibold">{progress.streak} {t("home.days")} {t("home.readingStreak")}</p>
           </div>
           <div className="flex justify-between">
             {streakDays.map((day, i) => (
@@ -160,7 +162,7 @@ export default function Home() {
         className="block bg-scripture-bg rounded-2xl p-5 mb-4 border border-cream-dark relative hover:border-gold/30 transition-colors"
       >
         <h2 className="text-xs font-medium text-gold uppercase tracking-wider mb-2">
-          Verse of the Day
+          {t("home.verseOfDay")}
         </h2>
         <p className="font-scripture text-warm-brown text-base leading-relaxed">
           "{dailyVerse.text}"
@@ -171,7 +173,7 @@ export default function Home() {
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); copyVerse(); }}
               className="w-[44px] h-[44px] -m-2 flex items-center justify-center text-warm-brown-light/50 hover:text-gold transition-colors"
-              aria-label="Copy verse"
+              aria-label={t("home.copyVerse")}
             >
               <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                 <rect x="9" y="9" width="13" height="13" rx="2" /><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
@@ -180,7 +182,7 @@ export default function Home() {
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShareData({ content: dailyVerse.text, reference: dailyVerse.ref }); }}
               className="w-[44px] h-[44px] -m-2 flex items-center justify-center text-warm-brown-light/50 hover:text-gold transition-colors"
-              aria-label="Share verse of the day"
+              aria-label={t("home.shareVerse")}
             >
               <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                 <circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" />
@@ -201,7 +203,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider">
-                Continue Reading
+                {t("home.continueReading")}
               </p>
               <p className="text-warm-brown font-semibold mt-1">
                 {progress.lastRead.book} {progress.lastRead.chapter}
@@ -217,7 +219,7 @@ export default function Home() {
       {/* Recently Read */}
       {recentlyRead.length > 1 && (
         <div className="mb-4">
-          <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-2">Recently Read</p>
+          <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-2">{t("home.recentlyRead")}</p>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-1 px-1">
             {recentlyRead.map((r, i) => (
               <Link
@@ -240,7 +242,7 @@ export default function Home() {
         >
           <div>
             <p className="text-2xl font-bold text-gold">{verses.length}</p>
-            <p className="text-xs text-warm-brown-light mt-1">Memory Verses</p>
+            <p className="text-xs text-warm-brown-light mt-1">{t("home.memoryVerses")}</p>
           </div>
           <svg
             aria-hidden="true"
@@ -265,9 +267,9 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-semibold text-gold">
-                {getDueVerses(verses).length} {getDueVerses(verses).length === 1 ? "verse" : "verses"} to review
+                {getDueVerses(verses).length} {t("home.versesToReview")}
               </p>
-              <p className="text-xs text-warm-brown-light mt-0.5">Keep your memory fresh</p>
+              <p className="text-xs text-warm-brown-light mt-0.5">{t("home.keepMemoryFresh")}</p>
             </div>
             <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5 text-gold">
               <polyline points="9 6 15 12 9 18" />
@@ -279,7 +281,7 @@ export default function Home() {
       {/* Progress Badges — show in a grid with locked badges */}
       <div className="bg-white rounded-2xl p-4 mb-4 border border-cream-dark">
         <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">
-          Badges
+          {t("home.badges")}
         </p>
         <div className="grid grid-cols-4 gap-2">
           {unlockedBadges.map((badge) => (
@@ -312,7 +314,7 @@ export default function Home() {
               to="/read/Genesis/1"
               className="block bg-gold text-white rounded-2xl p-4 text-center font-semibold hover:bg-gold/90 transition-colors"
             >
-              Read the Word
+              {t("home.readTheWord")}
             </Link>
           ) : (
             <>
@@ -320,13 +322,13 @@ export default function Home() {
                 to="/onboarding"
                 className="block bg-gold text-white rounded-2xl p-4 text-center font-semibold hover:bg-gold/90 transition-colors"
               >
-                Get Started
+                {t("home.getStarted")}
               </Link>
               <Link
                 to="/read/Genesis/1"
                 className="block text-center text-sm text-warm-brown-light hover:text-warm-brown"
               >
-                or jump straight to reading
+                {t("home.jumpToReading")}
               </Link>
             </>
           )}
@@ -346,6 +348,7 @@ export default function Home() {
 }
 
 function AccountMenu({ user, onSignOut }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [confirmSignOut, setConfirmSignOut] = useState(false);
   const menuRef = useRef(null);
@@ -371,7 +374,7 @@ function AccountMenu({ user, onSignOut }) {
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
           <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
         </svg>
-        {user?.email?.split("@")[0] || "Account"}
+        {user?.email?.split("@")[0] || t("nav.account")}
       </button>
 
       {open && (
@@ -387,24 +390,24 @@ function AccountMenu({ user, onSignOut }) {
             <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
               <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852.997 1.51 1H21a2 2 0 0 1 0 4h-.09" />
             </svg>
-            Settings
+            {t("nav.settings")}
           </Link>
           <div className="border-t border-cream-dark mt-1 pt-1">
             {confirmSignOut ? (
               <div className="px-3 py-2">
-                <p className="text-xs text-warm-brown-light mb-2">Sign out of your account?</p>
+                <p className="text-xs text-warm-brown-light mb-2">{t("auth.signOutConfirm")}</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => { onSignOut(); setOpen(false); }}
                     className="flex-1 text-xs font-medium text-red-600 bg-red-50 rounded-lg py-1.5 hover:bg-red-100 transition-colors"
                   >
-                    Sign Out
+                    {t("settings.signOut")}
                   </button>
                   <button
                     onClick={() => setConfirmSignOut(false)}
                     className="flex-1 text-xs text-warm-brown-light bg-cream-dark rounded-lg py-1.5 hover:bg-cream transition-colors"
                   >
-                    Cancel
+                    {t("general.cancel")}
                   </button>
                 </div>
               </div>
@@ -416,7 +419,7 @@ function AccountMenu({ user, onSignOut }) {
                 <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
                 </svg>
-                Sign Out
+                {t("settings.signOut")}
               </button>
             )}
           </div>

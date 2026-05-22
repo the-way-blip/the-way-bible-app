@@ -4,6 +4,7 @@ import useJournal from "../hooks/useJournal";
 import SkeletonList from "../components/SkeletonList";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import { tokenizeRefs, refToUrl } from "../utils/scriptureRef";
+import useT from "../hooks/useT";
 
 const MOOD_LABELS = {
   reflective: "Reflective",
@@ -25,6 +26,7 @@ const MOOD_COLORS = {
 
 export default function Journal() {
   useDocumentTitle("Journal");
+  const t = useT();
   const { entries, loading, deleteEntry } = useJournal();
   const [moodFilter, setMoodFilter] = useState(null);
   const [search, setSearch] = useState("");
@@ -68,7 +70,7 @@ export default function Journal() {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-xl font-bold text-warm-brown">Journal</h1>
+          <h1 className="text-xl font-bold text-warm-brown">{t("journal.title")}</h1>
           <p className="text-sm text-warm-brown-light">
             {entries.length} {entries.length === 1 ? "entry" : "entries"}
           </p>
@@ -80,7 +82,7 @@ export default function Journal() {
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
             <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
           </svg>
-          New Entry
+          {t("journal.newEntry")}
         </Link>
       </div>
 
@@ -175,20 +177,20 @@ export default function Journal() {
           <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setConfirmDelete(null)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 shadow-xl max-w-xs w-full">
-              <h3 className="text-warm-brown font-semibold mb-2">Delete Entry?</h3>
+              <h3 className="text-warm-brown font-semibold mb-2">{t("journal.confirmDelete")}</h3>
               <p className="text-sm text-warm-brown-light mb-4">This cannot be undone.</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setConfirmDelete(null)}
                   className="flex-1 py-2.5 rounded-lg text-sm border border-cream-dark text-warm-brown-light hover:bg-cream transition-colors"
                 >
-                  Cancel
+                  {t("general.cancel")}
                 </button>
                 <button
                   onClick={() => handleDelete(confirmDelete)}
                   className="flex-1 py-2.5 rounded-lg text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"
                 >
-                  Delete
+                  {t("journal.delete")}
                 </button>
               </div>
             </div>

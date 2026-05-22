@@ -97,3 +97,17 @@ export async function countExistingHighlights(refs) {
   }
   return count;
 }
+
+/**
+ * Return the color of the first highlighted verse in the topic (or null).
+ * Used by Topics page to display the active highlight color.
+ */
+export async function getTopicColor(refs) {
+  const verses = expandRefs(refs);
+  for (const { book, chapter, verse } of verses) {
+    const id = HIGHLIGHT_ID(book, chapter, verse);
+    const existing = await dbGet("highlights", id);
+    if (existing?.color) return existing.color;
+  }
+  return null;
+}

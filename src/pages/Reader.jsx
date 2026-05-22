@@ -731,10 +731,9 @@ export default function Reader() {
             <SidePanel
               book={book}
               chapter={chapterNum}
-              notes={notes}
               activeWordInfo={activeWordInfo}
-              onSaveNote={saveNote}
-              onDeleteNote={deleteNote}
+              selectedVerse={selectedVerse}
+              translation={translation}
             />
           </Suspense>
         </div>

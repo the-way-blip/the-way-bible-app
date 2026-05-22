@@ -82,15 +82,27 @@ export default function VerseList({
   book,
   chapter,
 }) {
-  const { fontSize, studyMode, fontFamily, showVerseNumbers } = useApp();
+  const { fontSize, studyMode, fontFamily, showVerseNumbers, translation } = useApp();
+  // Word study data is aligned to KJV word positions — can't apply it to other translations
+  const wordStudyAvailable = !translation || translation === "KJV";
   const containerRef = useRef(null);
 
   if (!verses || verses.length === 0) return null;
 
   return (
+    <div ref={containerRef} onCopy={(e) => handleCopyEvent(e, containerRef.current, book, chapter)}>
+      {/* Notice when study mode is on but word-study data only covers KJV */}
+      {studyMode && !wordStudyAvailable && (
+        <div className="mx-2 mb-2 px-3 py-2 bg-gold/10 rounded-lg flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5 text-gold shrink-0">
+            <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <p className="text-[11px] text-gold leading-snug">
+            Word study (Greek/Hebrew) requires KJV. Verse actions still work — tap a verse number.
+          </p>
+        </div>
+      )}
     <div
-      ref={containerRef}
-      onCopy={(e) => handleCopyEvent(e, containerRef.current, book, chapter)}
       className={`font-scripture px-5 py-4 bg-scripture-bg rounded-xl mx-2 max-w-xl mx-auto`}
       style={{
         fontSize: `${fontSize}px`,
@@ -137,7 +149,7 @@ export default function VerseList({
                   <sup className="verse-number-text">{v.verse}</sup>
                 </button>
               )}
-              {studyMode && wordsForVerse ? (
+              {studyMode && wordStudyAvailable && wordsForVerse ? (
                 <EnrichedText words={wordsForVerse} onWordTap={onWordTap} />
               ) : (
                 <ReadText text={v.text} />
@@ -158,6 +170,7 @@ export default function VerseList({
           </Wrapper>
         );
       })}
+    </div>
     </div>
   );
 }

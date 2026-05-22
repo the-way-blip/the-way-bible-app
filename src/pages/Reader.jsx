@@ -643,8 +643,8 @@ export default function Reader() {
         </div>
       </div>
 
-      {/* ─── Right: Side Panel (desktop only, resizable, hidden in read mode) ─── */}
-      {sidePanelOpen && studyMode && (
+      {/* ─── Right: Side Panel (desktop only, resizable, available in both read and study modes) ─── */}
+      {sidePanelOpen && (
         <div className="hidden md:flex shrink-0 relative" style={{ width: sidebarWidth }}>
           {/* Drag handle */}
           <div

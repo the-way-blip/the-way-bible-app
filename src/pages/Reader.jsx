@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect, lazy, Suspense } from "react";
-import TRANSLATIONS, { getTranslation } from "../data/translations";
+import { getTranslation } from "../data/translations";
 import { useParams, useNavigate } from "react-router-dom";
 import useBible from "../hooks/useBible";
 import useHighlights from "../hooks/useHighlights";
@@ -33,7 +33,7 @@ export default function Reader() {
   const chapterNum = parseInt(chapter);
   const navigate = useNavigate();
 
-  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers, translation, setTranslation } = useApp();
+  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers, translation } = useApp();
   const { data, loading, error } = useBible(book, chapterNum, translation);
   const { getHighlight, addHighlight } = useHighlights(book, chapterNum);
   const { notes, getNote, saveNote, deleteNote } = useNotes(book, chapterNum);
@@ -65,7 +65,6 @@ export default function Reader() {
   const [shareData, setShareData] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [showTranslationPicker, setShowTranslationPicker] = useState(false);
 
   // These need to be declared before the keyboard shortcuts effect
   const bookInfo = getBook(book);
@@ -104,7 +103,6 @@ export default function Reader() {
           setShowNav(false);
           setActiveWordInfo(null);
           setShareData(null);
-          setShowTranslationPicker(false);
           break;
         case "b":
         case "f":
@@ -430,7 +428,7 @@ export default function Reader() {
         <div className="max-w-3xl mx-auto">
           {/* Header */}
           <header className="sticky top-0 bg-cream/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-between">
-            {/* Left: chapter nav + translation chip */}
+            {/* Left: chapter nav */}
             <div className="flex items-center gap-2 min-w-0">
               <button
                 onClick={() => setShowNav(true)}
@@ -438,7 +436,7 @@ export default function Reader() {
                 aria-label={`Navigate — ${displayedChapter.book} chapter ${displayedChapter.chapter}`}
               >
                 <div className="min-w-0">
-                  <p className="text-[11px] font-medium text-warm-brown-light leading-none truncate max-w-[140px]">
+                  <p className="text-[11px] font-medium text-warm-brown-light leading-none truncate max-w-[160px]">
                     {displayedChapter.book}
                   </p>
                   <div className="flex items-center gap-1 mt-0.5">
@@ -451,69 +449,10 @@ export default function Reader() {
                   </div>
                 </div>
               </button>
-
-              {/* Translation chip — sits next to chapter name */}
-              <div className="relative shrink-0">
-                <button
-                  onClick={() => setShowTranslationPicker((v) => !v)}
-                  className={`px-2 py-1 flex items-center gap-0.5 text-[11px] font-bold rounded-md transition-colors ${
-                    showTranslationPicker
-                      ? "bg-gold/10 text-gold"
-                      : "bg-cream-dark text-warm-brown-light hover:text-warm-brown"
-                  }`}
-                  aria-label="Change Bible translation"
-                  title="Change translation"
-                >
-                  {translation}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-2.5 h-2.5">
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-
-                {/* Translation picker — absolutely positioned below the chip */}
-                {showTranslationPicker && (
-                  <>
-                    {/* Invisible backdrop to catch outside clicks */}
-                    <div className="fixed inset-0 z-40" onClick={() => setShowTranslationPicker(false)} />
-                  </>
-                )}
-                {showTranslationPicker && (
-                  <div className="absolute left-0 top-full mt-1 w-64 bg-white border border-cream-dark rounded-2xl shadow-xl z-50 overflow-hidden animate-slide-up">
-                    <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider px-4 pt-3 pb-1">
-                      Bible Translation
-                    </p>
-                    <div className="divide-y divide-cream-dark">
-                      {TRANSLATIONS.map((t) => (
-                        <button
-                          key={t.id}
-                          onClick={() => {
-                            setTranslation(t.id);
-                            setShowTranslationPicker(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors ${
-                            translation === t.id
-                              ? "bg-gold/5 text-gold"
-                              : "text-warm-brown hover:bg-cream-dark/40"
-                          }`}
-                        >
-                          <div>
-                            <span className="text-sm font-semibold">{t.short}</span>
-                            <span className="text-xs text-warm-brown-light ml-2">{t.name}</span>
-                          </div>
-                          {translation === t.id && (
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-gold shrink-0">
-                              <polyline points="20 6 9 17 4 12" />
-                            </svg>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    <p className="text-[10px] text-warm-brown-light/60 px-4 py-2 border-t border-cream-dark leading-snug">
-                      {getTranslation(translation).copyright}
-                    </p>
-                  </div>
-                )}
-              </div>
+              {/* Translation badge — read-only indicator, tap goes to Settings */}
+              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-cream-dark text-warm-brown-light select-none">
+                {translation}
+              </span>
             </div>
 
             <div className="flex items-center gap-1">

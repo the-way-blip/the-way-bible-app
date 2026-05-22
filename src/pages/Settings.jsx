@@ -105,24 +105,7 @@ export default function Settings() {
 
       {/* Font Type */}
       <SettingsSection title={t("settings.fontStyle")}>
-        <div className="space-y-2">
-          {FONT_OPTIONS.map((font) => (
-            <button
-              key={font.value}
-              onClick={() => setFontFamily(font.value)}
-              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
-                fontFamily === font.value
-                  ? "border-gold bg-gold/5"
-                  : "border-cream-dark bg-white hover:border-gold/30"
-              }`}
-            >
-              <p className="text-xs font-medium text-warm-brown mb-1">{font.label}</p>
-              <p className="text-sm text-warm-brown-light" style={{ fontFamily: font.value }}>
-                {font.sample}
-              </p>
-            </button>
-          ))}
-        </div>
+        <FontStylePicker fontFamily={fontFamily} setFontFamily={setFontFamily} />
       </SettingsSection>
 
       {/* Reading Mode */}
@@ -242,6 +225,91 @@ export default function Settings() {
       <p className="text-[10px] text-warm-brown-light/40 text-center mt-4 mb-8">
         TheWay Bible App v1.0
       </p>
+    </div>
+  );
+}
+
+// ── The 3 fonts always shown as full preview cards ───────────────────────────
+const FEATURED_FONT_VALUES = [
+  "Georgia, 'Times New Roman', serif",                      // Georgia
+  "'Iowan Old Style', 'Hoefler Text', Georgia, serif",      // Iowan Old Style
+  "'Inter', system-ui, -apple-system, sans-serif",          // Inter
+];
+
+function FontStylePicker({ fontFamily, setFontFamily }) {
+  const [showMore, setShowMore] = useState(false);
+
+  const featuredFonts = FONT_OPTIONS.filter((f) => FEATURED_FONT_VALUES.includes(f.value));
+  const moreFonts = FONT_OPTIONS.filter((f) => !FEATURED_FONT_VALUES.includes(f.value));
+
+  // If the active font isn't in featured, add it as a 4th card so it's always visible
+  const activeIsExtra = fontFamily && !FEATURED_FONT_VALUES.includes(fontFamily);
+  const activeFont = activeIsExtra ? FONT_OPTIONS.find((f) => f.value === fontFamily) : null;
+  const visibleCards = activeFont ? [...featuredFonts, activeFont] : featuredFonts;
+
+  return (
+    <div className="space-y-2">
+      {/* Featured cards */}
+      {visibleCards.map((font) => (
+        <button
+          key={font.value}
+          onClick={() => setFontFamily(font.value)}
+          className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
+            fontFamily === font.value
+              ? "border-gold bg-gold/5"
+              : "border-cream-dark bg-white hover:border-gold/30"
+          }`}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-xs font-medium text-warm-brown">{font.label}</p>
+            {fontFamily === font.value && (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 text-gold shrink-0">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
+          </div>
+          <p className="text-sm text-warm-brown-light leading-snug" style={{ fontFamily: font.value }}>
+            {font.sample}
+          </p>
+        </button>
+      ))}
+
+      {/* More fonts expander */}
+      <button
+        onClick={() => setShowMore((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl bg-cream-dark/50 hover:bg-cream-dark text-warm-brown-light transition-colors"
+      >
+        <span className="text-xs font-medium">More fonts</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`w-3.5 h-3.5 transition-transform ${showMore ? "rotate-180" : ""}`}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {showMore && (
+        <div className="rounded-xl border border-cream-dark overflow-hidden bg-white divide-y divide-cream-dark">
+          {moreFonts.map((font) => (
+            <button
+              key={font.value}
+              onClick={() => { setFontFamily(font.value); setShowMore(false); }}
+              className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
+                fontFamily === font.value ? "bg-gold/5" : "hover:bg-cream-dark/30"
+              }`}
+            >
+              <div className="min-w-0">
+                <p className="text-xs font-medium text-warm-brown">{font.label}</p>
+                <p className="text-[11px] text-warm-brown-light mt-0.5" style={{ fontFamily: font.value }}>
+                  In the beginning God created…
+                </p>
+              </div>
+              {fontFamily === font.value && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 text-gold shrink-0 ml-2">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

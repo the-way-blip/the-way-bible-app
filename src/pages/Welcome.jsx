@@ -11,7 +11,7 @@ import Logo from "../components/Logo";
  *           → Explanatory → Feature Grid → Final CTA → Footer
  */
 export default function Welcome() {
-  useDocumentTitle("The Way — Read Scripture. Study at any depth. Walk with Jesus daily.");
+  useDocumentTitle("TheWay Bible App — Read Scripture. Study at any depth. Walk with Jesus daily.");
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
@@ -41,7 +41,7 @@ function Header() {
   return (
     <header className="sticky top-0 z-40 bg-cream/95 dark:bg-[#1a1a1a]/95 backdrop-blur border-b border-cream-dark">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2" aria-label="The Way home">
+        <Link to="/" className="flex items-center gap-2" aria-label="TheWay Bible App home">
           <Logo className="h-28 sm:h-36" />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
@@ -70,7 +70,7 @@ function Hero() {
             Walk with Jesus daily.
           </h1>
           <p className="text-lg text-warm-brown-light mt-6 max-w-lg leading-relaxed">
-            The Way is a modern Bible study app for anyone — from first-time readers to those doing deep word studies. One place to read, study, memorize, journal, and pray.
+            TheWay Bible App is built for anyone, at any level of spiritual maturity. Read, study, grow, and follow Jesus at the depth you choose — first-time readers and lifelong scholars alike.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a
@@ -99,7 +99,7 @@ function Hero() {
           <div className="relative bg-white rounded-3xl shadow-2xl shadow-warm-brown/10 border border-cream-dark overflow-hidden">
             <img
               src="/landing/02_reader.png"
-              alt="The Way reader interface showing Scripture with study tools"
+              alt="TheWay Bible App reader interface showing Scripture with study tools"
               className="w-full h-auto"
               loading="eager"
             />
@@ -215,15 +215,15 @@ function Guide() {
     // dark mode (rather than inverting via the warm-brown theme variable).
     <section className="bg-[#3a2820] dark:bg-[#0f0a07] text-[#faf7f2]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
-        <p className="text-sm font-medium text-gold-light uppercase tracking-wider mb-4">Built for you</p>
+        <p className="text-base font-bold text-gold-light uppercase tracking-widest mb-4">Our purpose</p>
         <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-6 text-[#faf7f2]">
-          We're walking the same road.
+          A tool for every step of the journey.
         </h2>
         <p className="text-lg leading-relaxed text-[#faf7f2]/85 max-w-2xl mx-auto">
-          The Way wasn't born from a boardroom. It was built because Scripture is the most important book ever written, and we couldn't find a single tool that honored it — simple enough for any reader, deep enough for serious study, and free of the noise that gets between you and the Word.
+          TheWay Bible App exists to put a thoughtful, beautiful tool in the hands of every believer — wherever they are. Whether you're opening Scripture for the first time or you've walked with Jesus for decades, you'll find a place to read, study, grow, and follow Him at the depth you choose.
         </p>
         <p className="text-lg leading-relaxed text-[#faf7f2]/85 max-w-2xl mx-auto mt-6">
-          Our mission is to put that tool in your hands — and keep getting out of the way so Scripture can do what only Scripture can do.
+          We've built it to honor the Word, welcome the seeker, and serve the scholar — all in one place, free of distraction, available wherever life happens.
         </p>
       </div>
     </section>
@@ -428,8 +428,8 @@ function Footer() {
     <footer className="bg-[#3a2820] dark:bg-[#0f0a07] text-[#faf7f2]/70">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-3 gap-8 text-sm">
         <div>
-          <img src="/Logo%20White.png" alt="The Way" className="h-28 sm:h-36 w-auto mb-4" />
-          <p className="leading-relaxed">A modern Bible study app for everyday faith.</p>
+          <img src="/Logo%20White.png" alt="TheWay Bible App" className="h-28 sm:h-36 w-auto mb-4" />
+          <p className="leading-relaxed">TheWay Bible App — a tool to read, study, grow, and follow Jesus at the depth you choose.</p>
         </div>
         <div>
           <h4 className="font-semibold text-[#faf7f2] mb-3">Product</h4>
@@ -449,7 +449,7 @@ function Footer() {
       </div>
       <div className="border-t border-[#faf7f2]/10">
         <p className="text-center text-xs text-[#faf7f2]/40 py-4">
-          © {new Date().getFullYear()} The Way. All rights reserved.
+          © {new Date().getFullYear()} TheWay Bible App. All rights reserved.
         </p>
       </div>
     </footer>

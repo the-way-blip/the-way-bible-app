@@ -31,7 +31,7 @@ export default function ShareSheet({ content, reference, onClose }) {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: reference || "The Way",
+          title: reference || "TheWay Bible App",
           text: shareText,
         });
       } catch {}

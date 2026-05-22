@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
       <div className="space-y-6 text-sm text-warm-brown leading-relaxed">
         <Section title="Overview">
           <p>
-            The Way is a Bible study application. We are committed to protecting your privacy.
+            TheWay Bible App is a Bible study application. We are committed to protecting your privacy.
             This policy explains what data we collect, how we use it, and your rights.
           </p>
         </Section>
@@ -57,7 +57,7 @@ export default function PrivacyPolicy() {
         <Section title="Marketing & Email Communications">
           <p>
             If you sign up for a daily devotional during signup, you will receive periodic
-            emails from The Way. You can unsubscribe at any time using the link at the bottom
+            emails from TheWay Bible App. You can unsubscribe at any time using the link at the bottom
             of any email, or by replying to ask us to remove you. Unsubscribing will not
             affect your ability to use the app.
           </p>

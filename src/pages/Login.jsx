@@ -84,7 +84,7 @@ export default function Login() {
   return (
     <div className="max-w-sm mx-auto px-4 py-12">
       <div className="text-center mb-8">
-        <h1 className="flex justify-center"><Logo className="h-28 sm:h-36" /><span className="sr-only">The Way</span></h1>
+        <h1 className="flex justify-center"><Logo className="h-28 sm:h-36" /><span className="sr-only">TheWay Bible App</span></h1>
         <p className="text-sm text-warm-brown-light mt-1">
           {isSignUp ? "Create your account" : "Welcome back"}
         </p>

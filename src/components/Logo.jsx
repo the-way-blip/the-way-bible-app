@@ -7,7 +7,7 @@
  *   <Logo className="h-10" />       // larger
  *   <Logo className="h-12 mx-auto" />
  */
-export default function Logo({ className = "h-8", alt = "The Way" }) {
+export default function Logo({ className = "h-8", alt = "TheWay Bible App" }) {
   return (
     <>
       <img

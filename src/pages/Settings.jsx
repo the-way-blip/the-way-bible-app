@@ -171,7 +171,7 @@ export default function Settings() {
         <div className="space-y-2">
           <ShowAppTourButton />
           <a
-            href="mailto:dillon@branddesignco.com?subject=The Way Feedback"
+            href="mailto:hello@thewaybible.app?subject=TheWay Bible App Feedback"
             className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-cream-dark hover:border-gold/30 transition-colors"
           >
             <span className="text-sm text-warm-brown">Send Feedback</span>
@@ -192,7 +192,7 @@ export default function Settings() {
       </SettingsSection>
 
       <p className="text-[10px] text-warm-brown-light/40 text-center mt-4 mb-8">
-        The Way v1.0
+        TheWay Bible App v1.0
       </p>
     </div>
   );

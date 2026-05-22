@@ -84,7 +84,7 @@ function DesktopSidebar() {
 
   return (
     <aside className="hidden md:flex flex-col w-56 shrink-0 border-r border-cream-dark bg-white/50 py-6 px-3">
-      <Link to="/home" className="px-3 mb-6 inline-flex" aria-label="The Way home">
+      <Link to="/home" className="px-3 mb-6 inline-flex" aria-label="TheWay Bible App home">
         <Logo className="h-24" />
       </Link>
       <nav className="space-y-1" aria-label="Desktop navigation">
@@ -134,7 +134,7 @@ export default function Layout() {
             <Outlet />
           </PageTransition>
           <footer className="text-center text-[10px] text-warm-brown-light/40 pt-4 px-4 pb-4">
-            <p>The Way &middot; KJV Bible Study &middot; <a href="/settings" className="hover:text-warm-brown-light inline-flex items-center min-h-[44px]">Settings</a></p>
+            <p>TheWay Bible App &middot; <a href="/settings" className="hover:text-warm-brown-light inline-flex items-center min-h-[44px]">Settings</a></p>
           </footer>
         </main>
       </div>

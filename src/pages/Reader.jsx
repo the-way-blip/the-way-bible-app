@@ -434,12 +434,22 @@ export default function Reader() {
             <div className="flex items-center gap-2 min-w-0">
               <button
                 onClick={() => setShowNav(true)}
-                className="flex items-center gap-1 text-warm-brown font-semibold min-h-[44px] min-w-0 shrink"
+                className="flex items-center gap-2 min-h-[44px] min-w-0 text-left"
+                aria-label={`Navigate — ${displayedChapter.book} chapter ${displayedChapter.chapter}`}
               >
-                <h1 className="text-lg font-semibold m-0 truncate">{displayedChapter.book} {displayedChapter.chapter}</h1>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 shrink-0">
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-medium text-warm-brown-light leading-none truncate max-w-[140px]">
+                    {displayedChapter.book}
+                  </p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <span className="text-xl font-bold text-warm-brown leading-none">
+                      {displayedChapter.chapter}
+                    </span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 text-warm-brown-light shrink-0">
+                      <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                  </div>
+                </div>
               </button>
 
               {/* Translation chip — sits next to chapter name */}

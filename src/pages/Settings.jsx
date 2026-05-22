@@ -37,32 +37,16 @@ export default function Settings() {
       <SettingsSection title="Bible Translation">
         <div className="space-y-2">
           {TRANSLATIONS.map((t) => (
-            <button
+            <TranslationCard
               key={t.id}
-              onClick={() => setTranslation(t.id)}
-              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
-                translation === t.id
-                  ? "border-gold bg-gold/5"
-                  : "border-cream-dark bg-white hover:border-gold/30"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-sm font-semibold text-warm-brown">{t.short}</span>
-                  <span className="text-xs text-warm-brown-light ml-2">{t.name}</span>
-                </div>
-                {translation === t.id && (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-gold shrink-0">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                )}
-              </div>
-              <p className="text-[11px] text-warm-brown-light mt-0.5">{t.description}</p>
-            </button>
+              t={t}
+              selected={translation === t.id}
+              onSelect={() => setTranslation(t.id)}
+            />
           ))}
         </div>
         <p className="text-[10px] text-warm-brown-light/60 mt-2">
-          You can also switch translations while reading by tapping the translation badge in the reader header.
+          Tap the translation badge in the reader header to switch while reading.
         </p>
       </SettingsSection>
 
@@ -467,6 +451,74 @@ function ShowAppTourButton() {
           Tour will show on next visit
         </p>
       )}
+    </div>
+  );
+}
+
+function TranslationCard({ t, selected, onSelect }) {
+  const [expanded, setExpanded] = useState(false);
+  const d = t.details;
+
+  return (
+    <div className={`rounded-xl border-2 transition-colors overflow-hidden ${selected ? "border-gold bg-gold/5" : "border-cream-dark bg-white"}`}>
+      {/* Main row — tap to select */}
+      <button
+        onClick={onSelect}
+        className="w-full text-left px-4 py-3"
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-warm-brown">{t.short}</span>
+            {t.language !== "English" && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/10 text-gold font-medium">{t.language}</span>
+            )}
+            <span className="text-xs text-warm-brown-light">{t.name}</span>
+          </div>
+          {selected && (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-gold shrink-0">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+        </div>
+        <p className="text-[11px] text-warm-brown-light mt-0.5">{t.description}</p>
+      </button>
+
+      {/* Info toggle */}
+      {d && (
+        <>
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="w-full flex items-center gap-1.5 px-4 pb-2.5 text-[11px] text-gold hover:text-gold/80 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            {expanded ? "Hide details" : "About this translation"}
+          </button>
+
+          {expanded && (
+            <div className="px-4 pb-4 pt-1 border-t border-cream-dark space-y-2.5">
+              <InfoRow label="Year" value={d.year} />
+              <InfoRow label="Method" value={d.type} />
+              <InfoRow label="Reading level" value={d.readingLevel} />
+              <InfoRow label="Text base" value={d.textBase} />
+              <div>
+                <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider mb-1">Translation philosophy</p>
+                <p className="text-xs text-warm-brown leading-relaxed">{d.philosophy}</p>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function InfoRow({ label, value }) {
+  return (
+    <div>
+      <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider">{label}</p>
+      <p className="text-xs text-warm-brown mt-0.5">{value}</p>
     </div>
   );
 }

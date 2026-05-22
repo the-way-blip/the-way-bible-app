@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import useJournal from "../hooks/useJournal";
 import SkeletonList from "../components/SkeletonList";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import { tokenizeRefs, refToUrl } from "../utils/scriptureRef";
 
 const MOOD_LABELS = {
   reflective: "Reflective",
@@ -152,51 +153,11 @@ export default function Journal() {
           {view === "list" ? (
             <div className="space-y-3">
               {filtered.map((entry) => (
-                <div key={entry.id} className="bg-white rounded-xl border border-cream-dark overflow-hidden hover:border-gold/30 transition-colors">
-                  <Link to={`/journal/${entry.id}`} className="block p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-warm-brown truncate">
-                          {entry.title || "Untitled"}
-                        </h3>
-                        <p className="text-xs text-warm-brown-light mt-1 line-clamp-2">
-                          {entry.content}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2 flex-wrap">
-                          <span className="text-[10px] text-warm-brown-light/60">
-                            {new Date(entry.createdAt).toLocaleDateString("en-US", {
-                              weekday: "short",
-                              month: "short",
-                              day: "numeric",
-                              year: "numeric",
-                            })}
-                          </span>
-                          {entry.mood && (
-                            <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${MOOD_COLORS[entry.mood] || "bg-cream text-warm-brown-light"}`}>
-                              {MOOD_LABELS[entry.mood] || entry.mood}
-                            </span>
-                          )}
-                          {entry.book && (
-                            <span className="text-[10px] bg-gold/10 text-gold px-1.5 py-0.5 rounded-full">
-                              {entry.book} {entry.chapter && entry.chapter}{entry.verseNumber && `:${entry.verseNumber}`}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                  <div className="border-t border-cream-dark px-4 py-2 flex justify-end">
-                    <button
-                      onClick={() => setConfirmDelete(entry.id)}
-                      className="text-[10px] text-red-400 hover:text-red-500 flex items-center gap-1"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
-                        <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                      </svg>
-                      Delete
-                    </button>
-                  </div>
-                </div>
+                <JournalCard
+                  key={entry.id}
+                  entry={entry}
+                  onDelete={() => setConfirmDelete(entry.id)}
+                />
               ))}
               {filtered.length === 0 && (
                 <p className="text-center text-sm text-warm-brown-light py-8">No entries match your filter.</p>
@@ -234,6 +195,97 @@ export default function Journal() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function JournalCard({ entry, onDelete }) {
+  // Detect scripture refs in the content preview for the chip strip
+  const tokens = tokenizeRefs(entry.content || "");
+  const inlineRefs = tokens.filter((t) => t.type === "ref").slice(0, 3);
+
+  // Build the primary attached reference (stored on entry)
+  const primaryRef = entry.book
+    ? `${entry.book} ${entry.chapter || ""}${entry.verseNumber ? `:${entry.verseNumber}` : ""}`.trim()
+    : null;
+  const primaryUrl = entry.book && entry.chapter
+    ? `/read/${encodeURIComponent(entry.book)}/${entry.chapter}`
+    : null;
+
+  return (
+    <div className="bg-white rounded-xl border border-cream-dark overflow-hidden hover:border-gold/30 transition-colors">
+      {/* Verse quote block (if the entry has stored verse text) */}
+      {entry.verseText && (
+        <div className="px-4 pt-3 pb-2 border-b border-cream-dark/60 bg-scripture-bg/60">
+          <p className="text-[10px] font-semibold text-gold mb-0.5">{primaryRef}</p>
+          <p className="text-xs text-warm-brown-light italic line-clamp-2 font-scripture">"{entry.verseText}"</p>
+        </div>
+      )}
+
+      <Link to={`/journal/${entry.id}`} className="block p-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-warm-brown truncate">
+            {entry.title || "Untitled"}
+          </h3>
+          <p className="text-xs text-warm-brown-light mt-1 line-clamp-2">
+            {entry.content}
+          </p>
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <span className="text-[10px] text-warm-brown-light/60">
+              {new Date(entry.createdAt).toLocaleDateString("en-US", {
+                weekday: "short", month: "short", day: "numeric", year: "numeric",
+              })}
+            </span>
+            {entry.mood && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${MOOD_COLORS[entry.mood] || "bg-cream text-warm-brown-light"}`}>
+                {MOOD_LABELS[entry.mood] || entry.mood}
+              </span>
+            )}
+          </div>
+        </div>
+      </Link>
+
+      {/* Reference chips row — primary stored ref + any refs detected in content */}
+      {(primaryRef || inlineRefs.length > 0) && (
+        <div className="px-4 pb-3 flex flex-wrap gap-1.5">
+          {/* Primary attached ref — tappable link to reader */}
+          {primaryUrl && !entry.verseText && (
+            <Link
+              to={primaryUrl}
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-gold/10 text-gold rounded-full text-[10px] font-semibold hover:bg-gold/20 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-2.5 h-2.5">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+              {primaryRef}
+            </Link>
+          )}
+          {/* Refs auto-detected from content text */}
+          {inlineRefs.map(({ ref }, i) => (
+            <Link
+              key={i}
+              to={refToUrl(ref)}
+              className="inline-flex items-center gap-1 px-2 py-0.5 bg-cream-dark text-warm-brown-light rounded-full text-[10px] font-medium hover:bg-gold/10 hover:text-gold transition-colors"
+            >
+              {ref.raw}
+            </Link>
+          ))}
+        </div>
+      )}
+
+      <div className="border-t border-cream-dark px-4 py-2 flex justify-end">
+        <button
+          onClick={onDelete}
+          className="text-[10px] text-red-400 hover:text-red-500 flex items-center gap-1"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          </svg>
+          Delete
+        </button>
+      </div>
     </div>
   );
 }

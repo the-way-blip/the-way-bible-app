@@ -4,16 +4,7 @@ import { useApp, COLOR_THEMES } from "../stores/AppContext";
 import { useAuth } from "../stores/AuthContext";
 import { dbGetAll } from "../hooks/useDB";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-
-const FONT_OPTIONS = [
-  { value: "Georgia, 'Times New Roman', serif", label: "Georgia (Classic)", sample: "In the beginning God created..." },
-  { value: "'Palatino Linotype', Palatino, serif", label: "Palatino", sample: "In the beginning God created..." },
-  { value: "'Book Antiqua', Palatino, serif", label: "Book Antiqua", sample: "In the beginning God created..." },
-  { value: "'Garamond', serif", label: "Garamond", sample: "In the beginning God created..." },
-  { value: "'Times New Roman', Times, serif", label: "Times New Roman", sample: "In the beginning God created..." },
-  { value: "system-ui, -apple-system, sans-serif", label: "System Sans-Serif", sample: "In the beginning God created..." },
-  { value: "'Courier New', monospace", label: "Courier (Monospace)", sample: "In the beginning God created..." },
-];
+import FONT_OPTIONS from "../data/fontOptions";
 
 const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 

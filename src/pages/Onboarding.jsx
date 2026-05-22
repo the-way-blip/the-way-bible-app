@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../stores/AuthContext";
-import { useApp } from "../stores/AppContext";
+import { useApp, COLOR_THEMES } from "../stores/AppContext";
 import { submitOnboardingComplete } from "../services/ghlService";
+import FONT_OPTIONS from "../data/fontOptions";
 
 const SURVEY_STEPS = [
   {
@@ -52,16 +53,10 @@ const READING_PLANS = {
   mature: { plan: "Genesis to Revelation", book: "Genesis", desc: "Read through the entire Bible" },
 };
 
-const FONT_OPTIONS = [
-  { value: "Georgia, 'Times New Roman', serif", label: "Georgia", sample: "In the beginning God created the heaven and the earth." },
-  { value: "'Palatino Linotype', Palatino, serif", label: "Palatino", sample: "In the beginning God created the heaven and the earth." },
-  { value: "system-ui, -apple-system, sans-serif", label: "Sans-Serif", sample: "In the beginning God created the heaven and the earth." },
-];
-
 export default function Onboarding() {
   const navigate = useNavigate();
   const { saveProfile, user, profile } = useAuth();
-  const { toggleStudyMode, studyMode, toggleDarkMode, darkMode, setFontFamily, fontFamily, showVerseNumbers, toggleVerseNumbers } = useApp();
+  const { toggleStudyMode, studyMode, toggleDarkMode, darkMode, setFontFamily, fontFamily, showVerseNumbers, toggleVerseNumbers, colorTheme, setColorTheme } = useApp();
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({
     faithStage: "",
@@ -298,10 +293,38 @@ export default function Onboarding() {
             </div>
           </div>
 
+          {/* Color theme */}
+          <div className="mb-6">
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Color Scheme</p>
+            <div className="grid grid-cols-2 gap-2">
+              {COLOR_THEMES.map((theme) => (
+                <button
+                  key={theme.id}
+                  onClick={() => setColorTheme(theme.id)}
+                  className={`text-left px-3 py-3 rounded-xl border-2 transition-colors ${
+                    colorTheme === theme.id
+                      ? "border-gold bg-gold/5"
+                      : "border-cream-dark bg-white hover:border-gold/30"
+                  }`}
+                >
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.colors.gold }} />
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.colors["warm-brown"] }} />
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.colors.cream }} />
+                  </div>
+                  <p className={`text-xs font-medium ${colorTheme === theme.id ? "text-gold" : "text-warm-brown"}`}>
+                    {theme.name}
+                  </p>
+                  <p className="text-[10px] text-warm-brown-light">{theme.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Font choice */}
           <div className="mb-8">
             <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Font Style</p>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
               {FONT_OPTIONS.map((font) => (
                 <button
                   key={font.value}
@@ -312,9 +335,14 @@ export default function Onboarding() {
                       : "border-cream-dark bg-white hover:border-gold/30"
                   }`}
                 >
-                  <p className={`text-xs font-medium mb-1 ${fontFamily === font.value ? "text-gold" : "text-warm-brown"}`}>
-                    {font.label}
-                  </p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className={`text-xs font-medium ${fontFamily === font.value ? "text-gold" : "text-warm-brown"}`}>
+                      {font.label}
+                    </p>
+                    {font.desc && (
+                      <p className="text-[10px] text-warm-brown-light/70">{font.desc}</p>
+                    )}
+                  </div>
                   <p className="text-sm text-warm-brown-light" style={{ fontFamily: font.value }}>
                     {font.sample}
                   </p>

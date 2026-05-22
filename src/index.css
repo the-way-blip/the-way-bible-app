@@ -3,6 +3,10 @@
 @import "@fontsource/inter/700.css";
 @import "tailwindcss";
 
+/* Enable class-based dark mode: dark: variants trigger on .dark or any
+   descendant of .dark (which is how the existing theme toggle works) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-cream: #faf7f2;
   --color-cream-dark: #f0ebe3;

@@ -118,8 +118,8 @@ function Stakes() {
       body: "You read the words, but the depth slips away. What does this word mean in the original? Why does it matter today?",
     },
     {
-      title: "Plans that don't fit your pace get abandoned",
-      body: "Rigid reading plans, generic devotionals, apps stuffed with ads. The friction wins and the habit dies.",
+      title: "Most tools force you to choose",
+      body: "A simple devotional app, or a heavy study tool — never both, and never in one place. Switching between them breaks the rhythm.",
     },
     {
       title: "What you read fades by next week",
@@ -160,14 +160,14 @@ function ValueStack() {
   const values = [
     {
       title: "Read at your pace",
-      body: "Open any chapter, follow a plan, or just pick up where you left off. Daily streaks and gentle nudges — no guilt, no spam.",
+      body: "Open any chapter or pick up where you left off. Daily streaks and gentle nudges — no guilt, no spam.",
       icon: (
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
       ),
     },
     {
       title: "Study at any depth",
-      body: "Tap any word for Greek and Hebrew definitions, cross-references, commentary, and historical context — explore at your own pace.",
+      body: "Tap any word for Greek and Hebrew definitions, cross-references, commentary, and historical context — all at your fingertips.",
       icon: (
         <>
           <circle cx="11" cy="11" r="8" />
@@ -234,7 +234,7 @@ function Guide() {
 function Plan() {
   const steps = [
     { num: "1", title: "Sign up free", body: "Email and a password. No credit card, no commitment." },
-    { num: "2", title: "Pick a plan or open anywhere", body: "Follow a reading plan, or just open Genesis 1. The app meets you where you are." },
+    { num: "2", title: "Open anywhere in Scripture", body: "Start with Genesis 1, jump to the Psalms, or open the Gospels. The app meets you where you are." },
     { num: "3", title: "Read, study, and grow", body: "Tap words for definitions, save verses, journal what God shows you. Build a daily walk that lasts." },
   ];
   return (

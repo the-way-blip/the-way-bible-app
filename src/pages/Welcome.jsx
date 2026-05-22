@@ -167,7 +167,7 @@ function ValueStack() {
     },
     {
       title: "Study at any depth",
-      body: "Tap any word for Greek/Hebrew definitions, cross-references, commentary, and historical context. Go as deep as you want.",
+      body: "Tap any word for Greek and Hebrew definitions, cross-references, commentary, and historical context — explore at your own pace.",
       icon: (
         <>
           <circle cx="11" cy="11" r="8" />

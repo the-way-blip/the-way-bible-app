@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { track } from "@vercel/analytics";
 import { useAuth } from "../stores/AuthContext";
 import { submitSignUp } from "../services/ghlService";
 import { getSupabase } from "../services/supabase";
@@ -46,10 +47,14 @@ export default function Login() {
     setLoading(false);
 
     if (result.error) {
+      track(isSignUp ? "signup_failed" : "signin_failed", {
+        source: "login_page",
+        reason: result.error.message,
+      });
       setError(result.error.message);
     } else if (isSignUp) {
+      track("signup_completed", { source: "login_page", subscribed_to_devo: subscribeToDevo });
       submitSignUp({ email, name, subscribeToDevo });
-      // Supabase requires email confirmation — check if session was created
       if (result.data?.session) {
         const onboarded = localStorage.getItem("onboardingComplete");
         navigate(onboarded ? "/" : "/onboarding");
@@ -57,6 +62,7 @@ export default function Login() {
         setSuccess("Check your email to confirm your account, then sign in.");
       }
     } else {
+      track("signin_completed");
       const onboarded = localStorage.getItem("onboardingComplete");
       navigate(onboarded ? "/" : "/onboarding");
     }

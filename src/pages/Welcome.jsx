@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { track } from "@vercel/analytics";
 import { useAuth } from "../stores/AuthContext";
 import { submitSignUp } from "../services/ghlService";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -48,7 +49,11 @@ function Header() {
           <a href="#features" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">Features</a>
           <a href="#plan" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">How it works</a>
           <Link to="/login?mode=signin" className="text-sm text-warm-brown-light hover:text-warm-brown px-2">Sign in</Link>
-          <a href="#signup" className="bg-gold text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-gold/90 transition-colors">
+          <a
+            href="#signup"
+            onClick={() => track("cta_clicked", { location: "header" })}
+            className="bg-gold text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-gold/90 transition-colors"
+          >
             Get Started
           </a>
         </nav>
@@ -75,6 +80,7 @@ function Hero() {
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a
               href="#signup"
+              onClick={() => track("cta_clicked", { location: "hero" })}
               className="bg-gold text-white font-semibold px-6 py-3.5 rounded-full hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
             >
               Get Started Free
@@ -344,9 +350,11 @@ function FinalCTA() {
     const result = await signUp(email, password, name);
     setLoading(false);
     if (result.error) {
+      track("signup_failed", { source: "landing", reason: result.error.message });
       setError(result.error.message);
       return;
     }
+    track("signup_completed", { source: "landing", subscribed_to_devo: subscribe });
     submitSignUp({ email, name, subscribeToDevo: subscribe });
     if (result.data?.session) {
       navigate("/onboarding");

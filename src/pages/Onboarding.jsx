@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { track } from "@vercel/analytics";
 import { useAuth } from "../stores/AuthContext";
 import { useApp, COLOR_THEMES } from "../stores/AppContext";
 import { submitOnboardingComplete } from "../services/ghlService";
@@ -104,6 +105,11 @@ export default function Onboarding() {
     };
     saveProfile(profileData);
     localStorage.setItem("onboardingComplete", "true");
+    track("onboarding_completed", {
+      faith_stage: answers.faithStage,
+      goals_count: (answers.goals || []).length,
+      topics_count: (answers.topics || []).length,
+    });
 
     // Push the survey results to GHL so we can segment by faith stage,
     // goals, and topic interest. Fire-and-forget — never blocks the UI.

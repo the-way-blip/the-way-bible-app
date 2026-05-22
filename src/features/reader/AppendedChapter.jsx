@@ -1,9 +1,11 @@
-import { useCallback } from "react";
+import { useCallback, lazy, Suspense } from "react";
 import useHighlights from "../../hooks/useHighlights";
 import useNotes from "../../hooks/useNotes";
 import useChapterWordStudy from "../../hooks/useChapterWordStudy";
 import { getBook } from "../../data/bibleBooks";
 import VerseList from "./VerseList";
+
+const ChapterTools = lazy(() => import("./ChapterTools"));
 
 /**
  * Renders an appended chapter in continuous scroll mode.
@@ -62,6 +64,10 @@ export default function AppendedChapter({
         book={book}
         chapter={chapter}
       />
+      {/* Per-chapter study tools — show at the bottom of every appended chapter */}
+      <Suspense fallback={null}>
+        <ChapterTools book={book} chapter={chapter} />
+      </Suspense>
     </div>
   );
 }

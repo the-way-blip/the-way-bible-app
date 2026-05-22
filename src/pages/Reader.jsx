@@ -15,10 +15,7 @@ import SkeletonVerses from "../components/SkeletonVerses";
 // Lazy loaded (below fold / modals / panels)
 const ChapterNav = lazy(() => import("../features/reader/ChapterNav"));
 const SidePanel = lazy(() => import("../features/reader/SidePanel"));
-const BibleMaps = lazy(() => import("../features/reader/BibleMaps"));
-const YouTubeLinks = lazy(() => import("../features/reader/YouTubeLinks"));
-const AudioBible = lazy(() => import("../features/reader/AudioBible"));
-const ParallelPassages = lazy(() => import("../features/reader/ParallelPassages"));
+const ChapterTools = lazy(() => import("../features/reader/ChapterTools"));
 const ShareSheet = lazy(() => import("../components/ShareSheet"));
 import { useApp } from "../stores/AppContext";
 import { useToast } from "../components/Toast";
@@ -590,6 +587,10 @@ export default function Reader() {
                   book={book}
                   chapter={chapterNum}
                 />
+                {/* Study tools for this chapter (parallel passages, audio, maps, YouTube) */}
+                <Suspense fallback={null}>
+                  <ChapterTools book={book} chapter={chapterNum} />
+                </Suspense>
               </div>
 
               {/* Appended chapters (continuous scroll) */}
@@ -613,14 +614,6 @@ export default function Reader() {
                   <span className="text-xs text-warm-brown-light">Loading next chapter...</span>
                 </div>
               )}
-
-              {/* Study tools below text */}
-              <Suspense fallback={null}>
-                <ParallelPassages book={book} chapter={chapterNum} />
-                <AudioBible book={book} chapter={chapterNum} />
-                <BibleMaps book={book} />
-                <YouTubeLinks book={book} chapter={chapterNum} />
-              </Suspense>
 
               {/* Chapter navigation */}
               <nav aria-label="Chapter navigation" className="flex items-center justify-between px-6 py-4">

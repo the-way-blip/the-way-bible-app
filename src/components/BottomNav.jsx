@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { NavLink, Link, useNavigate, useLocation } from "react-router-dom";
 import { useApp } from "../stores/AppContext";
+import useT from "../hooks/useT";
 
 // Outline SVG icon helper
 const Icon = ({ d, className = "w-5 h-5" }) => (
@@ -9,43 +10,45 @@ const Icon = ({ d, className = "w-5 h-5" }) => (
   </svg>
 );
 
-const tabs = [
+// Tab/link definitions use translation keys — labels resolved in component
+const tabDefs = [
   {
-    to: "/home", label: "Home",
+    to: "/home", labelKey: "nav.home",
     icon: <Icon d={<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></>} />,
   },
   {
-    to: null, label: "Read", matchPath: "/read", useDynamic: true,
+    to: null, labelKey: "nav.read", matchPath: "/read", useDynamic: true,
     icon: <Icon d={<><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></>} />,
   },
   {
-    to: "/search", label: "Search",
+    to: "/search", labelKey: "nav.search",
     icon: <Icon d={<><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></>} />,
   },
   {
-    label: "More", isMenu: true,
+    labelKey: "nav.more", isMenu: true,
     icon: <Icon d={<><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" /></>} />,
   },
 ];
 
-const moreLinks = [
-  { to: "/memory", label: "Memory Verses",
+const moreLinkDefs = [
+  { to: "/memory", labelKey: "nav.memoryVerses",
     icon: <Icon d={<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></>} className="w-4.5 h-4.5" /> },
-  { to: "/journal", label: "Journal",
+  { to: "/journal", labelKey: "nav.journal",
     icon: <Icon d={<><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></>} className="w-4.5 h-4.5" /> },
-  { to: "/prayers", label: "Prayer List",
+  { to: "/prayers", labelKey: "nav.prayerList",
     icon: <Icon d={<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></>} className="w-4.5 h-4.5" /> },
-  { to: "/topics", label: "Topics",
+  { to: "/topics", labelKey: "nav.topics",
     icon: <Icon d={<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" /><line x1="7" y1="7" x2="7.01" y2="7" /></>} className="w-4.5 h-4.5" /> },
-  { to: "/settings", label: "Settings",
+  { to: "/settings", labelKey: "nav.settings",
     icon: <Icon d={<><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></>} className="w-4.5 h-4.5" /> },
-  { to: "/login", label: "Account",
+  { to: "/login", labelKey: "nav.account",
     icon: <Icon d={<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></>} className="w-4.5 h-4.5" /> },
 ];
 
 export default function BottomNav() {
   const [showMore, setShowMore] = useState(false);
   const { darkMode, toggleDarkMode } = useApp();
+  const t = useT();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -65,7 +68,7 @@ export default function BottomNav() {
           <div className="fixed inset-0 bg-black/20 z-40 md:hidden" onClick={() => setShowMore(false)} />
           <div className="fixed bottom-16 left-2 right-2 z-50 max-w-lg mx-auto md:hidden">
             <div className="bg-white rounded-2xl shadow-2xl border border-cream-dark p-2 animate-slide-up">
-              {moreLinks.map((link) => {
+              {moreLinkDefs.map((link) => {
                 const isActive = location.pathname === link.to || location.pathname.startsWith(link.to + "/");
                 return (
                   <Link
@@ -79,7 +82,7 @@ export default function BottomNav() {
                     }`}
                   >
                     {link.icon}
-                    <span className={`text-sm ${isActive ? "text-gold font-medium" : "text-warm-brown"}`}>{link.label}</span>
+                    <span className={`text-sm ${isActive ? "text-gold font-medium" : "text-warm-brown"}`}>{t(link.labelKey)}</span>
                   </Link>
                 );
               })}
@@ -93,14 +96,14 @@ export default function BottomNav() {
                   ) : (
                     <Icon d={<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />} className="w-4.5 h-4.5" />
                   )}
-                  <span className="text-sm text-warm-brown">{darkMode ? "Light Mode" : "Dark Mode"}</span>
+                  <span className="text-sm text-warm-brown">{darkMode ? t("nav.lightMode") : t("nav.darkMode")}</span>
                 </button>
                 <button
                   onClick={() => { localStorage.setItem("hasSeenTour", "false"); setShowMore(false); navigate("/"); }}
                   className="flex items-center gap-3 px-4 py-2.5 min-h-[44px] rounded-xl hover:bg-cream transition-colors w-full text-warm-brown-light"
                 >
                   <Icon d={<><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></>} className="w-4.5 h-4.5" />
-                  <span className="text-sm text-warm-brown">Show App Tour</span>
+                  <span className="text-sm text-warm-brown">{t("nav.showTour")}</span>
                 </button>
               </div>
             </div>
@@ -110,15 +113,15 @@ export default function BottomNav() {
 
       <nav className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-cream-dark z-50 md:hidden" aria-label="Main navigation">
         <div className="max-w-lg mx-auto flex justify-around items-center pb-[max(0.25rem,env(safe-area-inset-bottom))]">
-          {tabs.map((tab, i) => {
+          {tabDefs.map((tab, i) => {
             if (tab.isMenu) {
-              const morePaths = moreLinks.map((l) => l.to);
+              const morePaths = moreLinkDefs.map((l) => l.to);
               const isMoreActive = morePaths.some((p) => location.pathname === p || location.pathname.startsWith(p + "/"));
               return (
                 <button key={i} onClick={() => setShowMore(!showMore)}
                   className={`flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] px-2 rounded-lg transition-colors ${showMore || isMoreActive ? "text-gold" : "text-warm-brown-light hover:text-warm-brown"}`}>
                   {tab.icon}
-                  <span className="text-[10px] font-medium">{tab.label}</span>
+                  <span className="text-[10px] font-medium">{t(tab.labelKey)}</span>
                 </button>
               );
             }
@@ -130,7 +133,7 @@ export default function BottomNav() {
                   return `flex flex-col items-center justify-center gap-0.5 min-w-[56px] min-h-[48px] px-2 rounded-lg transition-colors ${active ? "text-gold" : "text-warm-brown-light hover:text-warm-brown"}`;
                 }}>
                 {tab.icon}
-                <span className="text-[10px] font-medium">{tab.label}</span>
+                <span className="text-[10px] font-medium">{t(tab.labelKey)}</span>
               </NavLink>
             );
           })}

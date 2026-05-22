@@ -67,6 +67,9 @@ export function AppProvider({ children }) {
   const [translation, setTranslationState] = useState(
     () => localStorage.getItem("translation") || "KJV"
   );
+  const [language, setLanguageState] = useState(
+    () => localStorage.getItem("uiLanguage") || "en"
+  );
 
   // Apply color theme CSS variables
   const applyThemeColors = useCallback((themeId) => {
@@ -148,6 +151,21 @@ export function AppProvider({ children }) {
     localStorage.setItem("translation", valid);
   };
 
+  const setLanguage = (lang) => {
+    const valid = ["en", "es"].includes(lang) ? lang : "en";
+    setLanguageState(valid);
+    localStorage.setItem("uiLanguage", valid);
+    // When switching to Spanish, auto-suggest RVR if user hasn't picked a Spanish translation
+    if (valid === "es") {
+      const currentTrans = localStorage.getItem("translation") || "KJV";
+      const spanishTranslations = ["RVR"];
+      if (!spanishTranslations.includes(currentTrans)) {
+        setTranslationState("RVR");
+        localStorage.setItem("translation", "RVR");
+      }
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       fontSize, setFontSize: updateFontSize,
@@ -158,6 +176,7 @@ export function AppProvider({ children }) {
       pinnedCommentator, setPinnedCommentator,
       colorTheme, setColorTheme, rotatingTheme, toggleRotatingTheme,
       translation, setTranslation,
+      language, setLanguage,
     }}>
       {children}
     </AppContext.Provider>

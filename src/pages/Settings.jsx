@@ -6,52 +6,82 @@ import TRANSLATIONS from "../data/translations";
 import { dbGetAll } from "../hooks/useDB";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import FONT_OPTIONS from "../data/fontOptions";
+import useT from "../hooks/useT";
 
 const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 
 export default function Settings() {
   useDocumentTitle("Settings");
-  const { fontSize, setFontSize, fontFamily, setFontFamily, darkMode, toggleDarkMode, studyMode, toggleStudyMode, colorTheme, setColorTheme, rotatingTheme, toggleRotatingTheme, translation, setTranslation } = useApp();
+  const { fontSize, setFontSize, fontFamily, setFontFamily, darkMode, toggleDarkMode, studyMode, toggleStudyMode, colorTheme, setColorTheme, rotatingTheme, toggleRotatingTheme, translation, setTranslation, language, setLanguage } = useApp();
   const { isLoggedIn, user, signOut } = useAuth();
+  const t = useT();
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
-      <h1 className="text-xl font-bold text-warm-brown mb-6">Settings</h1>
+      <h1 className="text-xl font-bold text-warm-brown mb-6">{t("settings.title")}</h1>
 
       {/* Account */}
-      <SettingsSection title="Account">
+      <SettingsSection title={t("settings.account")}>
         {isLoggedIn ? (
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-warm-brown">{user?.email || "Signed in"}</p>
-              <p className="text-xs text-warm-brown-light">Signed in</p>
+              <p className="text-sm text-warm-brown">{user?.email || t("settings.signedIn")}</p>
+              <p className="text-xs text-warm-brown-light">{t("settings.signedIn")}</p>
             </div>
-            <button onClick={signOut} className="text-xs text-red-400 hover:text-red-500">Sign Out</button>
+            <button onClick={signOut} className="text-xs text-red-400 hover:text-red-500">{t("settings.signOut")}</button>
           </div>
         ) : (
-          <Link to="/login" className="text-sm text-gold hover:text-gold/80">Sign in to sync your data</Link>
+          <Link to="/login" className="text-sm text-gold hover:text-gold/80">{t("settings.signInToSync")}</Link>
+        )}
+      </SettingsSection>
+
+      {/* Language */}
+      <SettingsSection title={t("settings.language")}>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setLanguage("en")}
+            className={`flex-1 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              language === "en" ? "bg-gold text-white" : "bg-cream-dark text-warm-brown-light"
+            }`}
+          >
+            <span>🇺🇸</span> English
+          </button>
+          <button
+            onClick={() => setLanguage("es")}
+            className={`flex-1 py-3 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
+              language === "es" ? "bg-gold text-white" : "bg-cream-dark text-warm-brown-light"
+            }`}
+          >
+            <span>🇪🇸</span> Español
+          </button>
+        </div>
+        {language === "es" && (
+          <p className="text-[10px] text-warm-brown-light/60 mt-2">
+            La traducción Reina-Valera se seleccionó automáticamente.
+          </p>
         )}
       </SettingsSection>
 
       {/* Bible Translation */}
-      <SettingsSection title="Bible Translation">
+      <SettingsSection title={t("settings.bibleTranslation")}>
         <div className="space-y-2">
-          {TRANSLATIONS.map((t) => (
+          {TRANSLATIONS.map((trans) => (
             <TranslationCard
-              key={t.id}
+              key={trans.id}
+              trans={trans}
+              selected={translation === trans.id}
+              onSelect={() => setTranslation(trans.id)}
               t={t}
-              selected={translation === t.id}
-              onSelect={() => setTranslation(t.id)}
             />
           ))}
         </div>
         <p className="text-[10px] text-warm-brown-light/60 mt-2">
-          Tap the translation badge in the reader header to switch while reading.
+          {t("settings.translationHint")}
         </p>
       </SettingsSection>
 
       {/* Font Size */}
-      <SettingsSection title="Font Size">
+      <SettingsSection title={t("settings.fontSize")}>
         <div className="flex items-center gap-3">
           <span className="text-xs text-warm-brown-light">A</span>
           <input
@@ -68,13 +98,13 @@ export default function Settings() {
         </div>
         <div className="mt-3 bg-scripture-bg rounded-lg p-3">
           <p className="font-scripture text-warm-brown leading-relaxed" style={{ fontSize: `${fontSize}px`, fontFamily: fontFamily }}>
-            In the beginning God created the heaven and the earth.
+            {t("settings.fontPreview")}
           </p>
         </div>
       </SettingsSection>
 
       {/* Font Type */}
-      <SettingsSection title="Font Style">
+      <SettingsSection title={t("settings.fontStyle")}>
         <div className="space-y-2">
           {FONT_OPTIONS.map((font) => (
             <button
@@ -96,7 +126,7 @@ export default function Settings() {
       </SettingsSection>
 
       {/* Reading Mode */}
-      <SettingsSection title="Default Mode">
+      <SettingsSection title={t("settings.defaultMode")}>
         <div className="flex gap-2">
           <button
             onClick={() => { if (studyMode) toggleStudyMode(); }}
@@ -104,7 +134,7 @@ export default function Settings() {
               !studyMode ? "bg-gold text-white" : "bg-cream-dark text-warm-brown-light"
             }`}
           >
-            Read Mode
+            {t("settings.readMode")}
           </button>
           <button
             onClick={() => { if (!studyMode) toggleStudyMode(); }}
@@ -112,16 +142,16 @@ export default function Settings() {
               studyMode ? "bg-gold text-white" : "bg-cream-dark text-warm-brown-light"
             }`}
           >
-            Study Mode
+            {t("settings.studyMode")}
           </button>
         </div>
         <p className="text-[10px] text-warm-brown-light/60 mt-2">
-          Read mode shows clean text. Study mode enables tappable words with study tools.
+          {t("settings.modeHint")}
         </p>
       </SettingsSection>
 
       {/* Color Theme */}
-      <SettingsSection title="Color Theme">
+      <SettingsSection title={t("settings.colorTheme")}>
         <div className="grid grid-cols-2 gap-2">
           {COLOR_THEMES.map((theme) => (
             <button
@@ -155,24 +185,24 @@ export default function Settings() {
           >
             <div className="flex items-center gap-2 mb-1.5">
               <div className="flex gap-0.5">
-                {COLOR_THEMES.slice(0, 3).map((t) => (
-                  <div key={t.id} className="w-3 h-3 rounded-full" style={{ backgroundColor: t.colors.gold }} />
+                {COLOR_THEMES.slice(0, 3).map((theme) => (
+                  <div key={theme.id} className="w-3 h-3 rounded-full" style={{ backgroundColor: theme.colors.gold }} />
                 ))}
               </div>
             </div>
-            <p className="text-xs font-medium text-warm-brown">Daily Rotation</p>
-            <p className="text-[10px] text-warm-brown-light">New theme each day</p>
+            <p className="text-xs font-medium text-warm-brown">{t("settings.dailyRotation")}</p>
+            <p className="text-[10px] text-warm-brown-light">{t("settings.dailyRotationDesc")}</p>
           </button>
         </div>
       </SettingsSection>
 
       {/* Appearance */}
-      <SettingsSection title="Appearance">
+      <SettingsSection title={t("settings.appearance")}>
         <button
           onClick={toggleDarkMode}
           className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-cream-dark"
         >
-          <span className="text-sm text-warm-brown">Dark Mode</span>
+          <span className="text-sm text-warm-brown">{t("settings.darkMode")}</span>
           <div className={`w-10 h-6 rounded-full transition-colors flex items-center px-0.5 ${darkMode ? "bg-gold" : "bg-cream-dark"}`}>
             <div className={`w-5 h-5 rounded-full shadow transition-transform ${darkMode ? "translate-x-4 bg-[#1a1a1a]" : "bg-white"}`} />
           </div>
@@ -180,19 +210,19 @@ export default function Settings() {
       </SettingsSection>
 
       {/* Data Management */}
-      <SettingsSection title="Data">
-        <DataManagement />
+      <SettingsSection title={t("settings.data")}>
+        <DataManagement t={t} />
       </SettingsSection>
 
       {/* Help & Feedback */}
-      <SettingsSection title="Help & Feedback">
+      <SettingsSection title={t("settings.helpFeedback")}>
         <div className="space-y-2">
           <ShowAppTourButton />
           <a
             href="mailto:hello@thewaybible.app?subject=TheWay Bible App Feedback"
             className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-cream-dark hover:border-gold/30 transition-colors"
           >
-            <span className="text-sm text-warm-brown">Send Feedback</span>
+            <span className="text-sm text-warm-brown">{t("settings.sendFeedback")}</span>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
               <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" />
             </svg>
@@ -201,7 +231,7 @@ export default function Settings() {
             to="/privacy"
             className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-cream-dark hover:border-gold/30 transition-colors"
           >
-            <span className="text-sm text-warm-brown">Privacy Policy</span>
+            <span className="text-sm text-warm-brown">{t("settings.privacyPolicy")}</span>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             </svg>
@@ -296,7 +326,7 @@ function ConfirmDeleteModal({ isOpen, onCancel, onConfirm }) {
   );
 }
 
-function DataManagement() {
+function DataManagement({ t }) {
   const [exporting, setExporting] = useState(false);
   const [importStatus, setImportStatus] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -381,13 +411,13 @@ function DataManagement() {
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-          {exporting ? "Exporting..." : "Export Data"}
+          {exporting ? t("settings.exporting") : t("settings.exportData")}
         </button>
         <label className="flex-1 flex items-center justify-center gap-2 bg-white border border-cream-dark rounded-xl px-4 py-3 text-sm text-warm-brown hover:border-gold/30 transition-colors cursor-pointer">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          Import Data
+          {t("settings.importData")}
           <input type="file" accept=".json" onChange={handleImport} className="hidden" />
         </label>
       </div>
@@ -412,7 +442,7 @@ function DataManagement() {
         onClick={() => setShowDeleteModal(true)}
         className="text-sm text-red-400 hover:text-red-500"
       >
-        Clear All Local Data
+        {t("settings.clearData")}
       </button>
 
       <ConfirmDeleteModal
@@ -430,6 +460,7 @@ function DataManagement() {
 
 function ShowAppTourButton() {
   const [toast, setToast] = useState(false);
+  const t = useT();
 
   return (
     <div>
@@ -441,23 +472,23 @@ function ShowAppTourButton() {
         }}
         className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-cream-dark hover:border-gold/30 transition-colors"
       >
-        <span className="text-sm text-warm-brown">Show App Tour Again</span>
+        <span className="text-sm text-warm-brown">{t("settings.showTourAgain")}</span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
           <circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
       </button>
       {toast && (
         <p className="text-xs text-green-600 text-center mt-2 animate-slide-up">
-          Tour will show on next visit
+          {t("settings.tourScheduled")}
         </p>
       )}
     </div>
   );
 }
 
-function TranslationCard({ t, selected, onSelect }) {
+function TranslationCard({ trans, selected, onSelect, t }) {
   const [expanded, setExpanded] = useState(false);
-  const d = t.details;
+  const d = trans.details;
 
   return (
     <div className={`rounded-xl border-2 transition-colors overflow-hidden ${selected ? "border-gold bg-gold/5" : "border-cream-dark bg-white"}`}>
@@ -468,11 +499,11 @@ function TranslationCard({ t, selected, onSelect }) {
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-warm-brown">{t.short}</span>
-            {t.language !== "English" && (
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/10 text-gold font-medium">{t.language}</span>
+            <span className="text-sm font-semibold text-warm-brown">{trans.short}</span>
+            {trans.language !== "English" && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-gold/10 text-gold font-medium">{trans.language}</span>
             )}
-            <span className="text-xs text-warm-brown-light">{t.name}</span>
+            <span className="text-xs text-warm-brown-light">{trans.name}</span>
           </div>
           {selected && (
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-gold shrink-0">
@@ -480,7 +511,7 @@ function TranslationCard({ t, selected, onSelect }) {
             </svg>
           )}
         </div>
-        <p className="text-[11px] text-warm-brown-light mt-0.5">{t.description}</p>
+        <p className="text-[11px] text-warm-brown-light mt-0.5">{trans.description}</p>
       </button>
 
       {/* Info toggle */}
@@ -493,17 +524,17 @@ function TranslationCard({ t, selected, onSelect }) {
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
               <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
             </svg>
-            {expanded ? "Hide details" : "About this translation"}
+            {expanded ? t("settings.hideDetails") : t("settings.aboutTranslation")}
           </button>
 
           {expanded && (
             <div className="px-4 pb-4 pt-1 border-t border-cream-dark space-y-2.5">
-              <InfoRow label="Year" value={d.year} />
-              <InfoRow label="Method" value={d.type} />
-              <InfoRow label="Reading level" value={d.readingLevel} />
-              <InfoRow label="Text base" value={d.textBase} />
+              <InfoRow label={t("settings.year")} value={d.year} />
+              <InfoRow label={t("settings.method")} value={d.type} />
+              <InfoRow label={t("settings.readingLevel")} value={d.readingLevel} />
+              <InfoRow label={t("settings.textBase")} value={d.textBase} />
               <div>
-                <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider mb-1">Translation philosophy</p>
+                <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider mb-1">{t("settings.translationPhilosophy")}</p>
                 <p className="text-xs text-warm-brown leading-relaxed">{d.philosophy}</p>
               </div>
             </div>

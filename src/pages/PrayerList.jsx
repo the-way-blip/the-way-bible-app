@@ -161,19 +161,24 @@ export default function PrayerList() {
       {loading ? (
         <SkeletonList count={4} />
       ) : prayers.length === 0 && !showForm ? (
-        <div className="text-center py-16">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 mx-auto text-cream-dark mb-4">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-          </svg>
-          <p className="text-warm-brown font-medium text-sm mb-1">Your prayer list is empty</p>
-          <p className="text-warm-brown-light/60 text-xs mb-4">
-            Keep track of your prayer requests and celebrate when God answers.
+        <div className="text-center py-16 px-4">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gold/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8 text-gold">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+          </div>
+          <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">Pray. Track. Remember.</h2>
+          <p className="text-warm-brown-light text-sm mb-1 max-w-xs mx-auto leading-relaxed">
+            Write down what you're praying for. Mark it answered when God moves. Watch His faithfulness grow over time.
+          </p>
+          <p className="text-xs text-warm-brown-light/70 mb-6 max-w-xs mx-auto">
+            "Be careful for nothing; but in every thing by prayer..." — Philippians 4:6
           </p>
           <button
             onClick={() => setShowForm(true)}
-            className="inline-block bg-gold text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gold/90 transition-colors"
+            className="inline-block bg-gold text-white rounded-full px-6 py-3 text-sm font-semibold hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
           >
-            Add Your First Prayer
+            Add your first prayer
           </button>
         </div>
       ) : filtered.length === 0 ? (

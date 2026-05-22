@@ -8,36 +8,23 @@ import { getDueVerses } from "../utils/spaced-repetition";
 import ShareSheet from "../components/ShareSheet";
 import Logo from "../components/Logo";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-
-
-const DAILY_VERSES = [
-  { ref: "Psalm 119:105", text: "Thy word is a lamp unto my feet, and a light unto my path.", book: "Psalms", chapter: 119, verse: 105 },
-  { ref: "Proverbs 3:5-6", text: "Trust in the LORD with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.", book: "Proverbs", chapter: 3, verse: 5 },
-  { ref: "Philippians 4:13", text: "I can do all things through Christ which strengtheneth me.", book: "Philippians", chapter: 4, verse: 13 },
-  { ref: "Romans 8:28", text: "And we know that all things work together for good to them that love God, to them who are the called according to his purpose.", book: "Romans", chapter: 8, verse: 28 },
-  { ref: "Isaiah 41:10", text: "Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee; yea, I will uphold thee with the right hand of my righteousness.", book: "Isaiah", chapter: 41, verse: 10 },
-  { ref: "Jeremiah 29:11", text: "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.", book: "Jeremiah", chapter: 29, verse: 11 },
-  { ref: "Joshua 1:9", text: "Have not I commanded thee? Be strong and of a good courage; be not afraid, neither be thou dismayed: for the LORD thy God is with thee whithersoever thou goest.", book: "Joshua", chapter: 1, verse: 9 },
-  { ref: "Psalm 23:1", text: "The LORD is my shepherd; I shall not want.", book: "Psalms", chapter: 23, verse: 1 },
-  { ref: "John 3:16", text: "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.", book: "John", chapter: 3, verse: 16 },
-  { ref: "Romans 12:2", text: "And be not conformed to this world: but be ye transformed by the renewing of your mind, that ye may prove what is that good, and acceptable, and perfect, will of God.", book: "Romans", chapter: 12, verse: 2 },
-];
-
-function getDailyVerse() {
-  const dayOfYear = Math.floor(
-    (Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000
-  );
-  return DAILY_VERSES[dayOfYear % DAILY_VERSES.length];
-}
+import { getSmartDailyVerse } from "../data/dailyVerses";
 
 export default function Home() {
   useDocumentTitle("Home");
   const { verses } = useMemoryVerses();
-  const { user, isLoggedIn, signOut } = useAuth();
+  const { user, isLoggedIn, signOut, profile } = useAuth();
   const navigate = useNavigate();
   const [progress, setProgress] = useState({});
   const [shareData, setShareData] = useState(null);
-  const dailyVerse = getDailyVerse();
+  // Smart pick: contextual to last book read and matching the user's onboarding topics
+  const dailyVerse = getSmartDailyVerse({
+    topics: profile?.topics,
+    lastReadBook: (() => {
+      try { return JSON.parse(localStorage.getItem("readingProgress") || "{}").lastReadBook; } catch { return null; }
+    })(),
+    profile,
+  });
   const headerQuote = getHeaderQuote();
 
   // Auto-redirect first-time users to onboarding

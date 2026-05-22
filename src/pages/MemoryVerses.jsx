@@ -40,19 +40,28 @@ export default function MemoryVerses() {
       </div>
 
       {verses.length === 0 ? (
-        <div className="text-center py-16">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 mx-auto text-cream-dark mb-4">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-          <p className="text-warm-brown-light text-sm mb-4">
-            No memory verses yet. Tap a verse while reading to save it.
+        <div className="text-center py-16 px-4">
+          <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gold/10 flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8 text-gold">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+          </div>
+          <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">Hide His Word in your heart</h2>
+          <p className="text-warm-brown-light text-sm mb-1 max-w-xs mx-auto leading-relaxed">
+            Save verses you want to memorize. The app uses spaced repetition to help them stick — for life.
+          </p>
+          <p className="text-xs text-warm-brown-light/70 mb-6 max-w-xs mx-auto">
+            Tip: start with just <em>three</em> verses you've always wanted to know by heart.
           </p>
           <Link
-            to="/read/Genesis/1"
-            className="inline-block bg-gold text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gold/90 transition-colors"
+            to="/read/Psalms/23"
+            className="inline-block bg-gold text-white rounded-full px-6 py-3 text-sm font-semibold hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
           >
-            Start Reading
+            Add your first verse
           </Link>
+          <p className="text-[11px] text-warm-brown-light/60 mt-3">
+            Open any chapter, long-press a verse, and tap "Memorize"
+          </p>
         </div>
       ) : (
         <>

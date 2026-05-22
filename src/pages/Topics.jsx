@@ -35,16 +35,31 @@ export default function Topics() {
   const [busy, setBusy] = useState(false);
   const [existingCounts, setExistingCounts] = useState({}); // { topicName: highlightedVerseCount }
   const showToast = useToast();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+
+  // Build a personalization map: which topic names are in the user's onboarding selections.
+  // Onboarding uses lowercase values like "salvation", "spiritual_warfare". Match
+  // case-insensitively against topic.name (which is "Salvation", etc.)
+  const userTopicKeys = new Set(
+    (profile?.topics || []).map((t) => t.replace(/_/g, " ").toLowerCase())
+  );
+  const isPersonalTopic = (name) => userTopicKeys.has(name.toLowerCase());
+
+  // Sort: personal topics first, then everything else (alphabetical preserved within each group)
+  const sortedTopics = [...topics].sort((a, b) => {
+    const aP = isPersonalTopic(a.name) ? 0 : 1;
+    const bP = isPersonalTopic(b.name) ? 0 : 1;
+    return aP - bP;
+  });
 
   // Filter topics by search
   const filtered = search
-    ? topics.filter((t) => {
+    ? sortedTopics.filter((t) => {
         const q = search.toLowerCase();
         if (t.name.toLowerCase().includes(q)) return true;
         return t.verses.some((v) => v.toLowerCase().includes(q));
       })
-    : topics;
+    : sortedTopics;
 
   // Lazy-load verse text when a topic is expanded
   const loadVerseText = useCallback(async (ref) => {
@@ -151,30 +166,45 @@ export default function Topics() {
         />
       </div>
 
-      {/* Quick topic chips */}
+      {/* Quick topic chips — personal first */}
       <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-hide">
-        {topics.slice(0, 8).map((t, i) => (
-          <button
-            key={t.name}
-            onClick={() => {
-              setSearch("");
-              const idx = filtered.findIndex((f) => f.name === t.name);
-              if (idx >= 0) handleExpand(idx);
-            }}
-            className="whitespace-nowrap text-xs px-3 py-1.5 rounded-full bg-cream text-warm-brown hover:bg-gold/10 hover:text-gold transition-colors"
-          >
-            {t.name}
-          </button>
-        ))}
+        {sortedTopics.slice(0, 8).map((t) => {
+          const isPersonal = isPersonalTopic(t.name);
+          return (
+            <button
+              key={t.name}
+              onClick={() => {
+                setSearch("");
+                const idx = filtered.findIndex((f) => f.name === t.name);
+                if (idx >= 0) handleExpand(idx);
+              }}
+              className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full transition-colors ${
+                isPersonal
+                  ? "bg-gold text-white hover:bg-gold/90"
+                  : "bg-cream text-warm-brown hover:bg-gold/10 hover:text-gold"
+              }`}
+            >
+              {t.name}
+            </button>
+          );
+        })}
       </div>
+
+      {userTopicKeys.size > 0 && !search && (
+        <p className="text-[10px] font-bold text-gold uppercase tracking-wider mb-2">
+          For you
+        </p>
+      )}
 
       <p className="text-[10px] text-warm-brown-light/60 mb-3">
         {filtered.length} {filtered.length === 1 ? "topic" : "topics"}
       </p>
 
       <div className="space-y-2">
-        {filtered.map((topic, i) => (
-          <div key={topic.name} className="bg-white rounded-xl border border-cream-dark overflow-hidden">
+        {filtered.map((topic, i) => {
+          const isPersonal = isPersonalTopic(topic.name);
+          return (
+          <div key={topic.name} className={`bg-white rounded-xl overflow-hidden border ${isPersonal && !search ? "border-gold/40 ring-1 ring-gold/20" : "border-cream-dark"}`}>
             <button
               type="button"
               onClick={() => handleExpand(i)}
@@ -315,7 +345,8 @@ export default function Topics() {
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
 
         {filtered.length === 0 && (
           <p className="text-center text-sm text-warm-brown-light py-8">No topics match your search.</p>

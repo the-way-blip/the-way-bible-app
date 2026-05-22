@@ -308,20 +308,25 @@ function CalendarView({ byDate }) {
 
 function EmptyState() {
   return (
-    <div className="text-center py-16">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-12 h-12 mx-auto text-cream-dark mb-4">
-        <path d="M12 20h9" />
-        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-      </svg>
-      <p className="text-warm-brown-light text-sm mb-1">Start journaling your reflections and prayers.</p>
-      <p className="text-warm-brown-light/60 text-xs mb-4">
-        Capture what God is speaking to your heart as you read.
+    <div className="text-center py-16 px-4">
+      <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gold/10 flex items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-8 h-8 text-gold">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+      </div>
+      <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">What is God showing you?</h2>
+      <p className="text-warm-brown-light text-sm mb-1 max-w-xs mx-auto leading-relaxed">
+        Capture reflections, questions, prayers, and insights as you read. Your journal lives with the Word it came from — searchable, yours forever.
+      </p>
+      <p className="text-xs text-warm-brown-light/70 mb-6 max-w-xs mx-auto">
+        Most journals get lost in a drawer. This one stays with you.
       </p>
       <Link
         to="/journal/new"
-        className="inline-block bg-gold text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gold/90 transition-colors"
+        className="inline-block bg-gold text-white rounded-full px-6 py-3 text-sm font-semibold hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
       >
-        Write First Entry
+        Write your first entry
       </Link>
     </div>
   );

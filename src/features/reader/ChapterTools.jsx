@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 const BibleMaps = lazy(() => import("./BibleMaps"));
 const YouTubeLinks = lazy(() => import("./YouTubeLinks"));
 const ParallelPassages = lazy(() => import("./ParallelPassages"));
+const AudioBible = lazy(() => import("./AudioBible"));
 
 /**
  * Study tools shown at the bottom of EACH chapter (Parallel passages,
@@ -14,6 +15,7 @@ export default function ChapterTools({ book, chapter }) {
   return (
     <div className="mt-6">
       <Suspense fallback={null}>
+        <AudioBible book={book} chapter={chapter} />
         <ParallelPassages book={book} chapter={chapter} />
         <BibleMaps book={book} />
         <YouTubeLinks book={book} chapter={chapter} />

@@ -73,12 +73,12 @@ export default function VerseImage({ content, reference, onClose }) {
     setPhotosLoading(true);
     setPhotosError(null);
     const cat = PHOTO_CATEGORIES.find((c) => c.id === photoCategory);
-    fetch(`/api/unsplash?query=${encodeURIComponent(cat.query)}&orientation=squarish&per_page=20`)
+    fetch(`/api/photos?query=${encodeURIComponent(cat.query)}&orientation=square&per_page=20`)
       .then((r) => r.json())
       .then((data) => {
         if (cancelled) return;
         if (data.error === "not_configured") {
-          setPhotosError("Photo backgrounds aren't set up yet. Ask your admin to add UNSPLASH_ACCESS_KEY.");
+          setPhotosError("Photo backgrounds aren't set up yet.");
           setPhotos([]);
         } else if (!data.results?.length) {
           setPhotosError("No photos found. Try another category.");
@@ -222,12 +222,12 @@ export default function VerseImage({ content, reference, onClose }) {
     ctx.font = `${Math.round(18 * s)}px system-ui`;
     ctx.fillText("thewaybible.app", innerPad, h - pad - Math.round(20 * s));
 
-    // ── Unsplash photo credit ──
+    // ── Photo credit ──
     if (mode === "photo" && photo) {
       ctx.textAlign = "right";
       ctx.font = `${Math.round(14 * s)}px system-ui`;
       ctx.globalAlpha = 0.6;
-      ctx.fillText(`Photo: ${photo.author} / Unsplash`, w - innerPad, h - pad - Math.round(20 * s));
+      ctx.fillText(`Photo: ${photo.author} / ${photo.source || "Pexels"}`, w - innerPad, h - pad - Math.round(20 * s));
       ctx.textAlign = "left";
     }
     ctx.globalAlpha = 1;
@@ -436,7 +436,7 @@ export default function VerseImage({ content, reference, onClose }) {
                 <a href={photo.authorUrl} target="_blank" rel="noreferrer" className="underline">
                   {photo.author}
                 </a>{" "}
-                on Unsplash
+                on {photo.source || "Pexels"}
               </p>
             )}
           </div>

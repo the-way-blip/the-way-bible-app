@@ -443,6 +443,7 @@ function Footer() {
           <h4 className="font-semibold text-[#faf7f2] mb-3">Legal</h4>
           <ul className="space-y-2">
             <li><Link to="/privacy" className="hover:text-[#faf7f2]">Privacy Policy</Link></li>
+            <li><Link to="/terms" className="hover:text-[#faf7f2]">Terms of Service</Link></li>
             <li><a href="mailto:hello@thewaybible.app" className="hover:text-[#faf7f2]">Contact</a></li>
           </ul>
         </div>

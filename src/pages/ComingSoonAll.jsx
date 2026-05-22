@@ -81,7 +81,7 @@ export default function ComingSoonAll() {
       </div>
 
       <Link
-        to="/"
+        to="/home"
         className="block text-center text-sm text-gold hover:text-gold/80 mt-8"
       >
         Back to Home

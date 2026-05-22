@@ -46,17 +46,19 @@ function PageLoader() {
 }
 
 /**
- * Smart root route:
- * - Logged in → show Home (app dashboard)
- * - Logged out + web → redirect to /welcome (marketing landing page)
- * - Logged out + native iOS → redirect to /login (skip marketing — they're already in the app)
- * - Still loading auth state → show loader to avoid flicker
+ * Smart root route at "/":
+ * - Logged out + web  → render <Welcome /> inline (the marketing landing page,
+ *                       served from the root URL — no /welcome redirect)
+ * - Logged in         → redirect to /home (the app dashboard)
+ * - Native iOS        → redirect to /login (skip marketing — they're already in the app)
+ * - Loading auth      → loader to avoid flicker
  */
 function RootRoute() {
   const { isLoggedIn, loading } = useAuth();
   if (loading) return <PageLoader />;
-  if (isLoggedIn) return <Home />;
-  return <Navigate to={Capacitor.isNativePlatform() ? "/login" : "/welcome"} replace />;
+  if (isLoggedIn) return <Navigate to="/home" replace />;
+  if (Capacitor.isNativePlatform()) return <Navigate to="/login" replace />;
+  return <Welcome />;
 }
 
 export default function App() {
@@ -70,10 +72,12 @@ export default function App() {
             <ErrorBoundary>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-                {/* Public landing page — sits OUTSIDE the app shell (no sidebar/bottom nav) */}
-                <Route path="/welcome" element={<Welcome />} />
+                {/* Public root — landing page for logged-out web users (no app shell) */}
+                <Route path="/" element={<RootRoute />} />
+                {/* Back-compat: anyone hitting /welcome bounces to / */}
+                <Route path="/welcome" element={<Navigate to="/" replace />} />
                 <Route element={<Layout />}>
-                  <Route path="/" element={<RootRoute />} />
+                  <Route path="/home" element={<Home />} />
                   <Route path="/read/:book/:chapter" element={<Reader />} />
                   <Route path="/word/:strongsId" element={<WordStudy />} />
                   <Route path="/memory" element={<MemoryVerses />} />

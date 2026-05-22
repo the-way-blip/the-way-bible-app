@@ -242,7 +242,7 @@ export default function Login() {
       </div>
 
       <Link
-        to="/"
+        to="/home"
         className="block text-center text-xs text-warm-brown-light/50 mt-4 hover:text-warm-brown-light"
       >
         Continue without an account

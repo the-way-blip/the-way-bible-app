@@ -152,7 +152,7 @@ export default function WordStudy() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
         <p className="text-warm-brown-light mb-2">No data found for <span className="font-mono text-gold">{strongsId}</span></p>
-        <Link to="/" className="text-sm text-gold hover:text-gold/80">Back to reading</Link>
+        <Link to="/home" className="text-sm text-gold hover:text-gold/80">Back to reading</Link>
       </div>
     );
   }
@@ -168,7 +168,7 @@ export default function WordStudy() {
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm mb-5 flex-wrap">
-        <Link to="/" className="text-warm-brown-light hover:text-warm-brown">Home</Link>
+        <Link to="/home" className="text-warm-brown-light hover:text-warm-brown">Home</Link>
         <span className="text-warm-brown-light/40" aria-hidden="true">/</span>
         <button onClick={() => window.history.back()} className="text-warm-brown-light hover:text-warm-brown">Reading</button>
         <span className="text-warm-brown-light/40" aria-hidden="true">/</span>

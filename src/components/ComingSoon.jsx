@@ -14,7 +14,7 @@ export default function ComingSoon({ title, description }) {
         {description || "This feature is coming soon. We're working hard to bring it to you."}
       </p>
       <Link
-        to="/"
+        to="/home"
         className="inline-flex items-center gap-2 bg-gold text-white rounded-xl px-6 py-3 text-sm font-medium hover:bg-gold/90 transition-colors"
       >
         Back to Home

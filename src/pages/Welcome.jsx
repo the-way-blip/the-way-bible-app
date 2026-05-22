@@ -70,7 +70,7 @@ function Hero() {
             Walk with Jesus daily.
           </h1>
           <p className="text-lg text-warm-brown-light mt-6 max-w-lg leading-relaxed">
-            The Way is a modern KJV Bible study app for anyone — from first-time readers to those doing deep word studies. One place to read, study, memorize, journal, and pray.
+            The Way is a modern Bible study app for anyone — from first-time readers to those doing deep word studies. One place to read, study, memorize, journal, and pray.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a
@@ -95,7 +95,7 @@ function Hero() {
           <div className="relative bg-white rounded-3xl shadow-2xl shadow-warm-brown/10 border border-cream-dark overflow-hidden">
             <img
               src="/landing/02_reader.png"
-              alt="The Way reader interface showing KJV Scripture with study tools"
+              alt="The Way reader interface showing Scripture with study tools"
               className="w-full h-auto"
               loading="eager"
             />
@@ -262,9 +262,6 @@ function Explanatory() {
         <p className="text-sm font-medium text-gold uppercase tracking-wider mb-3">Frequently asked</p>
         <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-8">A few honest answers.</h2>
         <div className="space-y-6">
-          <FAQ q="Why the King James Version?">
-            The KJV remains the most quoted, memorized, and preached translation in English-speaking Christianity. We pair it with Strong's numbers so you can see the original Greek and Hebrew behind every word — giving you both reverence for tradition and access to depth.
-          </FAQ>
           <FAQ q="Is my data private?">
             Yes. Your reading progress, highlights, notes, journal entries, and prayer requests are yours. We never sell user data and never serve ads. Read our <Link to="/privacy" className="text-gold underline">privacy policy</Link>.
           </FAQ>
@@ -426,7 +423,7 @@ function Footer() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-3 gap-8 text-sm">
         <div>
           <img src="/Logo%20White.png" alt="The Way" className="h-8 w-auto mb-3" />
-          <p className="leading-relaxed">A modern KJV Bible study app for everyday faith.</p>
+          <p className="leading-relaxed">A modern Bible study app for everyday faith.</p>
         </div>
         <div>
           <h4 className="font-semibold text-cream mb-3">Product</h4>
@@ -446,7 +443,7 @@ function Footer() {
       </div>
       <div className="border-t border-cream/10">
         <p className="text-center text-xs text-cream/40 py-4">
-          © {new Date().getFullYear()} The Way. The King James Version of the Bible is in the public domain.
+          © {new Date().getFullYear()} The Way. All rights reserved.
         </p>
       </div>
     </footer>

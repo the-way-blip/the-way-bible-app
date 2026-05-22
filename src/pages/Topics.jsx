@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import topics from "../data/topicIndex";
 import ShareSheet from "../components/ShareSheet";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import usePageMeta from "../hooks/usePageMeta";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
 import {
@@ -27,6 +28,10 @@ function parseRef(ref) {
 
 export default function Topics() {
   useDocumentTitle("Topics");
+  usePageMeta({
+    description: "Browse key Bible verses by topic — faith, prayer, hope, forgiveness, wisdom, and more. Highlight every verse on a topic with one tap.",
+    ogTitle: "Bible Topics — TheWay Bible App",
+  });
   const [expanded, setExpanded] = useState(null);
   const [shareData, setShareData] = useState(null);
   const [search, setSearch] = useState("");

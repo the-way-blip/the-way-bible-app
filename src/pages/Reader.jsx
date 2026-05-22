@@ -72,8 +72,16 @@ export default function Reader() {
 
   // Set document title and displayed chapter on direct navigation
   useEffect(() => {
-    document.title = `${bookInfo?.name || book} ${chapterNum} — The Way`;
+    document.title = `${bookInfo?.name || book} ${chapterNum} — TheWay Bible App`;
     setDisplayedChapter({ book: bookInfo?.name || book, chapter: chapterNum });
+    // Per-chapter <meta description> for SEO + link previews
+    const desc = `Read ${bookInfo?.name || book} ${chapterNum} (KJV) in TheWay Bible App. Tap any word for Greek/Hebrew definitions, save verses to memorize, and journal what God shows you.`;
+    let metaEl = document.querySelector('meta[name="description"]');
+    if (metaEl) metaEl.setAttribute("content", desc);
+    let ogTitleEl = document.querySelector('meta[property="og:title"]');
+    if (ogTitleEl) ogTitleEl.setAttribute("content", `${bookInfo?.name || book} ${chapterNum} — TheWay Bible App`);
+    let ogDescEl = document.querySelector('meta[property="og:description"]');
+    if (ogDescEl) ogDescEl.setAttribute("content", desc);
   }, [book, chapterNum, bookInfo]);
 
   // Keyboard shortcuts

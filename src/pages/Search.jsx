@@ -1,6 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Link } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import usePageMeta from "../hooks/usePageMeta";
+import bibleBooks from "../data/bibleBooks";
 
 let searchIndex = null;
 
@@ -33,13 +35,33 @@ function addToHistory(query) {
 
 export default function Search() {
   useDocumentTitle("Search Scripture");
+  usePageMeta({
+    description: "Search the King James Bible for any word, verse, or phrase across all 66 books. Filter by Testament or specific book.",
+    ogTitle: "Search Scripture — TheWay Bible App",
+  });
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [searchType, setSearchType] = useState("reference");
   const [showHistory, setShowHistory] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  // Keyword-search filters
+  const [testamentFilter, setTestamentFilter] = useState("all"); // "all" | "OT" | "NT"
+  const [bookFilter, setBookFilter] = useState("all");            // "all" or specific book name
+  const [matchType, setMatchType] = useState("any");              // "any" | "exact" | "whole"
   const inputRef = useRef(null);
+
+  // Books filtered by current testament selection (for the book picker)
+  const booksByTestament = useMemo(() => {
+    if (testamentFilter === "all") return bibleBooks;
+    return bibleBooks.filter((b) => b.testament === testamentFilter);
+  }, [testamentFilter]);
+
+  const activeFilterCount =
+    (testamentFilter !== "all" ? 1 : 0) +
+    (bookFilter !== "all" ? 1 : 0) +
+    (matchType !== "any" ? 1 : 0);
 
   const history = getSearchHistory();
 
@@ -93,9 +115,40 @@ export default function Search() {
         searchIndex = await res.json();
       }
       const lowerQ = q.toLowerCase();
+      // Pre-compute a Set of allowed books for fast filtering
+      let allowedBooks = null;
+      if (testamentFilter !== "all" || bookFilter !== "all") {
+        allowedBooks = new Set(
+          bibleBooks
+            .filter((b) => testamentFilter === "all" || b.testament === testamentFilter)
+            .filter((b) => bookFilter === "all" || b.name === bookFilter)
+            .map((b) => b.name)
+        );
+      }
+
+      // Build matcher based on matchType
+      let matcher;
+      if (matchType === "exact") {
+        // Exact phrase
+        matcher = (text) => text.toLowerCase().includes(lowerQ);
+      } else if (matchType === "whole") {
+        // Whole-word match — escape regex, wrap in \b boundaries
+        const escaped = lowerQ.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const re = new RegExp(`\\b${escaped}\\b`, "i");
+        matcher = (text) => re.test(text);
+      } else {
+        // Any word — split query into words, all must appear (substring)
+        const words = lowerQ.split(/\s+/).filter(Boolean);
+        matcher = (text) => {
+          const lower = text.toLowerCase();
+          return words.every((w) => lower.includes(w));
+        };
+      }
+
       const found = [];
       for (const entry of searchIndex) {
-        if (entry.t.toLowerCase().includes(lowerQ)) {
+        if (allowedBooks && !allowedBooks.has(entry.b)) continue;
+        if (matcher(entry.t)) {
           found.push({
             ref: entry.r,
             book: entry.b,
@@ -104,7 +157,7 @@ export default function Search() {
             text: entry.t,
             query: q,
           });
-          if (found.length >= 50) break;
+          if (found.length >= 100) break;
         }
       }
       setResults(found);
@@ -130,6 +183,110 @@ export default function Search() {
             </button>
           ))}
         </div>
+
+        {/* Filters — only meaningful for keyword/topic search */}
+        {(searchType === "keyword" || searchType === "topic") && (
+          <div className="mb-3">
+            <button
+              type="button"
+              onClick={() => setShowFilters(!showFilters)}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-warm-brown-light hover:text-warm-brown py-2 px-3 rounded-lg hover:bg-cream-dark/40 transition-colors"
+              aria-expanded={showFilters}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
+                <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+              </svg>
+              Filters
+              {activeFilterCount > 0 && (
+                <span className="ml-1 bg-gold text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">{activeFilterCount}</span>
+              )}
+            </button>
+
+            {showFilters && (
+              <div className="mt-2 bg-white border border-cream-dark rounded-xl p-3 space-y-3">
+                {/* Testament */}
+                <div>
+                  <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1.5">Testament</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { v: "all", l: "All 66" },
+                      { v: "OT",  l: "Old (39)" },
+                      { v: "NT",  l: "New (27)" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.v}
+                        type="button"
+                        onClick={() => {
+                          setTestamentFilter(opt.v);
+                          // Reset book filter if it's not in the new testament
+                          if (opt.v !== "all" && bookFilter !== "all") {
+                            const stillValid = bibleBooks.find((b) => b.name === bookFilter && b.testament === opt.v);
+                            if (!stillValid) setBookFilter("all");
+                          }
+                        }}
+                        className={`py-1.5 rounded-lg text-xs font-medium transition-colors ${testamentFilter === opt.v ? "bg-gold text-white" : "bg-cream text-warm-brown-light hover:bg-cream-dark"}`}
+                      >
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Book picker */}
+                <div>
+                  <label htmlFor="book-filter" className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1.5 block">Book</label>
+                  <select
+                    id="book-filter"
+                    value={bookFilter}
+                    onChange={(e) => setBookFilter(e.target.value)}
+                    className="w-full bg-cream border border-cream-dark rounded-lg px-3 py-2 text-sm text-warm-brown focus:outline-none focus:border-gold/30"
+                  >
+                    <option value="all">All books</option>
+                    {booksByTestament.map((b) => (
+                      <option key={b.name} value={b.name}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Match type */}
+                <div>
+                  <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1.5">Match</p>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { v: "any",   l: "Any word" },
+                      { v: "exact", l: "Exact phrase" },
+                      { v: "whole", l: "Whole word" },
+                    ].map((opt) => (
+                      <button
+                        key={opt.v}
+                        type="button"
+                        onClick={() => setMatchType(opt.v)}
+                        className={`py-1.5 rounded-lg text-[11px] font-medium transition-colors ${matchType === opt.v ? "bg-gold text-white" : "bg-cream text-warm-brown-light hover:bg-cream-dark"}`}
+                      >
+                        {opt.l}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Reset */}
+                {activeFilterCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTestamentFilter("all");
+                      setBookFilter("all");
+                      setMatchType("any");
+                    }}
+                    className="w-full text-xs text-warm-brown-light hover:text-warm-brown py-1"
+                  >
+                    Reset filters
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {searchType !== "topic" && (
           <form onSubmit={handleSearch} className="flex gap-2 mb-6 relative">
@@ -234,8 +391,8 @@ export default function Search() {
                 </p>
               </Link>
             ))}
-            {results.length >= 50 && (
-              <p className="text-xs text-warm-brown-light text-center py-2">Showing first 50 results</p>
+            {results.length >= 100 && (
+              <p className="text-xs text-warm-brown-light text-center py-2">Showing first 100 results — narrow with filters above</p>
             )}
           </div>
         )}

@@ -1,11 +1,16 @@
 import { Link } from "react-router-dom";
 import useBookmarks from "../hooks/useBookmarks";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import usePageMeta from "../hooks/usePageMeta";
 import SkeletonList from "../components/SkeletonList";
 import { useToast } from "../components/Toast";
 
 export default function Bookmarks() {
   useDocumentTitle("Bookmarks");
+  usePageMeta({
+    description: "Saved chapters and verses to return to. Sync across devices.",
+    ogTitle: "Bookmarks — TheWay Bible App",
+  });
   const { bookmarks, loading, removeBookmark } = useBookmarks();
   const showToast = useToast();
 

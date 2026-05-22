@@ -1,7 +1,12 @@
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import usePageMeta from "../hooks/usePageMeta";
 
 export default function PrivacyPolicy() {
   useDocumentTitle("Privacy Policy");
+  usePageMeta({
+    description: "Privacy policy for TheWay Bible App. What data we collect, how we use it, and your rights.",
+    ogTitle: "Privacy Policy — TheWay Bible App",
+  });
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">

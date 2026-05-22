@@ -5,6 +5,7 @@ import { useAuth } from "../stores/AuthContext";
 import { submitSignUp } from "../services/ghlService";
 import { getSupabase } from "../services/supabase";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import usePageMeta from "../hooks/usePageMeta";
 import { Capacitor } from "@capacitor/core";
 import Logo from "../components/Logo";
 
@@ -19,6 +20,12 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") !== "signin");
   useDocumentTitle(isSignUp ? "Sign Up" : "Sign In");
+  usePageMeta({
+    description: isSignUp
+      ? "Create your free TheWay Bible App account. Sync highlights, notes, journal, and prayer requests across devices."
+      : "Sign in to TheWay Bible App and pick up where you left off.",
+    ogTitle: isSignUp ? "Sign up free — TheWay Bible App" : "Sign in — TheWay Bible App",
+  });
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");

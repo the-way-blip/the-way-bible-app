@@ -1,7 +1,12 @@
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import usePageMeta from "../hooks/usePageMeta";
 
 export default function Terms() {
   useDocumentTitle("Terms of Service");
+  usePageMeta({
+    description: "Terms of Service for TheWay Bible App. Account terms, acceptable use, content ownership, and more.",
+    ogTitle: "Terms of Service — TheWay Bible App",
+  });
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">

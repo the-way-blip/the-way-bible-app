@@ -63,7 +63,7 @@ function Hero() {
     <section className="relative">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32 grid lg:grid-cols-2 gap-12 items-center">
         <div>
-          <p className="text-sm font-medium text-gold uppercase tracking-wider mb-4">A new way to study Scripture</p>
+          <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">A new way to study Scripture</p>
           <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-warm-brown leading-tight">
             Read Scripture.<br />
             <span className="text-gold">Study at any depth.</span><br />
@@ -130,7 +130,7 @@ function Stakes() {
     <section className="bg-cream-dark/40 border-y border-cream-dark">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
         <div className="max-w-2xl mb-12">
-          <p className="text-sm font-medium text-gold uppercase tracking-wider mb-3">The challenge</p>
+          <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">The challenge</p>
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-warm-brown">
             Daily time in the Word shouldn't feel like a chore.
           </h2>
@@ -167,7 +167,7 @@ function ValueStack() {
     },
     {
       title: "Study at any depth",
-      body: "Tap any word for Greek/Hebrew definitions, cross-references, commentary, and historical context. Go as deep as you want — or stay shallow.",
+      body: "Tap any word for Greek/Hebrew definitions, cross-references, commentary, and historical context. Go as deep as you want.",
       icon: (
         <>
           <circle cx="11" cy="11" r="8" />
@@ -186,7 +186,7 @@ function ValueStack() {
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
       <div className="max-w-2xl mb-12">
-        <p className="text-sm font-medium text-gold uppercase tracking-wider mb-3">Imagine instead</p>
+        <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">Imagine instead</p>
         <h2 className="font-serif text-3xl sm:text-4xl font-bold text-warm-brown">
           Scripture that finally sticks.
         </h2>
@@ -240,7 +240,7 @@ function Plan() {
   return (
     <section id="plan" className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
       <div className="max-w-2xl mb-12">
-        <p className="text-sm font-medium text-gold uppercase tracking-wider mb-3">How it works</p>
+        <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">How it works</p>
         <h2 className="font-serif text-3xl sm:text-4xl font-bold text-warm-brown">Three steps to start.</h2>
       </div>
       <div className="grid md:grid-cols-3 gap-8 relative">
@@ -265,7 +265,7 @@ function Explanatory() {
   return (
     <section className="bg-cream-dark/40 border-y border-cream-dark">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-warm-brown">
-        <p className="text-sm font-medium text-gold uppercase tracking-wider mb-3">Frequently asked</p>
+        <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">Frequently asked</p>
         <h2 className="font-serif text-3xl sm:text-4xl font-bold mb-8">A few honest answers.</h2>
         <div className="space-y-6">
           <FAQ q="Is my data private?">
@@ -308,7 +308,7 @@ function FeatureGrid() {
   return (
     <section id="features" className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
       <div className="max-w-2xl mb-12">
-        <p className="text-sm font-medium text-gold uppercase tracking-wider mb-3">Built-in tools</p>
+        <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">Built-in tools</p>
         <h2 className="font-serif text-3xl sm:text-4xl font-bold text-warm-brown">Everything in one place.</h2>
       </div>
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -359,7 +359,7 @@ function FinalCTA() {
   return (
     <section id="signup" className="bg-gradient-to-b from-cream to-cream-dark/40 dark:from-[#1a1a1a] dark:to-[#252525] border-t border-cream-dark">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-24 text-center">
-        <p className="text-sm font-medium text-gold uppercase tracking-wider mb-4">Start today</p>
+        <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">Start today</p>
         <h2 className="font-serif text-3xl sm:text-5xl font-bold text-warm-brown mb-4">
           Begin your daily walk.
         </h2>

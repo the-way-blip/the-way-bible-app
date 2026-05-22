@@ -42,7 +42,7 @@ function Header() {
     <header className="sticky top-0 z-40 bg-cream/95 backdrop-blur border-b border-cream-dark">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2" aria-label="The Way home">
-          <Logo className="h-14" />
+          <Logo className="h-20 sm:h-24" />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
           <a href="#features" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">Features</a>

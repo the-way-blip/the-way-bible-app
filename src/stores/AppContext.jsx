@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import TRANSLATIONS from "../data/translations";
 
 const AppContext = createContext();
 
@@ -62,6 +63,9 @@ export function AppProvider({ children }) {
   );
   const [rotatingTheme, setRotatingTheme] = useState(
     () => localStorage.getItem("rotatingTheme") === "true"
+  );
+  const [translation, setTranslationState] = useState(
+    () => localStorage.getItem("translation") || "KJV"
   );
 
   // Apply color theme CSS variables
@@ -137,6 +141,13 @@ export function AppProvider({ children }) {
     });
   };
 
+  const setTranslation = (id) => {
+    // Validate the id exists in our list; fall back to KJV
+    const valid = TRANSLATIONS.find((t) => t.id === id) ? id : "KJV";
+    setTranslationState(valid);
+    localStorage.setItem("translation", valid);
+  };
+
   return (
     <AppContext.Provider value={{
       fontSize, setFontSize: updateFontSize,
@@ -146,6 +157,7 @@ export function AppProvider({ children }) {
       fontFamily, setFontFamily,
       pinnedCommentator, setPinnedCommentator,
       colorTheme, setColorTheme, rotatingTheme, toggleRotatingTheme,
+      translation, setTranslation,
     }}>
       {children}
     </AppContext.Provider>

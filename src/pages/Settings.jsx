@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useApp, COLOR_THEMES } from "../stores/AppContext";
 import { useAuth } from "../stores/AuthContext";
+import TRANSLATIONS from "../data/translations";
 import { dbGetAll } from "../hooks/useDB";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import FONT_OPTIONS from "../data/fontOptions";
@@ -10,7 +11,7 @@ const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 
 export default function Settings() {
   useDocumentTitle("Settings");
-  const { fontSize, setFontSize, fontFamily, setFontFamily, darkMode, toggleDarkMode, studyMode, toggleStudyMode, colorTheme, setColorTheme, rotatingTheme, toggleRotatingTheme } = useApp();
+  const { fontSize, setFontSize, fontFamily, setFontFamily, darkMode, toggleDarkMode, studyMode, toggleStudyMode, colorTheme, setColorTheme, rotatingTheme, toggleRotatingTheme, translation, setTranslation } = useApp();
   const { isLoggedIn, user, signOut } = useAuth();
 
   return (
@@ -30,6 +31,39 @@ export default function Settings() {
         ) : (
           <Link to="/login" className="text-sm text-gold hover:text-gold/80">Sign in to sync your data</Link>
         )}
+      </SettingsSection>
+
+      {/* Bible Translation */}
+      <SettingsSection title="Bible Translation">
+        <div className="space-y-2">
+          {TRANSLATIONS.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => setTranslation(t.id)}
+              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${
+                translation === t.id
+                  ? "border-gold bg-gold/5"
+                  : "border-cream-dark bg-white hover:border-gold/30"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-sm font-semibold text-warm-brown">{t.short}</span>
+                  <span className="text-xs text-warm-brown-light ml-2">{t.name}</span>
+                </div>
+                {translation === t.id && (
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-gold shrink-0">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                )}
+              </div>
+              <p className="text-[11px] text-warm-brown-light mt-0.5">{t.description}</p>
+            </button>
+          ))}
+        </div>
+        <p className="text-[10px] text-warm-brown-light/60 mt-2">
+          You can also switch translations while reading by tapping the translation badge in the reader header.
+        </p>
       </SettingsSection>
 
       {/* Font Size */}

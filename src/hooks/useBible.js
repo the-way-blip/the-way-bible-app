@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { fetchChapter } from "../services/bibleApi";
+import { fetchChapterByTranslation } from "../services/bibleApi";
 import { dbGet, dbPut } from "./useDB";
 
-export default function useBible(bookName, chapter) {
+export default function useBible(bookName, chapter, translationId = "KJV") {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,8 +13,10 @@ export default function useBible(bookName, chapter) {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setData(null);
 
-    const key = `${bookName}-${chapter}`;
+    // Cache key includes translation so different translations are stored separately
+    const key = `${bookName}-${chapter}-${translationId}`;
 
     (async () => {
       try {
@@ -25,8 +27,8 @@ export default function useBible(bookName, chapter) {
           return;
         }
 
-        const result = await fetchChapter(bookName, chapter);
-        const record = { key, ...result, fetchedAt: Date.now() };
+        const result = await fetchChapterByTranslation(bookName, chapter, translationId);
+        const record = { key, ...result, translationId, fetchedAt: Date.now() };
 
         await dbPut("cachedChapters", record);
 
@@ -43,7 +45,7 @@ export default function useBible(bookName, chapter) {
     })();
 
     return () => { cancelled = true; };
-  }, [bookName, chapter]);
+  }, [bookName, chapter, translationId]);
 
   return { data, loading, error };
 }

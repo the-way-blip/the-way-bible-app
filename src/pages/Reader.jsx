@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef, useEffect, lazy, Suspense } from "react";
+import TRANSLATIONS, { getTranslation } from "../data/translations";
 import { useParams, useNavigate } from "react-router-dom";
 import useBible from "../hooks/useBible";
 import useHighlights from "../hooks/useHighlights";
@@ -32,13 +33,13 @@ export default function Reader() {
   const chapterNum = parseInt(chapter);
   const navigate = useNavigate();
 
-  const { data, loading, error } = useBible(book, chapterNum);
+  const { data, loading, error } = useBible(book, chapterNum, translation);
   const { getHighlight, addHighlight } = useHighlights(book, chapterNum);
   const { notes, getNote, saveNote, deleteNote } = useNotes(book, chapterNum);
   const { addVerse, isMemoryVerse } = useMemoryVerses();
   const { wordData, loading: wordLoading, error: wordError, getWordStudy, clear: clearWordStudy } = useWordStudy();
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapterNum, data?.verses);
-  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers } = useApp();
+  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers, translation, setTranslation } = useApp();
   const { user, profile } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const showToast = useToast();
@@ -64,6 +65,7 @@ export default function Reader() {
   const [shareData, setShareData] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [showTranslationPicker, setShowTranslationPicker] = useState(false);
 
   // These need to be declared before the keyboard shortcuts effect
   const bookInfo = getBook(book);
@@ -102,6 +104,7 @@ export default function Reader() {
           setShowNav(false);
           setActiveWordInfo(null);
           setShareData(null);
+          setShowTranslationPicker(false);
           break;
         case "b":
         case "f":
@@ -125,7 +128,7 @@ export default function Reader() {
   }, [prev, next, toggleStudyMode]);
 
   // Infinite / continuous scroll
-  const { extraChapters, extraChaptersBefore, loadingNext, loadingPrev, loadNextChapter, loadPrevChapter } = useInfiniteScroll(book, chapterNum);
+  const { extraChapters, extraChaptersBefore, loadingNext, loadingPrev, loadNextChapter, loadPrevChapter } = useInfiniteScroll(book, chapterNum, translation);
   const sentinelRef = useRef(null);
   const topSentinelRef = useRef(null);
   const scrollContainerRef = useRef(null);
@@ -438,6 +441,16 @@ export default function Reader() {
             </button>
 
             <div className="flex items-center gap-1">
+              {/* Translation switcher badge */}
+              <button
+                onClick={() => setShowTranslationPicker((v) => !v)}
+                className="px-2.5 min-h-[44px] flex items-center text-[11px] font-bold rounded-full bg-cream-dark text-warm-brown-light hover:text-warm-brown transition-colors"
+                aria-label="Change Bible translation"
+                title="Change translation"
+              >
+                {translation}
+              </button>
+
               {/* Chapter bookmark toggle */}
               <button
                 onClick={() => {
@@ -540,6 +553,44 @@ export default function Reader() {
             </div>
           </header>
 
+          {/* Translation picker dropdown */}
+          {showTranslationPicker && (
+            <div className="mx-4 mt-2 mb-1 bg-white border border-cream-dark rounded-2xl shadow-lg z-20 overflow-hidden animate-slide-up">
+              <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider px-4 pt-3 pb-1">
+                Bible Translation
+              </p>
+              <div className="divide-y divide-cream-dark">
+                {TRANSLATIONS.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => {
+                      setTranslation(t.id);
+                      setShowTranslationPicker(false);
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-left transition-colors ${
+                      translation === t.id
+                        ? "bg-gold/5 text-gold"
+                        : "text-warm-brown hover:bg-cream-dark/40"
+                    }`}
+                  >
+                    <div>
+                      <span className="text-sm font-semibold">{t.short}</span>
+                      <span className="text-xs text-warm-brown-light ml-2">{t.name}</span>
+                    </div>
+                    {translation === t.id && (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-gold shrink-0">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-warm-brown-light/60 px-4 py-2 border-t border-cream-dark">
+                {getTranslation(translation).copyright}
+              </p>
+            </div>
+          )}
+
           {/* Content */}
           {loading && <SkeletonVerses />}
 
@@ -622,6 +673,12 @@ export default function Reader() {
                   book={book}
                   chapter={chapterNum}
                 />
+                {/* Translation copyright notice */}
+                {getTranslation(translation).copyright && translation !== "KJV" && (
+                  <p className="text-[10px] text-warm-brown-light/50 px-6 pb-2 leading-relaxed">
+                    {getTranslation(translation).copyright}
+                  </p>
+                )}
                 {/* Study tools for this chapter (parallel passages, audio, maps, YouTube) */}
                 <Suspense fallback={null}>
                   <ChapterTools book={book} chapter={chapterNum} />

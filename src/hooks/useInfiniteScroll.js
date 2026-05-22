@@ -1,13 +1,16 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { fetchChapter } from "../services/bibleApi";
+import { fetchChapterByTranslation } from "../services/bibleApi";
 import { dbGet, dbPut } from "./useDB";
 import { getNextChapter, getPrevChapter } from "../data/bibleBooks";
 
 /**
  * Manages loading additional chapters for infinite/continuous scroll.
  * Returns arrays of extra chapter data objects before and after the initial chapter.
+ * @param {string} initialBook
+ * @param {number} initialChapter
+ * @param {string} [translationId="KJV"]
  */
-export default function useInfiniteScroll(initialBook, initialChapter) {
+export default function useInfiniteScroll(initialBook, initialChapter, translationId = "KJV") {
   const [extraChaptersAfter, setExtraChaptersAfter] = useState([]);
   const [extraChaptersBefore, setExtraChaptersBefore] = useState([]);
   const [loadingNext, setLoadingNext] = useState(false);
@@ -19,7 +22,7 @@ export default function useInfiniteScroll(initialBook, initialChapter) {
   extraAfterRef.current = extraChaptersAfter;
   extraBeforeRef.current = extraChaptersBefore;
 
-  // Reset when the primary chapter changes (user navigated)
+  // Reset when the primary chapter or translation changes
   useEffect(() => {
     setExtraChaptersAfter([]);
     setExtraChaptersBefore([]);
@@ -29,7 +32,7 @@ export default function useInfiniteScroll(initialBook, initialChapter) {
     loadingPrevRef.current = false;
     setLoadingNext(false);
     setLoadingPrev(false);
-  }, [initialBook, initialChapter]);
+  }, [initialBook, initialChapter, translationId]);
 
   const loadNextChapter = useCallback(async () => {
     if (loadingNextRef.current) return;
@@ -46,12 +49,12 @@ export default function useInfiniteScroll(initialBook, initialChapter) {
     setLoadingNext(true);
 
     try {
-      const key = `${next.book}-${next.chapter}`;
+      const key = `${next.book}-${next.chapter}-${translationId}`;
       let data = await dbGet("cachedChapters", key);
 
       if (!data) {
-        const result = await fetchChapter(next.book, next.chapter);
-        data = { key, ...result, fetchedAt: Date.now() };
+        const result = await fetchChapterByTranslation(next.book, next.chapter, translationId);
+        data = { key, ...result, translationId, fetchedAt: Date.now() };
         await dbPut("cachedChapters", data);
       }
 
@@ -62,7 +65,7 @@ export default function useInfiniteScroll(initialBook, initialChapter) {
       loadingNextRef.current = false;
       setLoadingNext(false);
     }
-  }, [initialBook, initialChapter]);
+  }, [initialBook, initialChapter, translationId]);
 
   const loadPrevChapter = useCallback(async () => {
     if (loadingPrevRef.current) return;
@@ -79,12 +82,12 @@ export default function useInfiniteScroll(initialBook, initialChapter) {
     setLoadingPrev(true);
 
     try {
-      const key = `${prev.book}-${prev.chapter}`;
+      const key = `${prev.book}-${prev.chapter}-${translationId}`;
       let data = await dbGet("cachedChapters", key);
 
       if (!data) {
-        const result = await fetchChapter(prev.book, prev.chapter);
-        data = { key, ...result, fetchedAt: Date.now() };
+        const result = await fetchChapterByTranslation(prev.book, prev.chapter, translationId);
+        data = { key, ...result, translationId, fetchedAt: Date.now() };
         await dbPut("cachedChapters", data);
       }
 
@@ -95,7 +98,7 @@ export default function useInfiniteScroll(initialBook, initialChapter) {
       loadingPrevRef.current = false;
       setLoadingPrev(false);
     }
-  }, [initialBook, initialChapter]);
+  }, [initialBook, initialChapter, translationId]);
 
   return {
     extraChapters: extraChaptersAfter,

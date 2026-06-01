@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { lookupConcordance, lookupWebsters } from "../../services/concordanceService";
+import useT from "../../hooks/useT";
 
 // Decode HTML entities and fix malformed entity references in lexicon data
 function clean(text) {
@@ -18,16 +19,17 @@ function clean(text) {
   return fixed;
 }
 
-const TABS = [
-  { id: "definition", label: "Definition" },
-  { id: "dictionaries", label: "Dictionaries" },
-  { id: "etymology", label: "Etymology" },
-  { id: "usage", label: "Usage" },
-  { id: "references", label: "References" },
-];
-
 export default function WordStudyPanel({ wordInfo, onClose }) {
+  const t = useT();
   const [activeTab, setActiveTab] = useState("definition");
+
+  const TABS = [
+    { id: "definition", label: t("wordStudy.tabDefinition") },
+    { id: "dictionaries", label: t("wordStudy.tabDictionaries") },
+    { id: "etymology", label: t("wordStudy.tabEtymology") },
+    { id: "usage", label: t("wordStudy.tabUsage") },
+    { id: "references", label: t("wordStudy.tabReferences") },
+  ];
 
   if (!wordInfo) return null;
 
@@ -89,7 +91,7 @@ export default function WordStudyPanel({ wordInfo, onClose }) {
           <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4" style={{ minHeight: "40vh" }}>
             {isAdded ? (
               <p className="text-sm text-warm-brown-light italic py-4">
-                This word was added by the KJV translators for clarity and does not correspond to a word in the original text. In printed KJV Bibles, these words appear in italics.
+                {t("wordStudy.addedByKjv")}
               </p>
             ) : (
               <>
@@ -148,6 +150,7 @@ function UsageList({ text: rawText }) {
 
 // ── Definition Tab ──
 function DefinitionTab({ word }) {
+  const t = useT();
   return (
     <div className="space-y-5">
       {word.strongs_def && (
@@ -157,17 +160,17 @@ function DefinitionTab({ word }) {
       )}
 
       {word.outline_usage && (
-        <Section title="Biblical Usage">
+        <Section title={t("wordStudy.biblicalUsage")}>
           <UsageList text={word.outline_usage} />
         </Section>
       )}
 
       {word.kjv_def && (
-        <Section title="KJV Renderings">
+        <Section title={t("wordStudy.kjvRenderings")}>
           <div className="flex flex-wrap gap-1.5">
-            {(word.kjv_translation_list || word.kjv_def.split(",")).map((t, i) => (
+            {(word.kjv_translation_list || word.kjv_def.split(",")).map((item, i) => (
               <span key={i} className="text-xs bg-cream-dark px-2.5 py-1 rounded-full text-warm-brown">
-                {clean((typeof t === "string" ? t : "").trim())}
+                {clean((typeof item === "string" ? item : "").trim())}
               </span>
             ))}
           </div>
@@ -175,7 +178,7 @@ function DefinitionTab({ word }) {
       )}
 
       {word.part_of_speech && (
-        <Section title="Part of Speech">
+        <Section title={t("wordStudy.partOfSpeech")}>
           <p className="capitalize">{word.part_of_speech}</p>
         </Section>
       )}
@@ -185,6 +188,7 @@ function DefinitionTab({ word }) {
 
 // ── Dictionaries Tab ──
 function DictionariesTab({ word }) {
+  const t = useT();
   const isGreek = !!word.greek;
   const [webstersDef, setWebstersDef] = useState(null);
   const [webstersLoading, setWebstersLoading] = useState(false);
@@ -200,7 +204,7 @@ function DictionariesTab({ word }) {
   return (
     <div className="space-y-5">
       {word.strongs_def && (
-        <Section title="Strong's Exhaustive Concordance">
+        <Section title={t("wordStudy.strongsExhaustive")}>
           <p className="mb-2">{clean(word.strongs_def)}</p>
           {word.kjv_def && (
             <p className="text-xs text-warm-brown-light"><span className="font-medium">KJV:</span> {clean(word.kjv_def)}</p>
@@ -209,19 +213,19 @@ function DictionariesTab({ word }) {
       )}
 
       {word.outline_usage && (
-        <Section title="Expository Usage">
+        <Section title={t("wordStudy.expositoryUsage")}>
           <UsageList text={word.outline_usage} />
         </Section>
       )}
 
-      <Section title="Webster's 1828 Dictionary">
+      <Section title={t("wordStudy.websters1828")}>
         <p className="text-[10px] text-warm-brown-light/60 mb-2 italic">
-          Shows how English speakers understood this word when the KJV was the standard Bible.
+          {t("wordStudy.websterContext")}
         </p>
         {webstersLoading && (
           <div className="flex items-center gap-2 py-2">
             <div className="w-3 h-3 border border-gold border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-warm-brown-light">Loading definition...</span>
+            <span className="text-xs text-warm-brown-light">{t("wordStudy.loadingDefinition")}</span>
           </div>
         )}
         {webstersDef && (
@@ -240,7 +244,7 @@ function DictionariesTab({ word }) {
         )}
       </Section>
 
-      <Section title="More Resources">
+      <Section title={t("wordStudy.moreResources")}>
         <div className="space-y-2">
           {word.biblehub_url && (
             <ExternalLink href={word.biblehub_url}
@@ -261,19 +265,20 @@ function DictionariesTab({ word }) {
 
 // ── Etymology Tab ──
 function EtymologyTab({ word }) {
+  const t = useT();
   const sourceWord = word.greek || word.hebrew;
   const hasRoots = word.root_words?.length > 0 && word.root_words[0].strongs;
 
   return (
     <div className="space-y-5">
       {word.derivation && (
-        <Section title="Derivation">
+        <Section title={t("wordStudy.derivation")}>
           <p>{clean(word.derivation)}</p>
         </Section>
       )}
 
       {hasRoots && (
-        <Section title="Root Words">
+        <Section title={t("wordStudy.rootWords")}>
           <div className="space-y-2">
             {word.root_words.filter((r) => r.strongs).map((root, i) => (
               <div key={i} className="bg-cream rounded-xl p-3">
@@ -289,13 +294,13 @@ function EtymologyTab({ word }) {
       )}
 
       {word.root_words?.length > 0 && !hasRoots && (
-        <Section title="Origin">
+        <Section title={t("wordStudy.origin")}>
           <p className="italic">{clean(word.root_words[0].meaning)}</p>
         </Section>
       )}
 
       {sourceWord && (
-        <Section title="Word Formation">
+        <Section title={t("wordStudy.wordFormation")}>
           <div className="bg-cream rounded-xl p-4 text-center">
             <p className="text-3xl text-warm-brown mb-2">{sourceWord}</p>
             <p className="text-sm text-warm-brown-light">
@@ -314,29 +319,29 @@ function EtymologyTab({ word }) {
 
 // ── Usage Tab ──
 function UsageTab({ word }) {
+  const t = useT();
   const hasOccurrenceMap = word.occurrence_map && Object.keys(word.occurrence_map).length > 0;
   // Determine OT vs NT from Strong's number prefix: H = Hebrew (OT), G = Greek (NT)
   const isOT = word.strongs?.startsWith("H");
-  const testamentLabel = isOT ? "Old Testament" : "New Testament";
 
   return (
     <div className="space-y-5">
       {word.total_occurrences > 0 && (
-        <Section title="Frequency">
+        <Section title={t("wordStudy.frequency")}>
           <div className="bg-cream rounded-xl p-4 flex items-center gap-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-gold">{word.total_occurrences}</p>
-              <p className="text-[10px] text-warm-brown-light">total uses</p>
+              <p className="text-[10px] text-warm-brown-light">{t("wordStudy.totalUses")}</p>
             </div>
             <p className="text-xs text-warm-brown-light">
-              in the {testamentLabel} (KJV)
+              {isOT ? t("wordStudy.inTheOT") : t("wordStudy.inTheNT")}
             </p>
           </div>
         </Section>
       )}
 
       {hasOccurrenceMap && (
-        <Section title="KJV Translation Breakdown">
+        <Section title={t("wordStudy.kjvBreakdown")}>
           <div className="space-y-2.5">
             {Object.entries(word.occurrence_map)
               .sort(([, a], [, b]) => b - a)
@@ -360,13 +365,13 @@ function UsageTab({ word }) {
       )}
 
       {word.outline_usage && (
-        <Section title="Biblical Usage Outline">
+        <Section title={t("wordStudy.biblicalUsageOutline")}>
           <UsageList text={word.outline_usage} />
         </Section>
       )}
 
       {!hasOccurrenceMap && !word.outline_usage && !word.total_occurrences && (
-        <EmptyState text="No usage data available for this word." />
+        <EmptyState text={t("wordStudy.noUsageData")} />
       )}
     </div>
   );
@@ -374,6 +379,7 @@ function UsageTab({ word }) {
 
 // ── References Tab ──
 function ReferencesTab({ word }) {
+  const t = useT();
   const sourceWord = word.greek || word.hebrew;
   const hasRoots = word.root_words?.length > 0 && word.root_words[0].strongs;
   const [verses, setVerses] = useState([]);
@@ -398,12 +404,12 @@ function ReferencesTab({ word }) {
         {loading ? (
           <div className="flex items-center gap-2 py-3">
             <div className="w-3 h-3 border border-gold border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-warm-brown-light">Loading concordance...</span>
+            <span className="text-xs text-warm-brown-light">{t("wordStudy.loadingConcordance")}</span>
           </div>
         ) : verses.length > 0 ? (
           <div className="space-y-2">
             <p className="text-[10px] text-warm-brown-light/60 mb-1">
-              {word.total_occurrences ? `${word.total_occurrences} total occurrences` : `${verses.length} verses found`}
+              {word.total_occurrences ? `${word.total_occurrences} ${t("wordStudy.totalOccurrences")}` : `${verses.length} ${t("wordStudy.versesFound")}`}
             </p>
             {displayed.map((v, i) => (
               <div key={i} className="bg-cream rounded-lg p-2.5">
@@ -416,17 +422,17 @@ function ReferencesTab({ word }) {
                 onClick={() => setShowAll(!showAll)}
                 className="text-xs text-gold hover:text-gold/80 w-full text-center py-1"
               >
-                {showAll ? "Show less" : `Show all ${verses.length} verses`}
+                {showAll ? t("wordStudy.showLess") : `${t("wordStudy.showAllVerses")} ${verses.length}`}
               </button>
             )}
           </div>
         ) : (
-          <p className="text-xs text-warm-brown-light">No concordance data available.</p>
+          <p className="text-xs text-warm-brown-light">{t("wordStudy.noConcordance")}</p>
         )}
       </Section>
 
       {hasRoots && (
-        <Section title="Related Word Family">
+        <Section title={t("wordStudy.relatedWordFamily")}>
           <div className="space-y-2">
             {word.root_words.filter((r) => r.strongs).map((root, i) => (
               <div key={i} className="bg-cream rounded-lg p-3">
@@ -441,12 +447,12 @@ function ReferencesTab({ word }) {
         </Section>
       )}
 
-      <Section title="Study Further">
+      <Section title={t("wordStudy.studyFurther")}>
         <div className="space-y-2">
           <ExternalLink href={word.biblehub_url}
-            title="Full BibleHub Concordance" subtitle="Every occurrence with full verse context" />
+            title={t("wordStudy.fullBiblehub")} subtitle={t("wordStudy.everyOccurrence")} />
           <ExternalLink href={word.blb_url}
-            title="Blue Letter Bible" subtitle="Treasury of Scripture Knowledge" />
+            title={t("wordStudy.blb")} subtitle={t("wordStudy.tskDesc")} />
         </div>
       </Section>
     </div>

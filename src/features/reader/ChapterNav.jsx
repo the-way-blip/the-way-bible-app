@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import bibleBooks from "../../data/bibleBooks";
+import useT from "../../hooks/useT";
 
 export default function ChapterNav({ currentBook, currentChapter, onClose }) {
   const [selectedBook, setSelectedBook] = useState(null);
   const [tab, setTab] = useState("OT");
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
+  const t = useT();
 
   const searchLower = search.toLowerCase().trim();
   const filteredBooks = searchLower
@@ -26,7 +28,7 @@ export default function ChapterNav({ currentBook, currentChapter, onClose }) {
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
                 <polyline points="15 18 9 12 15 6" />
               </svg>
-              Books
+              {t("nav.books")}
             </button>
             <button onClick={onClose} className="p-2 text-warm-brown-light hover:text-warm-brown">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
@@ -63,7 +65,7 @@ export default function ChapterNav({ currentBook, currentChapter, onClose }) {
     <div className="fixed inset-0 bg-cream z-50 overflow-y-auto">
       <div className="max-w-lg mx-auto px-4 py-4">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-warm-brown">Select Book</h2>
+          <h2 className="text-lg font-semibold text-warm-brown">{t("nav.selectBook")}</h2>
           <button onClick={onClose} className="p-2 text-warm-brown-light hover:text-warm-brown">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
               <line x1="18" y1="6" x2="6" y2="18" />
@@ -76,24 +78,24 @@ export default function ChapterNav({ currentBook, currentChapter, onClose }) {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search books..."
-          aria-label="Search books"
+          placeholder={t("nav.searchBooks")}
+          aria-label={t("nav.searchBooks")}
           className="w-full bg-white border border-cream-dark rounded-lg px-3 py-2.5 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30 mb-3"
         />
 
         {!searchLower && (
           <div className="flex gap-2 mb-4">
-            {["OT", "NT"].map((t) => (
+            {["OT", "NT"].map((tabId) => (
               <button
-                key={t}
-                onClick={() => setTab(t)}
+                key={tabId}
+                onClick={() => setTab(tabId)}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  tab === t
+                  tab === tabId
                     ? "bg-gold text-white"
                     : "bg-cream-dark text-warm-brown hover:bg-gold-light"
                 }`}
               >
-                {t === "OT" ? "Old Testament" : "New Testament"}
+                {tabId === "OT" ? t("search.oldTestament") : t("search.newTestament")}
               </button>
             ))}
           </div>

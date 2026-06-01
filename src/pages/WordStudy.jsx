@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { lookupConcordance, lookupWebsters } from "../services/concordanceService";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import useT from "../hooks/useT";
 
 function clean(text) {
   if (!text) return text;
@@ -13,6 +14,7 @@ function clean(text) {
 export default function WordStudy() {
   const { strongsId } = useParams();
   useDocumentTitle(strongsId ? `Word Study: ${strongsId}` : "Word Study");
+  const t = useT();
   const [entry, setEntry] = useState(null);
   const [loading, setLoading] = useState(true);
   const [concordance, setConcordance] = useState(null);
@@ -143,7 +145,7 @@ export default function WordStudy() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
         <div className="w-6 h-6 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-sm text-warm-brown-light mt-3">Loading word study...</p>
+        <p className="text-sm text-warm-brown-light mt-3">{t("wordStudy.loading")}</p>
       </div>
     );
   }
@@ -151,26 +153,26 @@ export default function WordStudy() {
   if (!entry) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12 text-center">
-        <p className="text-warm-brown-light mb-2">No data found for <span className="font-mono text-gold">{strongsId}</span></p>
-        <Link to="/home" className="text-sm text-gold hover:text-gold/80">Back to reading</Link>
+        <p className="text-warm-brown-light mb-2">{t("wordStudy.noData")} <span className="font-mono text-gold">{strongsId}</span></p>
+        <Link to="/home" className="text-sm text-gold hover:text-gold/80">{t("wordStudy.backToReading")}</Link>
       </div>
     );
   }
 
   const TABS = [
-    { id: "overview", label: "Overview" },
-    { id: "usage", label: "Usage" },
-    { id: "dictionaries", label: "Dictionaries" },
-    { id: "references", label: "References" },
+    { id: "overview", label: t("wordStudy.tabOverview") },
+    { id: "usage", label: t("wordStudy.tabUsage") },
+    { id: "dictionaries", label: t("wordStudy.tabDictionaries") },
+    { id: "references", label: t("wordStudy.tabReferences") },
   ];
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
       {/* Breadcrumb */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm mb-5 flex-wrap">
-        <Link to="/home" className="text-warm-brown-light hover:text-warm-brown">Home</Link>
+        <Link to="/home" className="text-warm-brown-light hover:text-warm-brown">{t("nav.home")}</Link>
         <span className="text-warm-brown-light/40" aria-hidden="true">/</span>
-        <button onClick={() => window.history.back()} className="text-warm-brown-light hover:text-warm-brown">Reading</button>
+        <button onClick={() => window.history.back()} className="text-warm-brown-light hover:text-warm-brown">{t("wordStudy.reading")}</button>
         <span className="text-warm-brown-light/40" aria-hidden="true">/</span>
         <span className="text-gold font-medium">{strongsId}</span>
       </nav>
@@ -197,14 +199,14 @@ export default function WordStudy() {
           {entry.total_occurrences > 0 && (
             <div className="text-right shrink-0">
               <p className="text-2xl font-bold text-gold">{entry.total_occurrences}</p>
-              <p className="text-[10px] text-warm-brown-light">KJV uses</p>
+              <p className="text-[10px] text-warm-brown-light">{t("wordStudy.kjvUses")}</p>
             </div>
           )}
         </div>
 
         {entry.strongs_def && (
           <div className="mt-4 pt-4 border-t border-cream-dark">
-            <p className="text-[10px] font-semibold text-gold uppercase tracking-wider mb-1">Strong's Definition</p>
+            <p className="text-[10px] font-semibold text-gold uppercase tracking-wider mb-1">{t("panel.strongsDef")}</p>
             <p className="text-sm text-warm-brown leading-relaxed">{entry.strongs_def}</p>
           </div>
         )}
@@ -231,7 +233,7 @@ export default function WordStudy() {
           {/* KJV Translations */}
           {Object.keys(entry.occurrence_map).length > 0 && (
             <Section title="KJV Translations">
-              <p className="text-[10px] text-warm-brown-light/60 mb-2">Tap a translation to find verses</p>
+              <p className="text-[10px] text-warm-brown-light/60 mb-2">{t("wordStudy.tapTranslation")}</p>
               <div className="flex flex-wrap gap-1.5">
                 {Object.entries(entry.occurrence_map)
                   .sort(([, a], [, b]) => b - a)
@@ -257,19 +259,19 @@ export default function WordStudy() {
             <div className="bg-white rounded-xl border border-cream-dark p-4">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-xs font-semibold text-gold">
-                  Verses with "{verseResults.word}"
+                  {t("wordStudy.versesWith")} "{verseResults.word}"
                 </h4>
                 <button onClick={() => setVerseResults(null)} className="text-[10px] text-warm-brown-light hover:text-warm-brown">
-                  Close
+                  {t("general.close")}
                 </button>
               </div>
               {verseResults.loading ? (
                 <div className="flex items-center gap-2 py-4 justify-center">
                   <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs text-warm-brown-light">Searching...</span>
+                  <span className="text-xs text-warm-brown-light">{t("wordStudy.searching")}</span>
                 </div>
               ) : verseResults.results.length === 0 ? (
-                <p className="text-xs text-warm-brown-light/60 py-2">No verses found.</p>
+                <p className="text-xs text-warm-brown-light/60 py-2">{t("wordStudy.noVerses")}</p>
               ) : (
                 <div className="space-y-2 max-h-72 overflow-y-auto">
                   {verseResults.results.map((r, i) => (
@@ -285,7 +287,7 @@ export default function WordStudy() {
                     </Link>
                   ))}
                   {verseResults.results.length >= 50 && (
-                    <p className="text-[10px] text-warm-brown-light/60 text-center">Showing first 50 results</p>
+                    <p className="text-[10px] text-warm-brown-light/60 text-center">{t("wordStudy.first50")}</p>
                   )}
                 </div>
               )}
@@ -326,17 +328,17 @@ export default function WordStudy() {
       {activeTab === "usage" && (
         <div className="space-y-4">
           {entry.outline_usage ? (
-            <Section title="Thayer's / BDB Outline">
+            <Section title={t("wordStudy.thayersBdb")}>
               <p className="text-sm text-warm-brown leading-relaxed whitespace-pre-line">{entry.outline_usage}</p>
             </Section>
           ) : (
-            <Section title="Usage">
-              <p className="text-sm text-warm-brown-light italic">No detailed usage outline available for this word.</p>
+            <Section title={t("wordStudy.tabUsage")}>
+              <p className="text-sm text-warm-brown-light italic">{t("wordStudy.noUsage")}</p>
             </Section>
           )}
 
           {entry.kjv_def && (
-            <Section title="KJV Definition">
+            <Section title={t("wordStudy.kjvDefinition")}>
               <p className="text-sm text-warm-brown leading-relaxed">{entry.kjv_def}</p>
             </Section>
           )}
@@ -346,31 +348,31 @@ export default function WordStudy() {
       {activeTab === "dictionaries" && (
         <div className="space-y-4">
           {concordance ? (
-            <Section title="Nave's Topical Concordance">
+            <Section title={t("wordStudy.navesConcordance")}>
               {concordance.entries?.map((ce, i) => (
                 <div key={i} className="mb-3 last:mb-0">
                   {ce.topic && <p className="text-xs font-semibold text-gold mb-1">{ce.topic}</p>}
                   <p className="text-sm text-warm-brown leading-relaxed">{ce.text}</p>
                 </div>
-              )) || <p className="text-sm text-warm-brown leading-relaxed">{concordance.text || "No entries found."}</p>}
+              )) || <p className="text-sm text-warm-brown leading-relaxed">{concordance.text || t("wordStudy.noEntries")}</p>}
             </Section>
           ) : (
-            <Section title="Nave's Topical Concordance">
-              <p className="text-sm text-warm-brown-light italic">Loading...</p>
+            <Section title={t("wordStudy.navesConcordance")}>
+              <p className="text-sm text-warm-brown-light italic">{t("general.loading")}</p>
             </Section>
           )}
 
           {websters ? (
-            <Section title="Webster's 1828 Dictionary">
+            <Section title={t("wordStudy.websters1828")}>
               {websters.definitions?.map((d, i) => (
                 <div key={i} className="mb-3 last:mb-0">
                   <p className="text-sm text-warm-brown leading-relaxed">{d}</p>
                 </div>
-              )) || <p className="text-sm text-warm-brown leading-relaxed">{websters.text || "No definition found."}</p>}
+              )) || <p className="text-sm text-warm-brown leading-relaxed">{websters.text || t("wordStudy.noDefinition")}</p>}
             </Section>
           ) : (
-            <Section title="Webster's 1828 Dictionary">
-              <p className="text-sm text-warm-brown-light italic">Loading...</p>
+            <Section title={t("wordStudy.websters1828")}>
+              <p className="text-sm text-warm-brown-light italic">{t("general.loading")}</p>
             </Section>
           )}
         </div>
@@ -379,7 +381,7 @@ export default function WordStudy() {
       {activeTab === "references" && (
         <div className="space-y-4">
           {/* External study links */}
-          <Section title="Study Resources">
+          <Section title={t("wordStudy.studyResources")}>
             <div className="space-y-2">
               <a
                 href={entry.biblehub_url}
@@ -394,7 +396,7 @@ export default function WordStudy() {
                 </svg>
                 <div>
                   <p className="text-sm text-warm-brown font-medium">BibleHub — {entry.strongs}</p>
-                  <p className="text-[10px] text-warm-brown-light">Strong's concordance, interlinear, and commentaries</p>
+                  <p className="text-[10px] text-warm-brown-light">{t("wordStudy.biblehubDesc")}</p>
                 </div>
               </a>
               <a
@@ -410,7 +412,7 @@ export default function WordStudy() {
                 </svg>
                 <div>
                   <p className="text-sm text-warm-brown font-medium">Blue Letter Bible — {entry.strongs}</p>
-                  <p className="text-[10px] text-warm-brown-light">Lexicon, outline of biblical usage, concordance</p>
+                  <p className="text-[10px] text-warm-brown-light">{t("wordStudy.blbDesc")}</p>
                 </div>
               </a>
             </div>
@@ -418,7 +420,7 @@ export default function WordStudy() {
 
           {/* Related Strong's numbers from derivation */}
           {entry.root_words?.some((r) => r.strongs) && (
-            <Section title="Related Words">
+            <Section title={t("wordStudy.relatedWords")}>
               <div className="space-y-2">
                 {entry.root_words.filter((r) => r.strongs).map((root, i) => (
                   <Link

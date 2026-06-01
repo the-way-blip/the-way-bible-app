@@ -6,6 +6,7 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import usePageMeta from "../hooks/usePageMeta";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
+import useT from "../hooks/useT";
 import {
   highlightVerses,
   unhighlightVerses,
@@ -41,6 +42,7 @@ export default function Topics() {
   const [busy, setBusy] = useState(false);
   const [existingCounts, setExistingCounts] = useState({}); // { topicName: highlightedVerseCount }
   const [topicColors, setTopicColors] = useState({}); // { topicName: colorKey }
+  const t = useT();
   const showToast = useToast();
   const { user, profile } = useAuth();
 
@@ -163,8 +165,8 @@ export default function Topics() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
-      <h1 className="text-xl font-bold text-warm-brown mb-1">Topics</h1>
-      <p className="text-sm text-warm-brown-light mb-4">Browse key verses by topic</p>
+      <h1 className="text-xl font-bold text-warm-brown mb-1">{t("topics.title")}</h1>
+      <p className="text-sm text-warm-brown-light mb-4">{t("topics.subtitle")}</p>
 
       {/* Search */}
       <div className="relative mb-4">
@@ -175,7 +177,7 @@ export default function Topics() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search topics or verses..."
+          placeholder={t("topics.searchPlaceholder")}
           className="w-full bg-white rounded-xl border border-cream-dark pl-10 pr-4 py-2.5 text-sm text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:border-gold/30"
         />
       </div>
@@ -206,12 +208,12 @@ export default function Topics() {
 
       {userTopicKeys.size > 0 && !search && (
         <p className="text-[10px] font-bold text-gold uppercase tracking-wider mb-2">
-          For you
+          {t("topics.forYou")}
         </p>
       )}
 
       <p className="text-[10px] text-warm-brown-light/60 mb-3">
-        {filtered.length} {filtered.length === 1 ? "topic" : "topics"}
+        {filtered.length} {filtered.length === 1 ? t("topics.topic") : t("topics.topics")}
       </p>
 
       <div className="space-y-2">
@@ -238,8 +240,8 @@ export default function Topics() {
                 <div className="px-4 py-2.5 bg-cream/40 border-b border-cream-dark/60 flex items-center justify-between gap-2">
                   <span className="text-[11px] text-warm-brown-light">
                     {existingCounts[topic.name] > 0
-                      ? `${existingCounts[topic.name]} verse${existingCounts[topic.name] === 1 ? "" : "s"} already highlighted`
-                      : "Highlight every verse in this topic"}
+                      ? `${existingCounts[topic.name]} ${existingCounts[topic.name] === 1 ? t("topics.verse") : t("topics.verses")} ${t("topics.alreadyHighlighted")}`
+                      : t("topics.highlightEvery")}
                   </span>
                   <div className="relative">
                     <button
@@ -251,7 +253,7 @@ export default function Topics() {
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
                         <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                       </svg>
-                      Highlight all
+                      {t("topics.highlightAll")}
                     </button>
 
                     {picker === topic.name && (
@@ -259,7 +261,7 @@ export default function Topics() {
                         className="absolute right-0 top-full mt-1.5 z-20 bg-white rounded-xl border border-cream-dark shadow-lg p-2 w-44"
                         onMouseLeave={() => setPicker(null)}
                       >
-                        <p className="text-[10px] text-warm-brown-light/80 px-1.5 pb-1.5">Pick a color</p>
+                        <p className="text-[10px] text-warm-brown-light/80 px-1.5 pb-1.5">{t("topics.pickColor")}</p>
                         <div className="flex items-center gap-1.5 px-1">
                           {HIGHLIGHT_COLORS.map((c) => (
                             <button
@@ -281,7 +283,7 @@ export default function Topics() {
                               onClick={() => handleRemoveAll(topic)}
                               className="w-full text-left text-xs text-warm-brown-light hover:text-red-500 px-1.5 py-1 disabled:opacity-50"
                             >
-                              Remove all highlights
+                              {t("topics.removeAllHighlights")}
                             </button>
                           </>
                         )}
@@ -352,7 +354,7 @@ export default function Topics() {
                       {vt?.loading ? (
                         <div className="flex items-center gap-1.5 py-1">
                           <div className="w-3 h-3 border border-gold/30 border-t-gold rounded-full animate-spin" />
-                          <span className="text-[10px] text-warm-brown-light/40">Loading...</span>
+                          <span className="text-[10px] text-warm-brown-light/40">{t("general.loading")}</span>
                         </div>
                       ) : vt?.text ? (
                         <p className="text-xs text-warm-brown-light leading-relaxed line-clamp-3 font-scripture italic">
@@ -369,7 +371,7 @@ export default function Topics() {
         })}
 
         {filtered.length === 0 && (
-          <p className="text-center text-sm text-warm-brown-light py-8">No topics match your search.</p>
+          <p className="text-center text-sm text-warm-brown-light py-8">{t("topics.noTopics")}</p>
         )}
       </div>
 

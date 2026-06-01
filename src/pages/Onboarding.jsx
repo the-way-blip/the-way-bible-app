@@ -5,47 +5,8 @@ import { useAuth } from "../stores/AuthContext";
 import { useApp, COLOR_THEMES } from "../stores/AppContext";
 import { submitOnboardingComplete } from "../services/ghlService";
 import FONT_OPTIONS from "../data/fontOptions";
+import useT from "../hooks/useT";
 
-const SURVEY_STEPS = [
-  {
-    title: "Where are you in your faith journey?",
-    key: "faithStage",
-    options: [
-      { value: "searching", label: "Searching", desc: "Exploring what the Bible says" },
-      { value: "new_believer", label: "New Believer", desc: "Recently came to faith" },
-      { value: "growing", label: "Growing", desc: "Building a deeper foundation" },
-      { value: "mature", label: "Mature", desc: "Years of walking with God" },
-    ],
-  },
-  {
-    title: "What are your study goals?",
-    key: "goals",
-    multi: true,
-    options: [
-      { value: "devotional", label: "Daily Devotional", desc: "Consistent quiet time" },
-      { value: "deep_study", label: "Deep Study", desc: "Word studies and theology" },
-      { value: "memorization", label: "Memorization", desc: "Committing scripture to memory" },
-      { value: "prayer", label: "Prayer Life", desc: "Scripture-guided prayer" },
-    ],
-  },
-  {
-    title: "What topics interest you most?",
-    key: "topics",
-    multi: true,
-    options: [
-      { value: "salvation", label: "Salvation" },
-      { value: "faith", label: "Faith & Trust" },
-      { value: "love", label: "God's Love" },
-      { value: "wisdom", label: "Wisdom" },
-      { value: "prayer", label: "Prayer" },
-      { value: "hope", label: "Hope" },
-      { value: "forgiveness", label: "Forgiveness" },
-      { value: "spiritual_warfare", label: "Spiritual Warfare" },
-    ],
-  },
-];
-
-const TOTAL_STEPS = SURVEY_STEPS.length + 2; // +2 for reading prefs + theme
 
 const READING_PLANS = {
   searching: { plan: "Gospel of John", book: "John", desc: "Start with the heart of the gospel" },
@@ -55,9 +16,52 @@ const READING_PLANS = {
 };
 
 export default function Onboarding() {
+  const t = useT();
   const navigate = useNavigate();
   const { saveProfile, user, profile } = useAuth();
   const { toggleStudyMode, studyMode, toggleDarkMode, darkMode, setFontFamily, fontFamily, showVerseNumbers, toggleVerseNumbers, colorTheme, setColorTheme } = useApp();
+
+  const SURVEY_STEPS = [
+    {
+      title: t("onboarding.faithJourney"),
+      key: "faithStage",
+      options: [
+        { value: "searching", label: t("onboarding.faithSearching"), desc: t("onboarding.faithSearchingDesc") },
+        { value: "new_believer", label: t("onboarding.faithNewBeliever"), desc: t("onboarding.faithNewBelieverDesc") },
+        { value: "growing", label: t("onboarding.faithGrowing"), desc: t("onboarding.faithGrowingDesc") },
+        { value: "mature", label: t("onboarding.faithMature"), desc: t("onboarding.faithMatureDesc") },
+      ],
+    },
+    {
+      title: t("onboarding.studyGoals"),
+      key: "goals",
+      multi: true,
+      options: [
+        { value: "devotional", label: t("onboarding.goalDevo"), desc: t("onboarding.goalDevoDesc") },
+        { value: "deep_study", label: t("onboarding.goalDeepStudy"), desc: t("onboarding.goalDeepStudyDesc") },
+        { value: "memorization", label: t("onboarding.goalMemorize"), desc: t("onboarding.goalMemorizeDesc") },
+        { value: "prayer", label: t("onboarding.goalPrayer"), desc: t("onboarding.goalPrayerDesc") },
+      ],
+    },
+    {
+      title: t("onboarding.topicsInterest"),
+      key: "topics",
+      multi: true,
+      options: [
+        { value: "salvation", label: "Salvation" },
+        { value: "faith", label: "Faith & Trust" },
+        { value: "love", label: "God's Love" },
+        { value: "wisdom", label: "Wisdom" },
+        { value: "prayer", label: "Prayer" },
+        { value: "hope", label: "Hope" },
+        { value: "forgiveness", label: "Forgiveness" },
+        { value: "spiritual_warfare", label: "Spiritual Warfare" },
+      ],
+    },
+  ];
+
+  const TOTAL_STEPS = SURVEY_STEPS.length + 2; // +2 for reading prefs + theme
+
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState({
     faithStage: "",
@@ -183,15 +187,15 @@ export default function Onboarding() {
       {isReadingPrefsStep && (
         <>
           <h1 className="text-xl font-bold text-warm-brown text-center mb-2">
-            How would you like to read?
+            {t("onboarding.howToRead")}
           </h1>
           <p className="text-sm text-warm-brown-light text-center mb-8">
-            You can always change this later in Settings.
+            {t("onboarding.changeInSettings")}
           </p>
 
           {/* Read vs Study mode */}
           <div className="mb-6">
-            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Default Mode</p>
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">{t("onboarding.defaultMode")}</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => { if (studyMode) toggleStudyMode(); }}
@@ -200,9 +204,9 @@ export default function Onboarding() {
                 }`}
               >
                 <span className={`text-sm font-medium ${!studyMode ? "text-gold" : "text-warm-brown"}`}>
-                  Read Mode
+                  {t("onboarding.readModeLabel")}
                 </span>
-                <p className="text-[11px] text-warm-brown-light mt-1">Clean, flowing text</p>
+                <p className="text-[11px] text-warm-brown-light mt-1">{t("onboarding.readModeDesc")}</p>
               </button>
               <button
                 onClick={() => { if (!studyMode) toggleStudyMode(); }}
@@ -211,16 +215,16 @@ export default function Onboarding() {
                 }`}
               >
                 <span className={`text-sm font-medium ${studyMode ? "text-gold" : "text-warm-brown"}`}>
-                  Study Mode
+                  {t("onboarding.studyModeLabel")}
                 </span>
-                <p className="text-[11px] text-warm-brown-light mt-1">Tap words for definitions</p>
+                <p className="text-[11px] text-warm-brown-light mt-1">{t("onboarding.studyModeDesc")}</p>
               </button>
             </div>
           </div>
 
           {/* Verse numbers toggle */}
           <div className="mb-8">
-            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Verse Numbers</p>
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">{t("onboarding.verseNumbers")}</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => { if (!showVerseNumbers) toggleVerseNumbers(); }}
@@ -229,9 +233,9 @@ export default function Onboarding() {
                 }`}
               >
                 <span className={`text-sm font-medium ${showVerseNumbers ? "text-gold" : "text-warm-brown"}`}>
-                  Show Numbers
+                  {t("onboarding.showNumbers")}
                 </span>
-                <p className="text-[11px] text-warm-brown-light mt-1">Traditional verse format</p>
+                <p className="text-[11px] text-warm-brown-light mt-1">{t("onboarding.showNumbersDesc")}</p>
               </button>
               <button
                 onClick={() => { if (showVerseNumbers) toggleVerseNumbers(); }}
@@ -240,16 +244,16 @@ export default function Onboarding() {
                 }`}
               >
                 <span className={`text-sm font-medium ${!showVerseNumbers ? "text-gold" : "text-warm-brown"}`}>
-                  Hide Numbers
+                  {t("onboarding.hideNumbers")}
                 </span>
-                <p className="text-[11px] text-warm-brown-light mt-1">Read like a book</p>
+                <p className="text-[11px] text-warm-brown-light mt-1">{t("onboarding.hideNumbersDesc")}</p>
               </button>
             </div>
           </div>
 
           {/* Preview */}
           <div className="bg-scripture-bg rounded-xl p-4 border border-cream-dark">
-            <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">Preview</p>
+            <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">{t("onboarding.preview")}</p>
             <p className="font-scripture text-warm-brown leading-relaxed text-base" style={{ fontFamily }}>
               {showVerseNumbers && <sup className="text-[10px] text-gold mr-1 font-sans font-bold">1</sup>}
               In the beginning God created the heaven and the earth.{" "}
@@ -264,15 +268,15 @@ export default function Onboarding() {
       {isThemeStep && (
         <>
           <h1 className="text-xl font-bold text-warm-brown text-center mb-2">
-            Choose your look
+            {t("onboarding.chooseYourLook")}
           </h1>
           <p className="text-sm text-warm-brown-light text-center mb-8">
-            You can always change this later in Settings.
+            {t("onboarding.changeInSettings")}
           </p>
 
           {/* Light / Dark */}
           <div className="mb-6">
-            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Theme</p>
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">{t("onboarding.theme")}</p>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => { if (darkMode) toggleDarkMode(); }}
@@ -282,7 +286,7 @@ export default function Onboarding() {
               >
                 <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-[#faf7f2] border-2 border-[#f0ebe3]" />
                 <span className={`text-sm font-medium ${!darkMode ? "text-gold" : "text-warm-brown"}`}>
-                  Light
+                  {t("onboarding.light")}
                 </span>
               </button>
               <button
@@ -293,7 +297,7 @@ export default function Onboarding() {
               >
                 <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-[#1a1a1a] border-2 border-[#333]" />
                 <span className={`text-sm font-medium ${darkMode ? "text-gold" : "text-warm-brown"}`}>
-                  Dark
+                  {t("onboarding.dark")}
                 </span>
               </button>
             </div>
@@ -301,7 +305,7 @@ export default function Onboarding() {
 
           {/* Color theme */}
           <div className="mb-6">
-            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Color Scheme</p>
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">{t("onboarding.colorScheme")}</p>
             <div className="grid grid-cols-2 gap-2">
               {COLOR_THEMES.map((theme) => (
                 <button
@@ -329,7 +333,7 @@ export default function Onboarding() {
 
           {/* Font choice */}
           <div className="mb-8">
-            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">Font Style</p>
+            <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">{t("settings.fontStyle")}</p>
             <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
               {FONT_OPTIONS.map((font) => (
                 <button
@@ -367,14 +371,14 @@ export default function Onboarding() {
               onClick={() => setStep((s) => s - 1)}
               className="text-sm text-warm-brown-light hover:text-warm-brown"
             >
-              Back
+              {t("onboarding.back")}
             </button>
           )}
           <button
             onClick={() => { localStorage.setItem("onboardingComplete", "true"); navigate("/"); }}
             className="text-sm text-warm-brown-light/60 hover:text-warm-brown-light"
           >
-            Skip
+            {t("onboarding.skip")}
           </button>
         </div>
         <button
@@ -382,7 +386,7 @@ export default function Onboarding() {
           disabled={!canProceed}
           className="bg-gold text-white rounded-lg px-6 py-2.5 text-sm font-medium hover:bg-gold/90 disabled:opacity-40 transition-colors"
         >
-          {isLastStep ? "Start Reading" : "Next"}
+          {isLastStep ? t("onboarding.startReading") : t("onboarding.next")}
         </button>
       </div>
     </div>

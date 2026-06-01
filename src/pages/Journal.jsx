@@ -6,14 +6,6 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import { tokenizeRefs, refToUrl } from "../utils/scriptureRef";
 import useT from "../hooks/useT";
 
-const MOOD_LABELS = {
-  reflective: "Reflective",
-  thankful: "Thankful",
-  questioning: "Questioning",
-  convicted: "Convicted",
-  joyful: "Joyful",
-  sorrowful: "Sorrowful",
-};
 
 const MOOD_COLORS = {
   reflective: "bg-blue-100 text-blue-700",
@@ -27,6 +19,14 @@ const MOOD_COLORS = {
 export default function Journal() {
   useDocumentTitle("Journal");
   const t = useT();
+  const MOOD_LABELS = {
+    reflective: t("journal.moodReflective"),
+    thankful: t("journal.moodThankful"),
+    questioning: t("journal.moodQuestioning"),
+    convicted: t("journal.moodConvicted"),
+    joyful: t("journal.moodJoyful"),
+    sorrowful: t("journal.moodSorrowful"),
+  };
   const { entries, loading, deleteEntry } = useJournal();
   const [moodFilter, setMoodFilter] = useState(null);
   const [search, setSearch] = useState("");
@@ -72,7 +72,7 @@ export default function Journal() {
         <div>
           <h1 className="text-xl font-bold text-warm-brown">{t("journal.title")}</h1>
           <p className="text-sm text-warm-brown-light">
-            {entries.length} {entries.length === 1 ? "entry" : "entries"}
+            {entries.length} {entries.length === 1 ? t("journal.entry") : t("journal.entries")}
           </p>
         </div>
         <Link
@@ -101,7 +101,7 @@ export default function Journal() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search journal entries..."
+              placeholder={t("journal.searchPlaceholder")}
               className="w-full bg-white rounded-xl border border-cream-dark pl-10 pr-4 py-2.5 text-sm text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:border-gold/30"
             />
           </div>
@@ -114,7 +114,7 @@ export default function Journal() {
                 !moodFilter ? "bg-gold text-white" : "bg-white border border-cream-dark text-warm-brown-light"
               }`}
             >
-              All ({entries.length})
+              {t("journal.allFilter")} ({entries.length})
             </button>
             {Object.entries(moodCounts)
               .sort(([, a], [, b]) => b - a)
@@ -141,13 +141,13 @@ export default function Journal() {
                 onClick={() => setView("list")}
                 className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${view === "list" ? "bg-white text-warm-brown shadow-sm" : "text-warm-brown-light"}`}
               >
-                List
+                {t("journal.listView")}
               </button>
               <button
                 onClick={() => setView("calendar")}
                 className={`px-2.5 py-1 rounded-md text-[10px] font-medium transition-colors ${view === "calendar" ? "bg-white text-warm-brown shadow-sm" : "text-warm-brown-light"}`}
               >
-                Calendar
+                {t("journal.calendarView")}
               </button>
             </div>
           </div>
@@ -162,7 +162,7 @@ export default function Journal() {
                 />
               ))}
               {filtered.length === 0 && (
-                <p className="text-center text-sm text-warm-brown-light py-8">No entries match your filter.</p>
+                <p className="text-center text-sm text-warm-brown-light py-8">{t("journal.noEntriesFilter")}</p>
               )}
             </div>
           ) : (
@@ -178,7 +178,7 @@ export default function Journal() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 shadow-xl max-w-xs w-full">
               <h3 className="text-warm-brown font-semibold mb-2">{t("journal.confirmDelete")}</h3>
-              <p className="text-sm text-warm-brown-light mb-4">This cannot be undone.</p>
+              <p className="text-sm text-warm-brown-light mb-4">{t("journal.cannotUndo")}</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setConfirmDelete(null)}
@@ -202,6 +202,15 @@ export default function Journal() {
 }
 
 function JournalCard({ entry, onDelete }) {
+  const t = useT();
+  const MOOD_LABELS = {
+    reflective: t("journal.moodReflective"),
+    thankful: t("journal.moodThankful"),
+    questioning: t("journal.moodQuestioning"),
+    convicted: t("journal.moodConvicted"),
+    joyful: t("journal.moodJoyful"),
+    sorrowful: t("journal.moodSorrowful"),
+  };
   // Detect scripture refs in the content preview for the chip strip
   const tokens = tokenizeRefs(entry.content || "");
   const inlineRefs = tokens.filter((t) => t.type === "ref").slice(0, 3);
@@ -361,6 +370,7 @@ function CalendarView({ byDate }) {
 }
 
 function EmptyState() {
+  const t = useT();
   return (
     <div className="text-center py-16 px-4">
       <div className="w-16 h-16 mx-auto mb-5 rounded-full bg-gold/10 flex items-center justify-center">
@@ -369,18 +379,18 @@ function EmptyState() {
           <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
         </svg>
       </div>
-      <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">What is God showing you?</h2>
+      <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">{t("journal.whatGodShowing")}</h2>
       <p className="text-warm-brown-light text-sm mb-1 max-w-xs mx-auto leading-relaxed">
-        Capture reflections, questions, prayers, and insights as you read. Your journal lives with the Word it came from — searchable, yours forever.
+        {t("journal.emptyLong")}
       </p>
       <p className="text-xs text-warm-brown-light/70 mb-6 max-w-xs mx-auto">
-        Most journals get lost in a drawer. This one stays with you.
+        {t("journal.staysWithYou")}
       </p>
       <Link
         to="/journal/new"
         className="inline-block bg-gold text-white rounded-full px-6 py-3 text-sm font-semibold hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
       >
-        Write your first entry
+        {t("journal.writeFirstEntry")}
       </Link>
     </div>
   );

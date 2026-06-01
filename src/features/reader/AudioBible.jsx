@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import useT from "../../hooks/useT";
 
 /**
  * Audio Bible using the browser's Speech Synthesis API.
@@ -14,6 +15,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
  * picker extended to add the human-narrated option as the default.
  */
 export default function AudioBible({ book, chapter }) {
+  const t = useT();
   const [expanded, setExpanded] = useState(false);
   const [supported, setSupported] = useState(true);
   const [voices, setVoices] = useState([]);
@@ -132,7 +134,7 @@ export default function AudioBible({ book, chapter }) {
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
           </svg>
-          Listen to this chapter
+          {t("audio.listen")}
         </span>
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`w-4 h-4 text-warm-brown-light transition-transform ${expanded ? "rotate-180" : ""}`}>
           <polyline points="6 9 12 15 18 9" />
@@ -185,14 +187,14 @@ export default function AudioBible({ book, chapter }) {
 
           {currentVerse > 0 && (isPlaying || isPaused) && (
             <p className="text-center text-xs text-warm-brown-light">
-              Now reading: <span className="font-medium text-warm-brown">{book} {chapter}:{currentVerse}</span>
+              {t("audio.nowReading")} <span className="font-medium text-warm-brown">{book} {chapter}:{currentVerse}</span>
             </p>
           )}
 
           {/* Settings */}
           <div className="grid grid-cols-2 gap-3 pt-2 border-t border-cream-dark/60">
             <div>
-              <label htmlFor="audio-voice" className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1 block">Voice</label>
+              <label htmlFor="audio-voice" className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1 block">{t("audio.voice")}</label>
               <select
                 id="audio-voice"
                 value={voiceIdx}
@@ -207,7 +209,7 @@ export default function AudioBible({ book, chapter }) {
               </select>
             </div>
             <div>
-              <label htmlFor="audio-rate" className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1 block">Speed: {rate.toFixed(1)}×</label>
+              <label htmlFor="audio-rate" className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1 block">{t("audio.speed")} {rate.toFixed(1)}×</label>
               <input
                 id="audio-rate"
                 type="range"
@@ -222,7 +224,7 @@ export default function AudioBible({ book, chapter }) {
           </div>
 
           <p className="text-[10px] text-warm-brown-light/60 text-center pt-1">
-            Powered by your device's text-to-speech. Human-narrated audio coming soon.
+            {t("audio.powered")}
           </p>
         </div>
       )}

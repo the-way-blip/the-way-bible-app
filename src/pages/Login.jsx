@@ -8,6 +8,7 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import usePageMeta from "../hooks/usePageMeta";
 import { Capacitor } from "@capacitor/core";
 import Logo from "../components/Logo";
+import useT from "../hooks/useT";
 
 /**
  * Returns true if the given userId already has a profile row in Supabase,
@@ -36,6 +37,7 @@ const REDIRECT_BASE = Capacitor.isNativePlatform()
   : (typeof window !== "undefined" ? window.location.origin : "https://thewaybible.app");
 
 export default function Login() {
+  const t = useT();
   // Default to Sign Up unless URL says ?mode=signin (e.g. landing page "Sign in" link)
   const [searchParams] = useSearchParams();
   const [isSignUp, setIsSignUp] = useState(searchParams.get("mode") !== "signin");
@@ -121,7 +123,7 @@ export default function Login() {
       <div className="text-center mb-8">
         <h1 className="flex justify-center"><Logo className="h-28 sm:h-36" /><span className="sr-only">TheWay Bible App</span></h1>
         <p className="text-sm text-warm-brown-light mt-1">
-          {isSignUp ? "Create your account" : "Welcome back"}
+          {isSignUp ? t("auth.createYourAccount") : t("auth.welcomeBack")}
         </p>
       </div>
 
@@ -134,7 +136,7 @@ export default function Login() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
+              placeholder={t("auth.yourName")}
               autoComplete="name"
               className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
             />
@@ -148,7 +150,7 @@ export default function Login() {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
+            placeholder={t("auth.emailAddress")}
             required
             autoComplete="email"
             className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
@@ -162,7 +164,7 @@ export default function Login() {
             type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
+            placeholder={t("auth.password")}
             required
             minLength={6}
             autoComplete={isSignUp ? "new-password" : "current-password"}
@@ -172,7 +174,7 @@ export default function Login() {
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-warm-brown-light/50 hover:text-warm-brown-light"
-            aria-label={showPassword ? "Hide password" : "Show password"}
+            aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
           >
             {showPassword ? (
               <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
@@ -194,7 +196,7 @@ export default function Login() {
               onChange={(e) => setSubscribeToDevo(e.target.checked)}
               className="w-4 h-4 rounded border-cream-dark text-gold focus:ring-gold/30"
             />
-            <span className="text-xs text-warm-brown-light">Subscribe to daily devotionals</span>
+            <span className="text-xs text-warm-brown-light">{t("auth.subscribeDevo")}</span>
           </label>
         )}
 
@@ -213,9 +215,9 @@ export default function Login() {
           {loading ? (
             <span className="inline-flex items-center gap-2">
               <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4 31.4" strokeLinecap="round" /></svg>
-              {isSignUp ? "Creating..." : "Signing in..."}
+              {isSignUp ? t("auth.creating") : t("auth.signingIn")}
             </span>
-          ) : isSignUp ? "Create Account" : "Sign In"}
+          ) : isSignUp ? t("auth.createAccount") : t("auth.signIn")}
         </button>
         {!isSignUp && (
           <div className="text-center">
@@ -228,7 +230,7 @@ export default function Login() {
               }}
               className="text-xs text-warm-brown-light hover:text-warm-brown"
             >
-              Forgot password?
+              {t("auth.forgotPassword")}
             </button>
           </div>
         )}
@@ -242,7 +244,7 @@ export default function Login() {
                 type="email"
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
-                placeholder="Email address"
+                placeholder={t("auth.emailAddress")}
                 required
                 autoComplete="email"
                 className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
@@ -254,7 +256,7 @@ export default function Login() {
               disabled={resetLoading || !resetEmail}
               className="w-full bg-warm-brown text-white rounded-xl py-2.5 text-sm font-semibold hover:bg-warm-brown/90 disabled:opacity-50 transition-colors"
             >
-              {resetLoading ? "..." : "Send Reset Link"}
+              {resetLoading ? "..." : t("auth.sendResetLink")}
             </button>
             {resetMessage && (
               <p className={`text-xs text-center ${resetMessage.type === "success" ? "text-green-600" : "text-red-500"}`}>
@@ -266,7 +268,7 @@ export default function Login() {
       </form>
 
       <p className="text-xs text-warm-brown-light/60 text-center mt-6 px-2">
-        Sign in to sync your reading progress, memory verses, and settings across devices.
+        {t("auth.syncSubtext")}
       </p>
 
       <div className="text-center mt-6">
@@ -274,7 +276,7 @@ export default function Login() {
           onClick={() => { setIsSignUp(!isSignUp); setError(null); }}
           className="text-sm text-warm-brown-light hover:text-warm-brown"
         >
-          {isSignUp ? "Already have an account? Sign in" : "Need an account? Sign up"}
+          {isSignUp ? t("auth.alreadyHaveAccount") + " " + t("auth.signIn") : t("auth.noAccount") + " " + t("auth.signUp")}
         </button>
       </div>
 
@@ -282,7 +284,7 @@ export default function Login() {
         to="/home"
         className="block text-center text-xs text-warm-brown-light/50 mt-4 hover:text-warm-brown-light"
       >
-        Continue without an account
+        {t("auth.continueWithoutAccount")}
       </Link>
     </div>
   );

@@ -5,14 +5,7 @@ import { fetchCommentaries } from "../../services/commentaryService";
 import { USFM_BOOK_IDS } from "../../data/translations";
 import useJournal from "../../hooks/useJournal";
 import { tokenizeRefs } from "../../utils/scriptureRef";
-
-const TABS = [
-  { id: "wordstudy",  label: "Study" },
-  { id: "crossrefs",  label: "Refs" },
-  { id: "commentary", label: "Commentary" },
-  { id: "compare",    label: "Compare" },
-  { id: "journal",    label: "Journal" },
-];
+import useT from "../../hooks/useT";
 
 export default function SidePanel({
   book,
@@ -21,6 +14,14 @@ export default function SidePanel({
   selectedVerse,
   translation,
 }) {
+  const t = useT();
+  const TABS = [
+    { id: "wordstudy",  label: t("panel.tabStudy") },
+    { id: "crossrefs",  label: t("panel.tabRefs") },
+    { id: "commentary", label: t("panel.tabCommentary") },
+    { id: "compare",    label: t("panel.tabCompare") },
+    { id: "journal",    label: t("panel.tabJournal") },
+  ];
   const [activeTab, setActiveTab] = useState("wordstudy");
   const [lastWordInfo, setLastWordInfo] = useState(null);
 
@@ -107,6 +108,7 @@ function TabPane({ id, labelledBy, visible, children }) {
 
 /* ─── Commentary Tab ─── */
 function CommentaryTab({ book, chapter }) {
+  const t = useT();
   const [commentaries, setCommentaries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(null);
@@ -129,7 +131,7 @@ function CommentaryTab({ book, chapter }) {
     return (
       <div className="flex items-center justify-center py-12 gap-2">
         <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs text-warm-brown-light">Loading commentaries…</span>
+        <span className="text-xs text-warm-brown-light">{t("panel.loadingCommentaries")}</span>
       </div>
     );
   }
@@ -140,7 +142,7 @@ function CommentaryTab({ book, chapter }) {
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-cream-dark mb-3">
           <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
         </svg>
-        <p className="text-sm text-warm-brown-light">No commentary available for this chapter.</p>
+        <p className="text-sm text-warm-brown-light">{t("panel.noCommentary")}</p>
       </div>
     );
   }
@@ -149,7 +151,7 @@ function CommentaryTab({ book, chapter }) {
     <div>
       <div className="px-4 py-2 bg-cream/50 border-b border-cream-dark">
         <p className="text-[10px] text-warm-brown-light">
-          {book} {chapter} — Classical commentaries
+          {book} {chapter} — {t("panel.classicalCommentaries")}
         </p>
       </div>
       <div className="divide-y divide-cream-dark">
@@ -185,7 +187,7 @@ function CommentaryTab({ book, chapter }) {
                   <p className="text-xs text-warm-brown leading-relaxed whitespace-pre-wrap">
                     {c.quote}
                   </p>
-                  <p className="text-[9px] text-warm-brown-light/40 mt-2">Source: {c.source}</p>
+                  <p className="text-[9px] text-warm-brown-light/40 mt-2">{t("panel.source")} {c.source}</p>
                 </div>
               )}
             </div>
@@ -227,6 +229,7 @@ async function fetchVerseText(translation, book, chapter, verse) {
 }
 
 function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
+  const t = useT();
   const [verse, setVerse] = useState(selectedVerse || 1);
   const [inputVerse, setInputVerse] = useState(String(selectedVerse || 1));
   const [results, setResults] = useState({}); // { translationId: { text, loading, error } }
@@ -294,10 +297,10 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
           onClick={handleGo}
           className="text-xs text-gold font-medium hover:text-gold/80 transition-colors"
         >
-          Compare
+          {t("panel.compare")}
         </button>
         {!selectedVerse && (
-          <span className="text-[10px] text-warm-brown-light/50 ml-auto">Tap a verse # to auto-select</span>
+          <span className="text-[10px] text-warm-brown-light/50 ml-auto">{t("panel.tapVerseHint")}</span>
         )}
       </div>
 
@@ -317,19 +320,19 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
               <span className="text-[10px] text-warm-brown-light">{t.name}</span>
               {isCurrent && (
                 <span className="ml-auto text-[9px] bg-gold/10 text-gold px-1.5 py-0.5 rounded-full font-medium">
-                  active
+                  {t("panel.active")}
                 </span>
               )}
             </div>
             {!r || r.loading ? (
               <div className="flex items-center gap-1.5 py-1">
                 <div className="w-3 h-3 border-2 border-gold/30 border-t-gold rounded-full animate-spin" />
-                <span className="text-[10px] text-warm-brown-light/50">Loading…</span>
+                <span className="text-[10px] text-warm-brown-light/50">{t("general.loading")}</span>
               </div>
             ) : r.text ? (
               <p className="text-xs text-warm-brown leading-relaxed font-scripture">{r.text}</p>
             ) : (
-              <p className="text-[10px] text-warm-brown-light/40 italic">Not available</p>
+              <p className="text-[10px] text-warm-brown-light/40 italic">{t("panel.notAvailable")}</p>
             )}
           </div>
         );
@@ -340,6 +343,7 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
 
 /* ─── Cross-References Tab ─── */
 function CrossRefsTab({ book, chapter }) {
+  const t = useT();
   const [refs, setRefs] = useState({});
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState({});
@@ -361,7 +365,7 @@ function CrossRefsTab({ book, chapter }) {
     return (
       <div className="flex items-center justify-center py-12 gap-2">
         <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs text-warm-brown-light">Loading cross-references…</span>
+        <span className="text-xs text-warm-brown-light">{t("panel.loadingRefs")}</span>
       </div>
     );
   }
@@ -375,7 +379,7 @@ function CrossRefsTab({ book, chapter }) {
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
         </svg>
-        <p className="text-sm text-warm-brown-light">No cross-references found for this chapter.</p>
+        <p className="text-sm text-warm-brown-light">{t("panel.noRefs")}</p>
       </div>
     );
   }
@@ -400,7 +404,7 @@ function CrossRefsTab({ book, chapter }) {
               className="flex items-center gap-2 mb-2 w-full text-left"
             >
               <span className="text-xs font-semibold text-gold">{book} {chapter}:{v}</span>
-              <span className="text-[10px] text-warm-brown-light/60">{verseRefs.length} refs</span>
+              <span className="text-[10px] text-warm-brown-light/60">{verseRefs.length} {t("panel.refs")}</span>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -441,14 +445,15 @@ function CrossRefsTab({ book, chapter }) {
 
 /* ─── Word Study Tab ─── */
 function WordStudyTab({ wordInfo }) {
+  const t = useT();
   const [chipSearch, setChipSearch] = useState(null);
 
   if (!wordInfo) {
     return (
       <div className="p-6 text-center">
-        <p className="text-sm text-warm-brown-light">Tap a word in the text to study it.</p>
+        <p className="text-sm text-warm-brown-light">{t("panel.tapToStudy")}</p>
         <p className="text-xs text-warm-brown-light/60 mt-1">
-          Original-language words have a gold dotted underline.
+          {t("panel.goldUnderline")}
         </p>
       </div>
     );
@@ -462,7 +467,7 @@ function WordStudyTab({ wordInfo }) {
       <div className="p-4">
         <h3 className="text-lg font-bold text-warm-brown mb-2">{wordInfo.word}</h3>
         <p className="text-sm text-warm-brown-light italic">
-          Added by KJV translators for clarity. Not in the original text.
+          {t("panel.addedByTranslators")}
         </p>
       </div>
     );
@@ -539,13 +544,13 @@ function WordStudyTab({ wordInfo }) {
       </div>
 
       {wordInfo.strongs_def && (
-        <StudySection title="Strong's Definition">
+        <StudySection title={t("panel.strongsDef")}>
           <p>{clean(wordInfo.strongs_def)}</p>
         </StudySection>
       )}
 
       {wordInfo.kjv_def && !wordInfo.occurrence_map && (
-        <StudySection title="KJV Translations">
+        <StudySection title={t("panel.kjvTranslations")}>
           <div className="flex flex-wrap gap-1">
             {wordInfo.kjv_def.split(",").map((t, i) => (
               <button key={i} type="button" onClick={() => searchChip(t)} className={chipClass(t)}>
@@ -557,20 +562,20 @@ function WordStudyTab({ wordInfo }) {
       )}
 
       {wordInfo.derivation && (
-        <StudySection title="Derivation">
+        <StudySection title={t("panel.derivation")}>
           <p>{clean(wordInfo.derivation)}</p>
         </StudySection>
       )}
 
       {wordInfo.outline_usage && (
-        <StudySection title="Usage">
+        <StudySection title={t("panel.usage")}>
           <p>{clean(wordInfo.outline_usage)}</p>
         </StudySection>
       )}
 
       {wordInfo.occurrence_map && Object.keys(wordInfo.occurrence_map).length > 0 && (
-        <StudySection title="KJV Translations">
-          <p className="text-[10px] text-warm-brown-light/60 mb-1.5">Tap a translation to find verses</p>
+        <StudySection title={t("panel.kjvTranslations")}>
+          <p className="text-[10px] text-warm-brown-light/60 mb-1.5">{t("panel.tapTranslation")}</p>
           <div className="flex flex-wrap gap-1">
             {Object.entries(wordInfo.occurrence_map)
               .sort(([, a], [, b]) => b - a)
@@ -590,16 +595,16 @@ function WordStudyTab({ wordInfo }) {
               Verses with "{chipSearch.word}"
             </h4>
             <button type="button" onClick={() => setChipSearch(null)} className="text-[10px] text-warm-brown-light hover:text-warm-brown">
-              Close
+              {t("general.close")}
             </button>
           </div>
           {chipSearch.loading ? (
             <div className="flex items-center gap-2 py-4 justify-center">
               <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-              <span className="text-[10px] text-warm-brown-light">Searching…</span>
+              <span className="text-[10px] text-warm-brown-light">{t("panel.searching")}</span>
             </div>
           ) : chipSearch.results.length === 0 ? (
-            <p className="text-xs text-warm-brown-light/60 py-2">No verses found.</p>
+            <p className="text-xs text-warm-brown-light/60 py-2">{t("panel.noVersesFound")}</p>
           ) : (
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {chipSearch.results.map((r, i) => (
@@ -615,7 +620,7 @@ function WordStudyTab({ wordInfo }) {
                 </Link>
               ))}
               {chipSearch.results.length >= 30 && (
-                <p className="text-[10px] text-warm-brown-light/60 text-center py-1">Showing first 30 results</p>
+                <p className="text-[10px] text-warm-brown-light/60 text-center py-1">{t("panel.showing30")}</p>
               )}
             </div>
           )}
@@ -662,6 +667,7 @@ function ChipHighlight({ text, word }) {
 
 /* ─── Journal Tab ─── */
 function JournalTab({ book, chapter }) {
+  const t = useT();
   const [text, setText] = useState("");
   const [saved, setSaved] = useState(false);
   const { entries, saveEntry } = useJournal();
@@ -697,7 +703,7 @@ function JournalTab({ book, chapter }) {
       {chapterEntries.length > 0 && (
         <div>
           <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">
-            Past entries — {book} {chapter}
+            {t("panel.pastEntries")} — {book} {chapter}
           </p>
           <div className="space-y-2">
             {chapterEntries.map((entry) => (
@@ -735,13 +741,13 @@ function JournalTab({ book, chapter }) {
 
       <div className="bg-cream rounded-lg p-3">
         <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">
-          Write a reflection
+          {t("panel.writeReflection")}
         </p>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = Math.max(96, e.target.scrollHeight) + "px"; }}
-          placeholder="What stood out to you? What is God speaking to your heart?"
+          placeholder={t("panel.reflectionPlaceholder")}
           className="w-full bg-white rounded-lg px-3 py-2 text-xs text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-1 focus:ring-gold/30 font-scripture leading-relaxed"
           style={{ minHeight: "96px" }}
         />
@@ -753,13 +759,13 @@ function JournalTab({ book, chapter }) {
             saved ? "bg-green-100 text-green-600" : "bg-gold text-white hover:bg-gold/90 disabled:opacity-40"
           }`}
         >
-          {saved ? "Saved!" : "Save to Journal"}
+          {saved ? t("journal.savedMsg") : t("journal.saveToJournal")}
         </button>
       </div>
 
       {chapterEntries.length === 0 && (
         <p className="text-[11px] text-warm-brown-light/60 text-center py-1">
-          No journal entries for this chapter yet.
+          {t("journal.noEntriesChapter")}
         </p>
       )}
 
@@ -767,7 +773,7 @@ function JournalTab({ book, chapter }) {
         to="/journal"
         className="flex items-center justify-center min-h-[36px] text-xs text-warm-brown-light hover:text-gold transition-colors"
       >
-        View all journal entries →
+        {t("journal.viewAll")}
       </Link>
     </div>
   );

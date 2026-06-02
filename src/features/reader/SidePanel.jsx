@@ -473,9 +473,9 @@ function WordStudyTab({ wordInfo }) {
     );
   }
 
-  const clean = (t) => {
-    if (!t) return "";
-    return t
+  const clean = (raw) => {
+    if (!raw) return "";
+    return raw
       .replace(/&#8212-/g, "—")
       .replace(/&mdash[^;]/g, (m) => "—" + m.slice(6))
       .replace(/&mdash;/g, "—")
@@ -552,9 +552,9 @@ function WordStudyTab({ wordInfo }) {
       {wordInfo.kjv_def && !wordInfo.occurrence_map && (
         <StudySection title={t("panel.kjvTranslations")}>
           <div className="flex flex-wrap gap-1">
-            {wordInfo.kjv_def.split(",").map((t, i) => (
-              <button key={i} type="button" onClick={() => searchChip(t)} className={chipClass(t)}>
-                {t.trim()}
+            {wordInfo.kjv_def.split(",").map((word, i) => (
+              <button key={i} type="button" onClick={() => searchChip(word)} className={chipClass(word)}>
+                {word.trim()}
               </button>
             ))}
           </div>

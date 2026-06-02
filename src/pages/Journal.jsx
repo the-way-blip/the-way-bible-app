@@ -213,7 +213,7 @@ function JournalCard({ entry, onDelete }) {
   };
   // Detect scripture refs in the content preview for the chip strip
   const tokens = tokenizeRefs(entry.content || "");
-  const inlineRefs = tokens.filter((t) => t.type === "ref").slice(0, 3);
+  const inlineRefs = tokens.filter((tok) => tok.type === "ref").slice(0, 3);
 
   // Build the primary attached reference (stored on entry)
   const primaryRef = entry.book

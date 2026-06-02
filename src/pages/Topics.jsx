@@ -50,7 +50,7 @@ export default function Topics() {
   // Onboarding uses lowercase values like "salvation", "spiritual_warfare". Match
   // case-insensitively against topic.name (which is "Salvation", etc.)
   const userTopicKeys = new Set(
-    (profile?.topics || []).map((t) => t.replace(/_/g, " ").toLowerCase())
+    (profile?.topics || []).map((key) => key.replace(/_/g, " ").toLowerCase())
   );
   const isPersonalTopic = (name) => userTopicKeys.has(name.toLowerCase());
 
@@ -184,14 +184,14 @@ export default function Topics() {
 
       {/* Quick topic chips — personal first */}
       <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-hide">
-        {sortedTopics.slice(0, 8).map((t) => {
-          const isPersonal = isPersonalTopic(t.name);
+        {sortedTopics.slice(0, 8).map((chip) => {
+          const isPersonal = isPersonalTopic(chip.name);
           return (
             <button
-              key={t.name}
+              key={chip.name}
               onClick={() => {
                 setSearch("");
-                const idx = filtered.findIndex((f) => f.name === t.name);
+                const idx = filtered.findIndex((f) => f.name === chip.name);
                 if (idx >= 0) handleExpand(idx);
               }}
               className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full transition-colors ${
@@ -200,7 +200,7 @@ export default function Topics() {
                   : "bg-cream text-warm-brown hover:bg-gold/10 hover:text-gold"
               }`}
             >
-              {t.name}
+              {chip.name}
             </button>
           );
         })}

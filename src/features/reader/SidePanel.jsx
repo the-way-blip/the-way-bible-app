@@ -245,16 +245,16 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
   const runCompare = useCallback(
     async (verseNum) => {
       const init = {};
-      COMPARE_TRANSLATIONS.forEach((t) => { init[t.id] = { loading: true }; });
+      COMPARE_TRANSLATIONS.forEach((tr) => { init[tr.id] = { loading: true }; });
       setResults(init);
 
       await Promise.all(
-        COMPARE_TRANSLATIONS.map(async (t) => {
+        COMPARE_TRANSLATIONS.map(async (tr) => {
           try {
-            const text = await fetchVerseText(t, book, chapter, verseNum);
-            setResults((prev) => ({ ...prev, [t.id]: { text, loading: false } }));
+            const text = await fetchVerseText(tr, book, chapter, verseNum);
+            setResults((prev) => ({ ...prev, [tr.id]: { text, loading: false } }));
           } catch {
-            setResults((prev) => ({ ...prev, [t.id]: { text: null, loading: false } }));
+            setResults((prev) => ({ ...prev, [tr.id]: { text: null, loading: false } }));
           }
         })
       );
@@ -305,19 +305,19 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
       </div>
 
       {/* Translation cards */}
-      {COMPARE_TRANSLATIONS.map((t) => {
-        const r = results[t.id];
-        const isCurrent = t.id === currentTranslation;
+      {COMPARE_TRANSLATIONS.map((tr) => {
+        const r = results[tr.id];
+        const isCurrent = tr.id === currentTranslation;
         return (
           <div
-            key={t.id}
+            key={tr.id}
             className={`bg-white rounded-xl border p-3 transition-colors ${
               isCurrent ? "border-gold/50 ring-1 ring-gold/20" : "border-cream-dark"
             }`}
           >
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="text-[10px] font-bold text-gold">{t.short}</span>
-              <span className="text-[10px] text-warm-brown-light">{t.name}</span>
+              <span className="text-[10px] font-bold text-gold">{tr.short}</span>
+              <span className="text-[10px] text-warm-brown-light">{tr.name}</span>
               {isCurrent && (
                 <span className="ml-auto text-[9px] bg-gold/10 text-gold px-1.5 py-0.5 rounded-full font-medium">
                   {t("panel.active")}

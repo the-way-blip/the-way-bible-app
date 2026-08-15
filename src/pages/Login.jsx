@@ -51,6 +51,10 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [smsOptIn, setSmsOptIn] = useState(false);
   const [subscribeToDevo, setSubscribeToDevo] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
@@ -82,8 +86,8 @@ export default function Login() {
       });
       setError(result.error.message);
     } else if (isSignUp) {
-      track("signup_completed", { source: "login_page", subscribed_to_devo: subscribeToDevo });
-      submitSignUp({ email, name, subscribeToDevo });
+      track("signup_completed", { source: "login_page", subscribed_to_devo: subscribeToDevo, sms_opt_in: smsOptIn });
+      submitSignUp({ email, name, phone, city, state, subscribeToDevo, smsOptIn });
       if (result.data?.session) {
         // Brand-new sign-up with immediate session — always go to onboarding
         navigate("/onboarding");
@@ -143,6 +147,53 @@ export default function Login() {
           </div>
         )}
 
+        {isSignUp && (
+          <div>
+            <label htmlFor="login-phone" className="sr-only">{t("auth.phoneNumber")}</label>
+            <input
+              id="login-phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder={t("auth.phoneNumber")}
+              autoComplete="tel"
+              className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+            />
+          </div>
+        )}
+
+        {isSignUp && (
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label htmlFor="login-city" className="sr-only">City</label>
+              <input
+                id="login-city"
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City"
+                required
+                autoComplete="address-level2"
+                className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+              />
+            </div>
+            <div className="w-28">
+              <label htmlFor="login-state" className="sr-only">State</label>
+              <input
+                id="login-state"
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder="State"
+                required
+                maxLength={20}
+                autoComplete="address-level1"
+                className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+              />
+            </div>
+          </div>
+        )}
+
         <div>
           <label htmlFor="login-email" className="sr-only">Email address</label>
           <input
@@ -189,15 +240,28 @@ export default function Login() {
         </div>
 
         {isSignUp && (
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={subscribeToDevo}
-              onChange={(e) => setSubscribeToDevo(e.target.checked)}
-              className="w-4 h-4 rounded border-cream-dark text-gold focus:ring-gold/30"
-            />
-            <span className="text-xs text-warm-brown-light">{t("auth.subscribeDevo")}</span>
-          </label>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={subscribeToDevo}
+                onChange={(e) => setSubscribeToDevo(e.target.checked)}
+                className="w-4 h-4 rounded border-cream-dark text-gold focus:ring-gold/30"
+              />
+              <span className="text-xs text-warm-brown-light">{t("auth.subscribeDevo")}</span>
+            </label>
+            {phone && (
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={smsOptIn}
+                  onChange={(e) => setSmsOptIn(e.target.checked)}
+                  className="w-4 h-4 mt-0.5 rounded border-cream-dark text-gold focus:ring-gold/30 shrink-0"
+                />
+                <span className="text-xs text-warm-brown-light">{t("auth.smsOptIn")}</span>
+              </label>
+            )}
+          </div>
         )}
 
         {error && (

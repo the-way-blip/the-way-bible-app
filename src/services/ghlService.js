@@ -28,13 +28,18 @@ function splitName(name) {
   };
 }
 
-export function submitSignUp({ email, name, subscribeToDevo = false }) {
+export function submitSignUp({ email, name, phone, city, state, subscribeToDevo = false, smsOptIn = false }) {
   const tags = ["scripture-app-user"];
   if (subscribeToDevo) tags.push("daily-devotional");
+  if (smsOptIn) tags.push("sms-opted-in");
 
   return submitToGHL({
     email,
     ...splitName(name),
+    phone: phone || undefined,
+    city: city || undefined,
+    state: state || undefined,
+    sms_opt_in: smsOptIn,
     tags,
     type: "sign-up",
   });

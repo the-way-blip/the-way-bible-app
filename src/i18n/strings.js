@@ -394,6 +394,8 @@ const strings = {
     "auth.signingIn": "Signing in...",
     "auth.sendResetLink": "Send Reset Link",
     "auth.continueWithoutAccount": "Continue without an account",
+    "auth.phoneNumber": "Phone number",
+    "auth.smsOptIn": "I agree to receive text messages from TheWay Bible App",
     "auth.syncSubtext": "Sign in to sync your reading progress, memory verses, and settings across devices.",
 
     // ── Prayer List (additional) ─────────────────────────────────────────────
@@ -981,6 +983,8 @@ const strings = {
     "auth.signingIn": "Iniciando sesión...",
     "auth.sendResetLink": "Enviar enlace de restablecimiento",
     "auth.continueWithoutAccount": "Continuar sin cuenta",
+    "auth.phoneNumber": "Número de teléfono",
+    "auth.smsOptIn": "Acepto recibir mensajes de texto de TheWay Bible App",
     "auth.syncSubtext": "Inicia sesión para sincronizar tu progreso de lectura, versículos y ajustes en todos tus dispositivos.",
 
     // ── Lista de oración (adicional) ──────────────────────────────────────────

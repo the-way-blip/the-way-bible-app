@@ -1,5 +1,6 @@
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useApp } from "../../stores/AppContext";
+import { detectMentions, detectMentionsInWords } from "../../services/biblePlaces";
 
 const HIGHLIGHT_COLORS = {
   yellow: "bg-highlight-yellow",
@@ -81,6 +82,8 @@ export default function VerseList({
   chapterWords,
   book,
   chapter,
+  places,
+  onPlaceTap,
 }) {
   const { fontSize, studyMode, fontFamily, showVerseNumbers, translation } = useApp();
   // Word study data is aligned to KJV word positions — can't apply it to other translations
@@ -150,9 +153,14 @@ export default function VerseList({
                 </button>
               )}
               {studyMode && wordStudyAvailable && wordsForVerse ? (
-                <EnrichedText words={wordsForVerse} onWordTap={onWordTap} />
+                <EnrichedText
+                  words={wordsForVerse}
+                  onWordTap={onWordTap}
+                  places={places}
+                  onPlaceTap={onPlaceTap}
+                />
               ) : (
-                <ReadText text={v.text} />
+                <ReadText text={v.text} places={places} onPlaceTap={onPlaceTap} />
               )}
               {" "}
               {note && (
@@ -175,37 +183,111 @@ export default function VerseList({
   );
 }
 
-// Read mode — clean text, no interactivity on words
-function ReadText({ text }) {
-  return <span>{text}</span>;
+/**
+ * A place name inside the scripture text. Tapping it opens the 3D atlas.
+ * Rendered as a span rather than a <button> so it can sit inside a paragraph
+ * without breaking text flow, justification, or the drop cap.
+ */
+function PlaceMention({ place, onPlaceTap, children }) {
+  const open = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    onPlaceTap(place);
+  };
+  return (
+    <span
+      className="place-mention"
+      role="button"
+      tabIndex={0}
+      title={`${place.name} — open map`}
+      onClick={open}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") open(event);
+      }}
+    >
+      {children}
+    </span>
+  );
 }
 
-// Study mode — original words tappable with underline, added words italic
-function EnrichedText({ words, onWordTap }) {
-  return (
-    <>
-      {words.map((w, i) => {
-        if (w.added) {
-          return (
-            <span key={i} className="italic text-warm-brown-light/80">
-              {w.word}{" "}
-            </span>
-          );
-        }
-        return (
-          <span
-            key={i}
-            className="word-tappable"
-            onClick={(e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              onWordTap(w);
-            }}
-          >
-            {w.word}{" "}
-          </span>
-        );
-      })}
-    </>
+// Read mode — clean text, with detected place names linked to the atlas
+function ReadText({ text, places, onPlaceTap }) {
+  const segments = useMemo(
+    () => (onPlaceTap ? detectMentions(text, places) : null),
+    [text, places, onPlaceTap]
   );
+
+  if (!segments) return <span>{text}</span>;
+
+  return (
+    <span>
+      {segments.map((segment, i) =>
+        segment.place ? (
+          <PlaceMention key={i} place={segment.place} onPlaceTap={onPlaceTap}>
+            {segment.text}
+          </PlaceMention>
+        ) : (
+          <span key={i}>{segment.text}</span>
+        )
+      )}
+    </span>
+  );
+}
+
+// Study mode — original words tappable with underline, added words italic.
+// Place names win over word study: their Strong's entries are just
+// transliterations, and the map is the more useful thing to surface.
+function EnrichedText({ words, onWordTap, places, onPlaceTap }) {
+  const placeMarks = useMemo(
+    () => (onPlaceTap ? detectMentionsInWords(words, places) : null),
+    [words, places, onPlaceTap]
+  );
+
+  const rendered = [];
+  for (let i = 0; i < words.length; i++) {
+    const mark = placeMarks?.get(i);
+
+    if (mark) {
+      const phrase = words.slice(i, i + mark.length).map((w) => w.word).join(" ");
+      // Trailing punctuation and the word gap stay outside the span, so the
+      // pin marker sits tight against the name instead of after a comma.
+      const [, name, tail] = phrase.match(/^(.*?[A-Za-z])([^A-Za-z]*)$/) || [null, phrase, ""];
+      rendered.push(
+        <span key={i}>
+          <PlaceMention place={mark.place} onPlaceTap={onPlaceTap}>
+            {name}
+          </PlaceMention>
+          {tail}{" "}
+        </span>
+      );
+      i += mark.length - 1;
+      continue;
+    }
+
+    const w = words[i];
+    if (w.added) {
+      rendered.push(
+        <span key={i} className="italic text-warm-brown-light/80">
+          {w.word}{" "}
+        </span>
+      );
+      continue;
+    }
+
+    rendered.push(
+      <span
+        key={i}
+        className="word-tappable"
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onWordTap(w);
+        }}
+      >
+        {w.word}{" "}
+      </span>
+    );
+  }
+
+  return <>{rendered}</>;
 }

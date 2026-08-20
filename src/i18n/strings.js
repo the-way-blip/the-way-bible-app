@@ -353,6 +353,25 @@ const strings = {
     "reader.scrollToTop": "Scroll to top",
     "reader.verseBookmarked": "Verse bookmarked",
 
+    // ── Biblical Atlas ───────────────────────────────────────────────────────
+    "atlas.title": "Biblical Atlas",
+    "atlas.close": "Close atlas",
+    "atlas.openTitle": "Explore the geography of this chapter",
+    "atlas.places": "places",
+    "atlas.whyItMatters": "Why this place matters",
+    "atlas.inThisChapter": "Named in",
+    "atlas.alsoHere": "Also in this chapter",
+    "atlas.today": "Today",
+    "atlas.near": "Near",
+    "atlas.approx": "Approximate site",
+    "atlas.within": "Within the city",
+    "atlas.region": "Region",
+    "atlas.mention": "mention",
+    "atlas.mentions": "mentions",
+    "atlas.verse": "v.",
+    "atlas.coordinates": "Coordinates from",
+    "atlas.imagery": "satellite imagery",
+
     // ── Study Panel ──────────────────────────────────────────────────────────
     "panel.tabStudy": "Study",
     "panel.tabRefs": "Refs",
@@ -941,6 +960,25 @@ const strings = {
     "reader.analyzingWord": "Analizando datos del estudio de palabras...",
     "reader.scrollToTop": "Ir al inicio",
     "reader.verseBookmarked": "Versículo marcado",
+
+    // ── Atlas bíblico ────────────────────────────────────────────────────────
+    "atlas.title": "Atlas bíblico",
+    "atlas.close": "Cerrar el atlas",
+    "atlas.openTitle": "Explora la geografía de este capítulo",
+    "atlas.places": "lugares",
+    "atlas.whyItMatters": "Por qué importa este lugar",
+    "atlas.inThisChapter": "Mencionado en",
+    "atlas.alsoHere": "También en este capítulo",
+    "atlas.today": "Hoy",
+    "atlas.near": "Cerca de",
+    "atlas.approx": "Ubicación aproximada",
+    "atlas.within": "Dentro de la ciudad",
+    "atlas.region": "Región",
+    "atlas.mention": "mención",
+    "atlas.mentions": "menciones",
+    "atlas.verse": "v.",
+    "atlas.coordinates": "Coordenadas de",
+    "atlas.imagery": "imágenes satelitales",
 
     // ── Panel de estudio ──────────────────────────────────────────────────────
     "panel.tabStudy": "Estudio",

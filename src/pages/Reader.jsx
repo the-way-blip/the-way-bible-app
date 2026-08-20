@@ -8,6 +8,7 @@ import useNotes from "../hooks/useNotes";
 import useMemoryVerses from "../hooks/useMemoryVerses";
 import useWordStudy from "../hooks/useWordStudy";
 import useChapterWordStudy from "../hooks/useChapterWordStudy";
+import useBiblePlaces from "../hooks/useBiblePlaces";
 import { getBook, getNextChapter, getPrevChapter } from "../data/bibleBooks";
 import VerseList from "../features/reader/VerseList";
 import VerseActions from "../features/reader/VerseActions";
@@ -19,6 +20,7 @@ const ChapterNav = lazy(() => import("../features/reader/ChapterNav"));
 const SidePanel = lazy(() => import("../features/reader/SidePanel"));
 const ChapterTools = lazy(() => import("../features/reader/ChapterTools"));
 const ShareSheet = lazy(() => import("../components/ShareSheet"));
+const PlaceExplorer = lazy(() => import("../features/reader/PlaceExplorer"));
 import { useApp } from "../stores/AppContext";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
@@ -42,6 +44,7 @@ export default function Reader() {
   const { addVerse, isMemoryVerse } = useMemoryVerses();
   const { wordData, loading: wordLoading, error: wordError, getWordStudy, clear: clearWordStudy } = useWordStudy();
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapterNum, data?.verses);
+  const { places: chapterPlaces } = useBiblePlaces(book, chapterNum);
   const { user, profile } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const showToast = useToast();
@@ -67,6 +70,8 @@ export default function Reader() {
   const [shareData, setShareData] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
+  // Biblical atlas: { place, book, chapter, places } for the open map panel
+  const [atlas, setAtlas] = useState(null);
 
   // These need to be declared before the keyboard shortcuts effect
   const bookInfo = getBook(book);
@@ -369,6 +374,7 @@ export default function Reader() {
     }
     setSelectedVerse(null);
     setActiveChapterCtx({ book: target.book, chapter: target.chapter });
+    setAtlas(null);
     setActiveWordInfo(null);
     setPendingWord(null);
     setWordStudyVerse(null);
@@ -378,6 +384,53 @@ export default function Reader() {
     navigatedDirectly.current = true;
     navigate(`/read/${encodeURIComponent(target.book)}/${target.chapter}`);
   };
+
+  // ── Biblical atlas ──────────────────────────────────────────────────────
+  // A place can be opened from the scripture text (which carries its own
+  // chapter context, since continuous scroll may be showing several) or from
+  // the header button, which always means the chapter in the URL.
+  const openAtlas = useCallback(
+    (place, context) => {
+      if (!place) return;
+      setSelectedVerse(null);
+      setActiveWordInfo(null);
+      setPendingWord(null);
+      setAtlas({
+        place,
+        book: context?.book || book,
+        chapter: context?.chapter ?? chapterNum,
+        places: context?.places?.length ? context.places : chapterPlaces,
+      });
+    },
+    [book, chapterNum, chapterPlaces]
+  );
+
+  // Jump from a verse chip in the atlas back to the verse in the text
+  const scrollToVerse = useCallback((verse, targetBook, targetChapter) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const scope =
+      container.querySelector(`[data-chapter-ref="${targetBook}-${targetChapter}"]`) || container;
+    const verseEl = scope.querySelector(`[data-verse="${verse}"]`);
+    if (!verseEl) return;
+    verseEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    setActiveChapterCtx({ book: targetBook, chapter: targetChapter });
+  }, []);
+
+  // "m" opens the atlas on the chapter's most significant place. Kept separate
+  // from the main shortcut effect so it can depend on openAtlas.
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key !== "m" || e.metaKey || e.ctrlKey || e.altKey) return;
+      const tag = document.activeElement?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || document.activeElement?.isContentEditable) return;
+      if (chapterPlaces.length === 0) return;
+      e.preventDefault();
+      setAtlas((current) => (current ? null : { place: chapterPlaces[0], book, chapter: chapterNum, places: chapterPlaces }));
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [chapterPlaces, book, chapterNum]);
 
   const handleVerseNumberTap = (verse, chapterBook, chapterChapter) => {
     setActiveWordInfo(null);
@@ -458,6 +511,24 @@ export default function Reader() {
             </div>
 
             <div className="flex items-center gap-1">
+              {/* Biblical atlas — 3D terrain map of the places in this chapter */}
+              {chapterPlaces.length > 0 && (
+                <button
+                  onClick={() => openAtlas(chapterPlaces[0])}
+                  className="flex items-center gap-1.5 pl-2 pr-2.5 min-h-[44px] rounded-full text-warm-brown-light hover:text-gold transition-colors"
+                  title={t("atlas.openTitle", "Explore the geography of this chapter")}
+                  aria-label={`${t("atlas.title", "Biblical Atlas")} — ${chapterPlaces.length} ${t("atlas.places", "places")}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span className="text-[10px] font-bold bg-gold/10 text-gold rounded-full px-1.5 py-0.5 leading-none">
+                    {chapterPlaces.length}
+                  </span>
+                </button>
+              )}
+
               {/* Chapter bookmark toggle */}
               <button
                 onClick={() => {
@@ -610,6 +681,7 @@ export default function Reader() {
                   selectedVerse={activeChapterCtx.book === ch.book && activeChapterCtx.chapter === ch.chapter ? selectedVerse : null}
                   onVerseNumberTap={handleVerseNumberTap}
                   onWordTap={handleWordTap}
+                  onPlaceTap={openAtlas}
                 />
               ))}
 
@@ -641,6 +713,8 @@ export default function Reader() {
                   chapterWords={chapterWords}
                   book={book}
                   chapter={chapterNum}
+                  places={chapterPlaces}
+                  onPlaceTap={openAtlas}
                 />
                 {/* Translation copyright notice */}
                 {getTranslation(translation).copyright && translation !== "KJV" && (
@@ -662,6 +736,7 @@ export default function Reader() {
                   selectedVerse={activeChapterCtx.book === ch.book && activeChapterCtx.chapter === ch.chapter ? selectedVerse : null}
                   onVerseNumberTap={handleVerseNumberTap}
                   onWordTap={handleWordTap}
+                  onPlaceTap={openAtlas}
                 />
               ))}
 
@@ -791,6 +866,24 @@ export default function Reader() {
       {shareData && (
         <Suspense fallback={null}>
           <ShareSheet content={shareData.content} reference={shareData.reference} onClose={() => setShareData(null)} />
+        </Suspense>
+      )}
+
+      {/* Biblical atlas — 3D terrain map for a place in the text */}
+      {atlas && (
+        <Suspense fallback={null}>
+          <PlaceExplorer
+            place={atlas.place}
+            places={atlas.places}
+            book={getBook(atlas.book)?.name || atlas.book}
+            chapter={atlas.chapter}
+            onSelectPlace={(place) => setAtlas((current) => ({ ...current, place }))}
+            onGoToVerse={(verse) => {
+              scrollToVerse(verse, atlas.book, atlas.chapter);
+              setAtlas(null);
+            }}
+            onClose={() => setAtlas(null)}
+          />
         </Suspense>
       )}
 

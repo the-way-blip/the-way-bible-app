@@ -4,6 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // NEXT_PUBLIC_ is accepted alongside Vite's own prefix so the Mapbox token
+  // can use the conventional NEXT_PUBLIC_MAPBOX_TOKEN name. Anything with
+  // either prefix is inlined into the client bundle — public values only.
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   plugins: [
     react(),
     tailwindcss(),
@@ -32,6 +36,12 @@ export default defineConfig({
       workbox: {
         // Pre-cache the app shell
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // The map engine and the geocoding dataset are lazy-loaded on demand;
+        // keeping them out of the precache keeps first load small. (Mapbox's
+        // terms also don't allow stashing their tiles for offline use, so
+        // there's deliberately no runtimeCaching rule for map tiles.)
+        globIgnores: ['**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Runtime caching strategies
         runtimeCaching: [
           {
@@ -90,6 +100,27 @@ export default defineConfig({
   ],
   resolve: {
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+  },
+  build: {
+    // Suppress Rolldown's experimental-features warning for modulePreload filter
+    modulePreload: {
+      resolveDependencies(_url, deps) {
+        // mapbox-gl produces ES module syntax that WKWebView (Capacitor iOS)
+        // can't parse at preload time; skip preloading so it only loads lazily
+        // when the Biblical Atlas feature is actually accessed.
+        return deps.filter((d) => !d.includes('mapbox-gl'));
+      },
+    },
+    rollupOptions: {
+      output: {
+        // Predictable names so the service worker can skip precaching the two
+        // heavy, lazily-loaded atlas assets (see globIgnores above).
+        manualChunks(id) {
+          if (id.includes('node_modules/mapbox-gl')) return 'mapbox-gl';
+          if (id.includes('src/data/biblePlaces.json')) return 'bible-places';
+        },
+      },
+    },
   },
   server: {
     proxy: {

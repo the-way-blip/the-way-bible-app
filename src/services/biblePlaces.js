@@ -130,6 +130,18 @@ export function getPlaceById(id) {
   return idx === -1 ? null : hydrate(dataset.places[idx], idx, null);
 }
 
+/**
+ * Look a place up by dataset id ("Antioch 1") or, failing that, by display
+ * name ("Antioch"). Journey waypoints use ids only where the name is
+ * ambiguous, so both paths are needed.
+ */
+export function getPlaceByName(name) {
+  if (!dataset || !name) return null;
+  let idx = dataset.places.findIndex((place) => place.n === name);
+  if (idx === -1) idx = dataset.places.findIndex((place) => place.d === name);
+  return idx === -1 ? null : hydrate(dataset.places[idx], idx, null);
+}
+
 export function getDatasetMeta() {
   if (!dataset) return null;
   const { source, sourceUrl, license, generated, places } = dataset;

@@ -1,49 +1,72 @@
 import { useEffect, useRef, useState } from "react";
 import { MAPBOX_TOKEN } from "../../services/mapboxConfig";
+import { loadMapboxGl } from "../../services/mapboxLoader";
+import {
+  syncTerritories,
+  setTerritoriesVisible,
+  syncRoute,
+  setRouteVisible,
+  setRouteProgress,
+  boundsForStops,
+} from "../../services/atlasLayers";
 
 /**
- * 3D satellite terrain map for a single biblical place.
+ * 3D satellite terrain map for the biblical atlas.
  *
- * mapbox-gl is a heavy dependency (~250 KB gzipped) so it is imported
- * dynamically the first time a map is actually opened — the reader itself
- * never pays for it. Without a token the component renders an elevation-style
- * placeholder instead of failing.
+ * Beyond showing one place, this renders the world of the passage: the
+ * territories that existed in that era, the route of a journey when the
+ * chapter traces one, and a colour grade that shifts with the period.
+ *
+ * The map instance is created once and then mutated — recreating it on every
+ * prop change would restart tile loading and throw away the camera.
  */
-export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
+export default function PlaceMap({
+  place,
+  nearby = [],
+  onSelectNearby,
+  era,
+  territories = [],
+  showTerritories = true,
+  journeyStops = null,
+  journeyProgress = 0,
+  cameraTarget = null,
+  onReady,
+}) {
   const containerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
   const nearbyMarkersRef = useRef([]);
   const glRef = useRef(null);
   const onSelectNearbyRef = useRef(onSelectNearby);
+  const onReadyRef = useRef(onReady);
   // The map is created once with wherever we started; later selections are
   // handled by flyTo, so the creation effect must not depend on `place`.
   const initialPlaceRef = useRef(place);
 
   const [status, setStatus] = useState(MAPBOX_TOKEN ? "loading" : "no-token");
 
-  useEffect(() => {
-    onSelectNearbyRef.current = onSelectNearby;
-  }, [onSelectNearby]);
+  useEffect(() => { onSelectNearbyRef.current = onSelectNearby; }, [onSelectNearby]);
+  useEffect(() => { onReadyRef.current = onReady; }, [onReady]);
 
   // ── Create the map once ──────────────────────────────────────────────────
   useEffect(() => {
     if (!MAPBOX_TOKEN || !containerRef.current) return;
     let cancelled = false;
-    const resizeTimers = [];
+    const timers = [];
 
     (async () => {
       try {
-        const [{ default: mapboxgl }] = await Promise.all([
-          import("mapbox-gl"),
-          import("mapbox-gl/dist/mapbox-gl.css"),
-        ]);
+        // mapbox-gl is a vendored UMD global rather than an import: Rolldown's
+        // ES module output for it is rejected by WKWebView (Capacitor iOS) at
+        // parse time. The loader injects it on first use, so the 1.8 MB script
+        // is not on the critical path for readers who never open a map.
+        const mapboxgl = await loadMapboxGl();
         if (cancelled || !containerRef.current) return;
 
         mapboxgl.accessToken = MAPBOX_TOKEN;
         glRef.current = mapboxgl;
 
-        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        const reduceMotion = prefersReducedMotion();
         const start = initialPlaceRef.current;
 
         const map = new mapboxgl.Map({
@@ -55,7 +78,6 @@ export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
           bearing: reduceMotion ? 0 : -18,
           antialias: true,
           attributionControl: true,
-          cooperativeGestures: false,
         });
         mapRef.current = map;
 
@@ -87,21 +109,23 @@ export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
               },
             });
           }
+
           // The panel slides in with a transform while the map initializes,
           // which can leave the GL drawing buffer sized against a mid-animation
           // box. Re-measure once the entry animation has settled.
-          const settle = setTimeout(() => map.resize(), 320);
-          resizeTimers.push(settle);
+          timers.push(setTimeout(() => map.resize(), 320));
 
           // Ready as soon as the style is parsed and painting has begun.
           // Deliberately not the "load" event: on satellite-streets-v12,
           // isStyleLoaded() can stay false indefinitely (an iconset request
           // that never resolves), so "load" never fires even though the map
           // is rendering fine. Tiles stream in behind this, as maps do.
-          if (!cancelled) setStatus("ready");
+          if (!cancelled) {
+            setStatus("ready");
+            onReadyRef.current?.(map);
+          }
         });
 
-        // Redundant trigger for styles where "load" does fire first.
         map.on("load", () => {
           if (!cancelled) setStatus("ready");
         });
@@ -120,7 +144,7 @@ export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
 
     return () => {
       cancelled = true;
-      resizeTimers.forEach(clearTimeout);
+      timers.forEach(clearTimeout);
       nearbyMarkersRef.current.forEach((marker) => marker.remove());
       nearbyMarkersRef.current = [];
       markerRef.current?.remove();
@@ -130,24 +154,94 @@ export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
     };
   }, []);
 
+  // ── Era: sky lighting ────────────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== "ready" || !era) return;
+    if (!map.getLayer("sky")) return;
+    map.setPaintProperty("sky", "sky-atmosphere-sun", era.visual.sun);
+    map.setPaintProperty("sky", "sky-atmosphere-sun-intensity", era.visual.sunIntensity);
+  }, [era, status]);
+
+  // ── Historical territories ───────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== "ready") return;
+    syncTerritories(map, territories);
+    setTerritoriesVisible(map, showTerritories && territories.length > 0);
+  }, [territories, showTerritories, status]);
+
+  // ── Journey route ────────────────────────────────────────────────────────
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== "ready") return;
+    syncRoute(map, journeyStops, era?.visual.accent);
+    setRouteVisible(map, Boolean(journeyStops?.length));
+  }, [journeyStops, era, status]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || status !== "ready" || !journeyStops?.length) return;
+    setRouteProgress(map, journeyProgress);
+  }, [journeyProgress, journeyStops, status]);
+
+  // ── Camera ───────────────────────────────────────────────────────────────
+  // A camera target overrides the selected place: it is how the journey player
+  // and the "frame the whole route" button drive the view.
+  useEffect(() => {
+    const map = mapRef.current;
+    const mapboxgl = glRef.current;
+    if (!map || !mapboxgl || status !== "ready" || !cameraTarget) return;
+    const reduceMotion = prefersReducedMotion();
+
+    if (cameraTarget.kind === "fit" && cameraTarget.stops?.length) {
+      const bounds = boundsForStops(mapboxgl, cameraTarget.stops);
+      if (bounds) {
+        map.fitBounds(bounds, {
+          padding: { top: 70, bottom: 70, left: 50, right: 50 },
+          pitch: reduceMotion ? 0 : 45,
+          bearing: 0,
+          duration: reduceMotion ? 0 : 1600,
+        });
+      }
+      return;
+    }
+
+    if (cameraTarget.kind === "point") {
+      map.flyTo({
+        center: [cameraTarget.lon, cameraTarget.lat],
+        zoom: cameraTarget.zoom ?? 11.5,
+        pitch: reduceMotion ? 0 : (cameraTarget.pitch ?? 60),
+        bearing: reduceMotion ? 0 : (cameraTarget.bearing ?? -18),
+        duration: reduceMotion ? 0 : (cameraTarget.duration ?? 1800),
+        essential: true,
+      });
+    }
+  }, [cameraTarget, status]);
+
   // ── Fly to the selected place + drop its pin ─────────────────────────────
   useEffect(() => {
     const map = mapRef.current;
     const mapboxgl = glRef.current;
     if (!map || !mapboxgl || status !== "ready") return;
 
-    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    map.flyTo({
-      center: [place.lon, place.lat],
-      zoom: zoomFor(place),
-      pitch: reduceMotion ? 0 : 62,
-      bearing: reduceMotion ? 0 : -18,
-      duration: reduceMotion ? 0 : 2200,
-      essential: true,
-    });
+    const reduceMotion = prefersReducedMotion();
+    if (!cameraTarget) {
+      map.flyTo({
+        center: [place.lon, place.lat],
+        zoom: zoomFor(place),
+        pitch: reduceMotion ? 0 : 62,
+        bearing: reduceMotion ? 0 : -18,
+        duration: reduceMotion ? 0 : 2200,
+        essential: true,
+      });
+    }
 
     markerRef.current?.remove();
-    markerRef.current = new mapboxgl.Marker({ element: buildPin(place.name), anchor: "bottom" })
+    markerRef.current = new mapboxgl.Marker({
+      element: buildPin(place.displayName || place.name, era?.visual.accent),
+      anchor: "bottom",
+    })
       .setLngLat([place.lon, place.lat])
       .addTo(map);
 
@@ -155,7 +249,10 @@ export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
       markerRef.current?.remove();
       markerRef.current = null;
     };
-  }, [place, status]);
+    // cameraTarget is read but intentionally not a dependency: it must not
+    // re-drop the pin every time the journey player moves the camera.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [place, era, status]);
 
   // ── Secondary pins for the other places in this chapter ──────────────────
   useEffect(() => {
@@ -164,24 +261,27 @@ export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
     if (!map || !mapboxgl || status !== "ready") return;
 
     nearbyMarkersRef.current.forEach((marker) => marker.remove());
-    nearbyMarkersRef.current = nearby
-      .filter((other) => other.id !== place.id)
-      .map((other) => {
-        const element = buildDot(other.name);
-        element.addEventListener("click", (event) => {
-          event.stopPropagation();
-          onSelectNearbyRef.current?.(other);
-        });
-        return new mapboxgl.Marker({ element, anchor: "center" })
-          .setLngLat([other.lon, other.lat])
-          .addTo(map);
-      });
+    // While a journey is drawn its own numbered stops carry the labels
+    nearbyMarkersRef.current = journeyStops?.length
+      ? []
+      : nearby
+          .filter((other) => other.id !== place.id)
+          .map((other) => {
+            const element = buildDot(other.displayName || other.name);
+            element.addEventListener("click", (event) => {
+              event.stopPropagation();
+              onSelectNearbyRef.current?.(other);
+            });
+            return new mapboxgl.Marker({ element, anchor: "center" })
+              .setLngLat([other.lon, other.lat])
+              .addTo(map);
+          });
 
     return () => {
       nearbyMarkersRef.current.forEach((marker) => marker.remove());
       nearbyMarkersRef.current = [];
     };
-  }, [nearby, place.id, status]);
+  }, [nearby, place.id, journeyStops, status]);
 
   if (status === "no-token" || status === "bad-token" || status === "error") {
     return <MapFallback place={place} status={status} />;
@@ -193,7 +293,20 @@ export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
           `.mapboxgl-map { position: relative }` and loads after Tailwind, so
           an absolutely-positioned container collapses to zero height and its
           own `overflow: hidden` then clips the canvas and markers away. */}
-      <div ref={containerRef} className="w-full h-full" />
+      <div
+        ref={containerRef}
+        className="w-full h-full transition-[filter] duration-700"
+        style={{ filter: era?.visual.filter }}
+      />
+
+      {/* Era colour wash — pointer-events-none so the map stays draggable */}
+      {era && (
+        <div
+          className="absolute inset-0 pointer-events-none transition-colors duration-700 mix-blend-soft-light"
+          style={{ backgroundColor: era.visual.wash }}
+          aria-hidden="true"
+        />
+      )}
 
       {status === "loading" && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-[#0f1720]">
@@ -213,6 +326,10 @@ export default function PlaceMap({ place, nearby = [], onSelectNearby }) {
       </div>
     </div>
   );
+}
+
+function prefersReducedMotion() {
+  return Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
 }
 
 const PRECISION_LABEL = {
@@ -236,14 +353,14 @@ function formatCoord(value, axis) {
   return `${degrees}°${minutes}'${hemisphere}`;
 }
 
-/** Gold teardrop pin with the place name, built as a DOM node for Mapbox. */
-function buildPin(name) {
+/** Teardrop pin with the place name, built as a DOM node for Mapbox. */
+function buildPin(name, accent = "#c9a84c") {
   const wrapper = document.createElement("div");
   wrapper.className = "atlas-pin";
   wrapper.innerHTML = `
     <div class="atlas-pin__label">${escapeHtml(name)}</div>
     <svg viewBox="0 0 24 32" class="atlas-pin__marker" aria-hidden="true">
-      <path d="M12 0C5.4 0 0 5.4 0 12c0 8.4 12 20 12 20s12-11.6 12-20c0-6.6-5.4-12-12-12z" fill="#c9a84c"/>
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 8.4 12 20 12 20s12-11.6 12-20c0-6.6-5.4-12-12-12z" fill="${escapeHtml(accent)}"/>
       <circle cx="12" cy="12" r="4.5" fill="#fdfbf7"/>
     </svg>
     <div class="atlas-pin__pulse"></div>
@@ -299,17 +416,8 @@ function MapFallback({ place, status }) {
         </defs>
         <rect width="400" height="300" fill="url(#atlas-fallback-glow)" />
         {Array.from({ length: 9 }, (_, i) => (
-          <ellipse
-            key={i}
-            cx="200"
-            cy="150"
-            rx={26 + i * 22}
-            ry={16 + i * 14}
-            fill="none"
-            stroke="#c9a84c"
-            strokeWidth="0.6"
-            opacity={0.5 - i * 0.045}
-          />
+          <ellipse key={i} cx="200" cy="150" rx={26 + i * 22} ry={16 + i * 14}
+            fill="none" stroke="#c9a84c" strokeWidth="0.6" opacity={0.5 - i * 0.045} />
         ))}
       </svg>
 

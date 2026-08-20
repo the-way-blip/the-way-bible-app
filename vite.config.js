@@ -36,11 +36,10 @@ export default defineConfig({
       workbox: {
         // Pre-cache the app shell
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
-        // The map engine and the geocoding dataset are lazy-loaded on demand;
-        // keeping them out of the precache keeps first load small. (Mapbox's
-        // terms also don't allow stashing their tiles for offline use, so
-        // there's deliberately no runtimeCaching rule for map tiles.)
-        globIgnores: ['**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
+        // The map engine and the geocoding dataset are excluded from precache.
+        // mapbox-gl is loaded as a UMD global from /mapbox-gl.js (public/).
+        // Mapbox's terms also don't allow stashing their tiles offline.
+        globIgnores: ['**/mapbox-gl.js', '**/mapbox-gl.css', '**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Runtime caching strategies
         runtimeCaching: [
@@ -102,21 +101,9 @@ export default defineConfig({
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
   },
   build: {
-    // Suppress Rolldown's experimental-features warning for modulePreload filter
-    modulePreload: {
-      resolveDependencies(_url, deps) {
-        // mapbox-gl produces ES module syntax that WKWebView (Capacitor iOS)
-        // can't parse at preload time; skip preloading so it only loads lazily
-        // when the Biblical Atlas feature is actually accessed.
-        return deps.filter((d) => !d.includes('mapbox-gl'));
-      },
-    },
     rollupOptions: {
       output: {
-        // Predictable names so the service worker can skip precaching the two
-        // heavy, lazily-loaded atlas assets (see globIgnores above).
         manualChunks(id) {
-          if (id.includes('node_modules/mapbox-gl')) return 'mapbox-gl';
           if (id.includes('src/data/biblePlaces.json')) return 'bible-places';
         },
       },

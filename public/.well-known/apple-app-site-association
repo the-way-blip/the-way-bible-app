@@ -2,7 +2,9 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["NG6DBB2567.app.theway.bible"],
+        "appIDs": [
+          "NG6DBB2567.app.theway.bible"
+        ],
         "components": [
           {
             "/": "/reset-password",
@@ -15,12 +17,18 @@
           {
             "/": "/auth/*",
             "comment": "Matches all auth routes"
+          },
+          {
+            "/": "/read/*",
+            "comment": "Bible reader deep links (e.g. Scroll Read in TheWay)"
           }
         ]
       }
     ]
   },
   "webcredentials": {
-    "apps": ["NG6DBB2567.app.theway.bible"]
+    "apps": [
+      "NG6DBB2567.app.theway.bible"
+    ]
   }
 }

@@ -5,9 +5,11 @@ import useReadingPlanProgress from "../hooks/useReadingPlanProgress";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import usePageMeta from "../hooks/usePageMeta";
 import { useToast } from "../components/Toast";
+import useT from "../hooks/useT";
 
 export default function ReadingPlan() {
   useDocumentTitle("Reading Plans");
+  const t = useT();
   usePageMeta({
     description: "Structured Bible reading plans — Gospel of John in 21 days, Proverbs in 31, Psalms in 60, NT in 90, or the whole Bible in a year.",
     ogTitle: "Reading Plans — TheWay Bible App",
@@ -50,9 +52,9 @@ export default function ReadingPlan() {
   // Otherwise — show the picker
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
-      <h1 className="text-xl font-bold text-warm-brown mb-1">Reading Plans</h1>
+      <h1 className="text-xl font-bold text-warm-brown mb-1">{t("plans.title")}</h1>
       <p className="text-sm text-warm-brown-light mb-6">
-        Pick a structured plan to guide your daily reading. Pause or switch any time.
+        {t("plans.subtitle")}
       </p>
 
       <div className="space-y-3">
@@ -75,7 +77,7 @@ export default function ReadingPlan() {
 
       {confirmingReset && (
         <ConfirmModal
-          message="Reset all progress for this plan? This can't be undone."
+          message={t("plans.resetConfirm")}
           onCancel={() => setConfirmingReset(null)}
           onConfirm={() => {
             resetPlan(confirmingReset);
@@ -90,6 +92,7 @@ export default function ReadingPlan() {
 
 /* ─────────────────────────── Plan Card ─────────────────────────── */
 function PlanCard({ plan, completedCount, onStart }) {
+  const t = useT();
   const pct = Math.round((completedCount / plan.duration) * 100);
   const hasProgress = completedCount > 0;
 
@@ -118,7 +121,7 @@ function PlanCard({ plan, completedCount, onStart }) {
           onClick={onStart}
           className="bg-gold text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-gold/90 transition-colors"
         >
-          {hasProgress ? "Resume" : "Start"}
+          {hasProgress ? t("plans.resume") : t("plans.start")}
         </button>
       </div>
     </div>
@@ -127,6 +130,7 @@ function PlanCard({ plan, completedCount, onStart }) {
 
 /* ─────────────────────────── Active Plan View ─────────────────────────── */
 function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToast }) {
+  const t = useT();
   const currentDay = getCurrentDay(plan, record);
   const [viewingDay, setViewingDay] = useState(currentDay);
   const dayData = plan.days[viewingDay - 1];
@@ -152,7 +156,7 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
         <div className="bg-gold h-full transition-all" style={{ width: `${pct}%` }} />
       </div>
       <p className="text-[11px] text-warm-brown-light mb-6">
-        Day {currentDay} of {plan.duration} · {completedCount} day{completedCount === 1 ? "" : "s"} complete
+        {t("plans.day")} {currentDay} {t("plans.of")} {plan.duration} · {completedCount} {t("plans.days")} {t("plans.doneCount")}
       </p>
 
       {/* Day picker */}
@@ -162,15 +166,15 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
           disabled={viewingDay <= 1}
           className="text-xs text-warm-brown-light hover:text-warm-brown disabled:opacity-30 px-2 py-1"
         >
-          ← Prev
+          {t("plans.prev")}
         </button>
-        <p className="text-sm font-semibold text-warm-brown">Day {viewingDay}</p>
+        <p className="text-sm font-semibold text-warm-brown">{t("plans.day")} {viewingDay}</p>
         <button
           onClick={() => setViewingDay(Math.min(plan.duration, viewingDay + 1))}
           disabled={viewingDay >= plan.duration}
           className="text-xs text-warm-brown-light hover:text-warm-brown disabled:opacity-30 px-2 py-1"
         >
-          Next →
+          {t("plans.nextBtn")}
         </button>
       </div>
 
@@ -205,13 +209,13 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
               : "bg-gold text-white hover:bg-gold/90 shadow-lg shadow-gold/20"
           }`}
         >
-          {isCompleted ? "✓ Marked complete" : "Mark Day Complete"}
+          {isCompleted ? t("plans.markedComplete") : t("plans.markDayComplete")}
         </button>
       </div>
 
       {/* Day grid */}
       <div className="bg-white rounded-xl border border-cream-dark p-4 mb-4">
-        <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">All days</p>
+        <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-2">{t("plans.allDays")}</p>
         <div className="grid grid-cols-7 gap-1.5">
           {plan.days.map((_, i) => {
             const day = i + 1;
@@ -222,7 +226,7 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
                 key={day}
                 type="button"
                 onClick={() => setViewingDay(day)}
-                aria-label={`Day ${day}${done ? " (complete)" : ""}`}
+                aria-label={`${t("plans.day")} ${day}${done ? " (complete)" : ""}`}
                 className={`aspect-square rounded-md text-[10px] font-medium transition-colors ${
                   done
                     ? "bg-gold text-white"
@@ -244,13 +248,13 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
           onClick={onStop}
           className="flex-1 text-xs text-warm-brown-light hover:text-warm-brown py-2 px-3 rounded-lg border border-cream-dark hover:bg-cream-dark/40 transition-colors"
         >
-          Pause plan
+          {t("plans.pausePlan")}
         </button>
         <button
           onClick={onReset}
           className="flex-1 text-xs text-warm-brown-light hover:text-red-500 py-2 px-3 rounded-lg border border-cream-dark hover:border-red-200 transition-colors"
         >
-          Reset progress
+          {t("plans.resetProgress")}
         </button>
       </div>
     </div>
@@ -259,6 +263,7 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
 
 /* ─────────────────────────── Confirm Modal ─────────────────────────── */
 function ConfirmModal({ message, onCancel, onConfirm }) {
+  const t = useT();
   return (
     <>
       <div className="fixed inset-0 bg-black/40 z-50" onClick={onCancel} />
@@ -267,10 +272,10 @@ function ConfirmModal({ message, onCancel, onConfirm }) {
           <p className="text-sm text-warm-brown mb-4">{message}</p>
           <div className="flex gap-2">
             <button onClick={onCancel} className="flex-1 text-sm text-warm-brown-light hover:text-warm-brown py-2 rounded-lg border border-cream-dark">
-              Cancel
+              {t("general.cancel")}
             </button>
             <button onClick={onConfirm} className="flex-1 bg-red-500 text-white text-sm font-semibold py-2 rounded-lg hover:bg-red-600">
-              Reset
+              {t("plans.reset")}
             </button>
           </div>
         </div>

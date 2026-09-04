@@ -1,12 +1,14 @@
 import { useState, useCallback, useRef, useEffect, lazy, Suspense } from "react";
 import { getTranslation } from "../data/translations";
 import { useParams, useNavigate } from "react-router-dom";
+import useT from "../hooks/useT";
 import useBible from "../hooks/useBible";
 import useHighlights from "../hooks/useHighlights";
 import useNotes from "../hooks/useNotes";
 import useMemoryVerses from "../hooks/useMemoryVerses";
 import useWordStudy from "../hooks/useWordStudy";
 import useChapterWordStudy from "../hooks/useChapterWordStudy";
+import useBiblePlaces from "../hooks/useBiblePlaces";
 import { getBook, getNextChapter, getPrevChapter } from "../data/bibleBooks";
 import VerseList from "../features/reader/VerseList";
 import VerseActions from "../features/reader/VerseActions";
@@ -18,6 +20,7 @@ const ChapterNav = lazy(() => import("../features/reader/ChapterNav"));
 const SidePanel = lazy(() => import("../features/reader/SidePanel"));
 const ChapterTools = lazy(() => import("../features/reader/ChapterTools"));
 const ShareSheet = lazy(() => import("../components/ShareSheet"));
+const PlaceExplorer = lazy(() => import("../features/reader/PlaceExplorer"));
 import { useApp } from "../stores/AppContext";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
@@ -29,6 +32,7 @@ import useInfiniteScroll from "../hooks/useInfiniteScroll";
 import AppendedChapter from "../features/reader/AppendedChapter";
 
 export default function Reader() {
+  const t = useT();
   const { book, chapter } = useParams();
   const chapterNum = parseInt(chapter);
   const navigate = useNavigate();
@@ -40,6 +44,7 @@ export default function Reader() {
   const { addVerse, isMemoryVerse } = useMemoryVerses();
   const { wordData, loading: wordLoading, error: wordError, getWordStudy, clear: clearWordStudy } = useWordStudy();
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapterNum, data?.verses);
+  const { places: chapterPlaces } = useBiblePlaces(book, chapterNum);
   const { user, profile } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const showToast = useToast();
@@ -65,6 +70,8 @@ export default function Reader() {
   const [shareData, setShareData] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(true);
   const [scrollProgress, setScrollProgress] = useState(0);
+  // Biblical atlas: { place, book, chapter, places } for the open map panel
+  const [atlas, setAtlas] = useState(null);
 
   // These need to be declared before the keyboard shortcuts effect
   const bookInfo = getBook(book);
@@ -367,6 +374,7 @@ export default function Reader() {
     }
     setSelectedVerse(null);
     setActiveChapterCtx({ book: target.book, chapter: target.chapter });
+    setAtlas(null);
     setActiveWordInfo(null);
     setPendingWord(null);
     setWordStudyVerse(null);
@@ -376,6 +384,53 @@ export default function Reader() {
     navigatedDirectly.current = true;
     navigate(`/read/${encodeURIComponent(target.book)}/${target.chapter}`);
   };
+
+  // ── Biblical atlas ──────────────────────────────────────────────────────
+  // A place can be opened from the scripture text (which carries its own
+  // chapter context, since continuous scroll may be showing several) or from
+  // the header button, which always means the chapter in the URL.
+  const openAtlas = useCallback(
+    (place, context) => {
+      if (!place) return;
+      setSelectedVerse(null);
+      setActiveWordInfo(null);
+      setPendingWord(null);
+      setAtlas({
+        place,
+        book: context?.book || book,
+        chapter: context?.chapter ?? chapterNum,
+        places: context?.places?.length ? context.places : chapterPlaces,
+      });
+    },
+    [book, chapterNum, chapterPlaces]
+  );
+
+  // Jump from a verse chip in the atlas back to the verse in the text
+  const scrollToVerse = useCallback((verse, targetBook, targetChapter) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    const scope =
+      container.querySelector(`[data-chapter-ref="${targetBook}-${targetChapter}"]`) || container;
+    const verseEl = scope.querySelector(`[data-verse="${verse}"]`);
+    if (!verseEl) return;
+    verseEl.scrollIntoView({ behavior: "smooth", block: "center" });
+    setActiveChapterCtx({ book: targetBook, chapter: targetChapter });
+  }, []);
+
+  // "m" opens the atlas on the chapter's most significant place. Kept separate
+  // from the main shortcut effect so it can depend on openAtlas.
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key !== "m" || e.metaKey || e.ctrlKey || e.altKey) return;
+      const tag = document.activeElement?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || document.activeElement?.isContentEditable) return;
+      if (chapterPlaces.length === 0) return;
+      e.preventDefault();
+      setAtlas((current) => (current ? null : { place: chapterPlaces[0], book, chapter: chapterNum, places: chapterPlaces }));
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [chapterPlaces, book, chapterNum]);
 
   const handleVerseNumberTap = (verse, chapterBook, chapterChapter) => {
     setActiveWordInfo(null);
@@ -456,16 +511,34 @@ export default function Reader() {
             </div>
 
             <div className="flex items-center gap-1">
+              {/* Biblical atlas — 3D terrain map of the places in this chapter */}
+              {chapterPlaces.length > 0 && (
+                <button
+                  onClick={() => openAtlas(chapterPlaces[0])}
+                  className="flex items-center gap-1.5 pl-2 pr-2.5 min-h-[44px] rounded-full text-warm-brown-light hover:text-gold transition-colors"
+                  title={t("atlas.openTitle", "Explore the geography of this chapter")}
+                  aria-label={`${t("atlas.title", "Biblical Atlas")} — ${chapterPlaces.length} ${t("atlas.places", "places")}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span className="text-[10px] font-bold bg-gold/10 text-gold rounded-full px-1.5 py-0.5 leading-none">
+                    {chapterPlaces.length}
+                  </span>
+                </button>
+              )}
+
               {/* Chapter bookmark toggle */}
               <button
                 onClick={() => {
                   const b = displayedChapter.book, c = displayedChapter.chapter;
                   if (isBookmarked(b, c)) {
                     removeBookmark(b, c);
-                    showToast("Bookmark removed", { icon: "🔖" });
+                    showToast(t("reader.bookmarkRemoved"), { icon: "🔖" });
                   } else {
                     addBookmark({ book: b, chapter: c });
-                    showToast(`${b} ${c} bookmarked`, { icon: "🔖" });
+                    showToast(`${b} ${c} ${t("reader.bookmarkAdded")}`, { icon: "🔖" });
                   }
                 }}
                 className={`w-[44px] h-[44px] flex items-center justify-center rounded-full transition-colors ${
@@ -473,7 +546,7 @@ export default function Reader() {
                     ? "bg-gold/10 text-gold"
                     : "text-warm-brown-light hover:text-warm-brown"
                 }`}
-                aria-label={isBookmarked(displayedChapter.book, displayedChapter.chapter) ? "Remove chapter bookmark" : "Bookmark this chapter"}
+                aria-label={isBookmarked(displayedChapter.book, displayedChapter.chapter) ? t("reader.removeBookmark") : t("reader.bookmarkChapter")}
                 title="Bookmark chapter"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -488,12 +561,12 @@ export default function Reader() {
                 <button
                   onClick={() => setFontSize(Math.max(14, fontSize - 2))}
                   className="w-[44px] h-[44px] flex items-center justify-center text-xs text-warm-brown-light hover:text-warm-brown"
-                  aria-label="Decrease font size"
+                  aria-label={t("reader.decreaseFontSize")}
                 >A</button>
                 <button
                   onClick={() => setFontSize(Math.min(28, fontSize + 2))}
                   className="w-[44px] h-[44px] flex items-center justify-center text-sm font-medium text-warm-brown-light hover:text-warm-brown"
-                  aria-label="Increase font size"
+                  aria-label={t("reader.increaseFontSize")}
                 >A</button>
               </div>
 
@@ -503,8 +576,8 @@ export default function Reader() {
                 className={`w-[44px] h-[44px] flex items-center justify-center rounded-full text-xs font-medium transition-colors ${
                   showVerseNumbers ? "bg-cream-dark text-warm-brown-light" : "bg-gold/10 text-gold"
                 }`}
-                title={showVerseNumbers ? "Hide verse numbers" : "Show verse numbers"}
-                aria-label={showVerseNumbers ? "Hide verse numbers" : "Show verse numbers"}
+                title={showVerseNumbers ? t("reader.hideVerseNumbers") : t("reader.showVerseNumbers")}
+                aria-label={showVerseNumbers ? t("reader.hideVerseNumbers") : t("reader.showVerseNumbers")}
               >
                 <span className="text-[10px] font-bold leading-none">1:</span>
               </button>
@@ -517,7 +590,7 @@ export default function Reader() {
                     ? "bg-gold/10 text-gold"
                     : "bg-cream-dark text-warm-brown-light"
                 }`}
-                title={studyMode ? "Switch to Read mode" : "Switch to Study mode"}
+                title={studyMode ? t("reader.switchToRead") : t("reader.switchToStudy")}
               >
                 {studyMode ? (
                   <>
@@ -525,14 +598,14 @@ export default function Reader() {
                       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                     </svg>
-                    Read
+                    {t("reader.readMode")}
                   </>
                 ) : (
                   <>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
                       <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
-                    Study
+                    {t("reader.studyMode")}
                   </>
                 )}
               </button>
@@ -541,7 +614,7 @@ export default function Reader() {
               <button
                 onClick={() => setSidePanelOpen(!sidePanelOpen)}
                 className="hidden md:flex items-center justify-center w-[44px] h-[44px] text-warm-brown-light hover:text-warm-brown transition-colors"
-                aria-label={sidePanelOpen ? "Close study panel" : "Open study panel"}
+                aria-label={sidePanelOpen ? t("reader.closePanel") : t("reader.openPanel")}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
                   <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -571,18 +644,18 @@ export default function Reader() {
                 )}
               </svg>
               <p className="text-sm font-medium text-warm-brown mb-1">
-                {navigator.onLine ? "Couldn't load this chapter" : "You're offline"}
+                {navigator.onLine ? t("reader.couldntLoad") : t("reader.offline")}
               </p>
               <p className="text-xs text-warm-brown-light mb-4">
                 {navigator.onLine
-                  ? "There was a problem reaching the Bible text server."
-                  : "Connect to the internet to load new chapters. Previously read chapters are available offline."}
+                  ? t("reader.serverError")
+                  : t("reader.offlineMsg")}
               </p>
               <button
                 onClick={() => window.location.reload()}
                 className="px-5 py-2 bg-gold text-white text-sm font-medium rounded-lg hover:bg-gold/90 transition-colors"
               >
-                Try Again
+                {t("reader.tryAgain")}
               </button>
             </div>
           )}
@@ -596,7 +669,7 @@ export default function Reader() {
               {loadingPrev && (
                 <div className="flex items-center justify-center py-6 gap-2">
                   <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs text-warm-brown-light">Loading previous chapter...</span>
+                  <span className="text-xs text-warm-brown-light">{t("reader.loadingPrev")}</span>
                 </div>
               )}
 
@@ -608,6 +681,7 @@ export default function Reader() {
                   selectedVerse={activeChapterCtx.book === ch.book && activeChapterCtx.chapter === ch.chapter ? selectedVerse : null}
                   onVerseNumberTap={handleVerseNumberTap}
                   onWordTap={handleWordTap}
+                  onPlaceTap={openAtlas}
                 />
               ))}
 
@@ -624,7 +698,7 @@ export default function Reader() {
                     </div>
                     <div className="flex items-center justify-center gap-4 text-[10px]">
                       <span className="text-warm-brown-light/60">
-                        {data.verses.length} verses
+                        {data.verses.length} {t("reader.verses")}
                       </span>
                     </div>
                   </div>
@@ -639,6 +713,8 @@ export default function Reader() {
                   chapterWords={chapterWords}
                   book={book}
                   chapter={chapterNum}
+                  places={chapterPlaces}
+                  onPlaceTap={openAtlas}
                 />
                 {/* Translation copyright notice */}
                 {getTranslation(translation).copyright && translation !== "KJV" && (
@@ -660,6 +736,7 @@ export default function Reader() {
                   selectedVerse={activeChapterCtx.book === ch.book && activeChapterCtx.chapter === ch.chapter ? selectedVerse : null}
                   onVerseNumberTap={handleVerseNumberTap}
                   onWordTap={handleWordTap}
+                  onPlaceTap={openAtlas}
                 />
               ))}
 
@@ -670,7 +747,7 @@ export default function Reader() {
               {loadingNext && (
                 <div className="flex items-center justify-center py-6 gap-2">
                   <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs text-warm-brown-light">Loading next chapter...</span>
+                  <span className="text-xs text-warm-brown-light">{t("reader.loadingNext")}</span>
                 </div>
               )}
 
@@ -731,10 +808,9 @@ export default function Reader() {
             <SidePanel
               book={book}
               chapter={chapterNum}
-              notes={notes}
               activeWordInfo={activeWordInfo}
-              onSaveNote={saveNote}
-              onDeleteNote={deleteNote}
+              selectedVerse={selectedVerse}
+              translation={translation}
             />
           </Suspense>
         </div>
@@ -761,10 +837,10 @@ export default function Reader() {
             const b = activeChapterCtx.book, c = activeChapterCtx.chapter;
             if (isBookmarked(b, c, selectedVerse)) {
               removeBookmark(b, c, selectedVerse);
-              showToast("Bookmark removed");
+              showToast(t("reader.bookmarkRemoved"));
             } else {
               addBookmark({ book: b, chapter: c, verse: selectedVerse, label: selectedVerseData.text?.slice(0, 80) || "" });
-              showToast("Verse bookmarked");
+              showToast(t("reader.verseBookmarked"));
             }
           }}
           onAddToJournal={() => {
@@ -793,6 +869,24 @@ export default function Reader() {
         </Suspense>
       )}
 
+      {/* Biblical atlas — 3D terrain map for a place in the text */}
+      {atlas && (
+        <Suspense fallback={null}>
+          <PlaceExplorer
+            place={atlas.place}
+            places={atlas.places}
+            book={getBook(atlas.book)?.name || atlas.book}
+            chapter={atlas.chapter}
+            onSelectPlace={(place) => setAtlas((current) => ({ ...current, place }))}
+            onGoToVerse={(verse) => {
+              scrollToVerse(verse, atlas.book, atlas.chapter);
+              setAtlas(null);
+            }}
+            onClose={() => setAtlas(null)}
+          />
+        </Suspense>
+      )}
+
       {/* Chapter nav overlay */}
       {showNav && (
         <Suspense fallback={null}>
@@ -806,7 +900,7 @@ export default function Reader() {
           onClick={scrollToTop}
           className="fixed left-4 md:left-6 z-30 w-10 h-10 rounded-full bg-gold/90 text-white shadow-lg flex items-center justify-center hover:bg-gold transition-all duration-200 active:scale-90"
           style={{ bottom: "calc(53px + env(safe-area-inset-bottom, 0px) + 16px)" }}
-          aria-label="Scroll to top"
+          aria-label={t("reader.scrollToTop")}
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
             <polyline points="18 15 12 9 6 15" />
@@ -819,6 +913,7 @@ export default function Reader() {
 }
 
 function WordLoadingPanel({ word, loading, error, onClose }) {
+  const t = useT();
   return (
     <>
       <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />
@@ -835,7 +930,7 @@ function WordLoadingPanel({ word, loading, error, onClose }) {
           {loading && (
             <div className="flex items-center justify-center gap-3 py-8">
               <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-warm-brown-light">Analyzing word study data...</span>
+              <span className="text-sm text-warm-brown-light">{t("reader.analyzingWord")}</span>
             </div>
           )}
           {error && <p className="text-sm text-red-500 text-center py-4">{error}</p>}

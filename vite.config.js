@@ -4,6 +4,10 @@ import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  // NEXT_PUBLIC_ is accepted alongside Vite's own prefix so the Mapbox token
+  // can use the conventional NEXT_PUBLIC_MAPBOX_TOKEN name. Anything with
+  // either prefix is inlined into the client bundle — public values only.
+  envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   plugins: [
     react(),
     tailwindcss(),
@@ -32,6 +36,14 @@ export default defineConfig({
       workbox: {
         // Pre-cache the app shell
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // The map engine and the geocoding dataset are excluded from precache.
+        // mapbox-gl is loaded as a UMD global from /mapbox-gl.js (public/).
+        // Mapbox's terms also don't allow stashing their tiles offline.
+        globIgnores: ['**/mapbox-gl.js', '**/mapbox-gl.css', '**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        // Server-rendered SEO pages (/bible/*, /verses-about/*, sitemaps) must
+        // never be answered with the app shell by the service worker.
+        navigateFallbackDenylist: [/^\/bible(\/|$)/, /^\/verses-about(\/|$)/, /^\/sitemap/, /^\/api\//],
         // Runtime caching strategies
         runtimeCaching: [
           {
@@ -90,6 +102,15 @@ export default defineConfig({
   ],
   resolve: {
     dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('src/data/biblePlaces.json')) return 'bible-places';
+        },
+      },
+    },
   },
   server: {
     proxy: {

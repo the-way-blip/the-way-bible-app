@@ -270,6 +270,176 @@ html.dark .drop-cap::first-letter {
   color: var(--color-warm-brown);
 }
 
+/* ── Biblical Atlas ──────────────────────────────────────────────────────── */
+
+/* Place names detected inside the scripture text. Deliberately quieter than
+   .word-tappable so the two affordances don't compete in study mode. */
+.place-mention {
+  cursor: pointer;
+  color: inherit;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.55);
+  padding-bottom: 1px;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.place-mention:hover,
+.place-mention:focus-visible {
+  background-color: rgba(201, 168, 76, 0.16);
+  border-bottom-color: var(--color-gold);
+  border-radius: 2px;
+}
+.place-mention:active {
+  background-color: rgba(201, 168, 76, 0.3);
+}
+/* Tiny map pin after the name so it reads as geography, not a footnote */
+.place-mention::after {
+  content: "";
+  display: inline-block;
+  width: 0.42em;
+  height: 0.42em;
+  margin-left: 0.18em;
+  vertical-align: 0.32em;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  background-color: var(--color-gold);
+  opacity: 0.75;
+}
+
+/* Primary pin dropped on the selected place */
+.atlas-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  will-change: transform;
+}
+.atlas-pin__label {
+  margin-bottom: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(12, 16, 22, 0.72);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+.atlas-pin__marker {
+  width: 26px;
+  height: 34px;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+  animation: atlasPinDrop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.atlas-pin__pulse {
+  width: 26px;
+  height: 8px;
+  margin-top: -3px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(201, 168, 76, 0.5), transparent 70%);
+  animation: atlasPulse 2.4s ease-out infinite;
+}
+@keyframes atlasPinDrop {
+  from { transform: translateY(-18px) scale(0.8); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes atlasPulse {
+  0%   { transform: scale(0.6); opacity: 0.9; }
+  70%  { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Secondary markers for the other places named in the chapter */
+.atlas-dot {
+  all: unset;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 6px;
+  margin: -6px;
+  -webkit-tap-highlight-color: transparent;
+}
+.atlas-dot::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(253, 251, 247, 0.92);
+  border: 2px solid rgba(201, 168, 76, 0.95);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s ease;
+}
+.atlas-dot:hover::before {
+  transform: scale(1.35);
+}
+.atlas-dot__label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+  opacity: 0.85;
+}
+
+/* Mapbox chrome, tuned to sit inside the app's palette */
+.mapboxgl-ctrl-group {
+  background: rgba(12, 16, 22, 0.6) !important;
+  backdrop-filter: blur(6px);
+  border-radius: 10px !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+}
+.mapboxgl-ctrl-group button + button {
+  border-top-color: rgba(255, 255, 255, 0.14) !important;
+}
+.mapboxgl-ctrl-group button .mapboxgl-ctrl-icon {
+  filter: invert(1) opacity(0.75);
+}
+.mapboxgl-ctrl-attrib {
+  background: rgba(12, 16, 22, 0.55) !important;
+  border-radius: 6px 0 0 0 !important;
+}
+.mapboxgl-ctrl-attrib a {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* The atlas panel enters as a sheet on phones and as a drawer on desktop.
+   This lives in CSS rather than as `md:animate-…` because Tailwind can only
+   build responsive variants for utilities it generates, not custom classes. */
+.atlas-panel-enter {
+  animation: slideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+}
+@media (min-width: 768px) {
+  .atlas-panel-enter {
+    animation: slideInRight 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atlas-pin__marker,
+  .atlas-pin__pulse,
+  .atlas-panel-enter,
+  .animate-fade-in {
+    animation: none;
+  }
+}
+
 /* ── Page Transitions ── */
 @keyframes pageFadeIn {
   from {

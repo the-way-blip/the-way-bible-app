@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { isSupabaseConfigured, getSupabase } from "../services/supabase";
 import { syncAll } from "../services/supabaseSync";
+import { gaEvent } from "../services/ga";
 import { Capacitor } from "@capacitor/core";
 import { App as CapApp } from "@capacitor/app";
 
@@ -130,6 +131,7 @@ export function AuthProvider({ children }) {
       const localUser = { id: "local", email, name };
       localStorage.setItem("localUser", JSON.stringify(localUser));
       setUser(localUser);
+      gaEvent("sign_up", { method: "local" }); // GA4 key event
       return { error: null };
     }
     const sb = await getSupabase();
@@ -141,6 +143,7 @@ export function AuthProvider({ children }) {
         emailRedirectTo: `${getEmailRedirectBase()}/auth/callback`,
       },
     });
+    if (!error) gaEvent("sign_up", { method: "email" }); // GA4 key event
     return { data, error };
   }
 
@@ -163,6 +166,34 @@ export function AuthProvider({ children }) {
       if (sb) await sb.auth.signOut();
     }
     localStorage.removeItem("localUser");
+    setUser(null);
+    setProfile(null);
+  }
+
+  async function deleteAccount() {
+    if (!isSupabaseConfigured() || !user) {
+      throw new Error("No account to delete");
+    }
+    const sb = await getSupabase();
+    if (!sb) throw new Error("Supabase unavailable");
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session?.access_token) throw new Error("Not authenticated");
+
+    // On native (Capacitor), relative URLs resolve to capacitor://localhost/…
+    // which has no server — use the absolute production URL instead.
+    const apiBase = Capacitor.isNativePlatform() ? PROD_REDIRECT_BASE : "";
+    const res = await fetch(`${apiBase}/api/delete-account`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.error || "Deletion failed");
+    }
+    // Clear local state after successful server-side deletion
+    await sb.auth.signOut();
+    localStorage.clear();
+    indexedDB.deleteDatabase("scripture-study");
     setUser(null);
     setProfile(null);
   }
@@ -212,7 +243,7 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       user, loading, syncing, profile,
-      signUp, signIn, signOut, saveProfile,
+      signUp, signIn, signOut, deleteAccount, saveProfile,
       isLoggedIn: !!user,
     }}>
       {children}

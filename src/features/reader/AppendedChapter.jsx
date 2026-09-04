@@ -2,6 +2,7 @@ import { useCallback, lazy, Suspense } from "react";
 import useHighlights from "../../hooks/useHighlights";
 import useNotes from "../../hooks/useNotes";
 import useChapterWordStudy from "../../hooks/useChapterWordStudy";
+import useBiblePlaces from "../../hooks/useBiblePlaces";
 import { getBook } from "../../data/bibleBooks";
 import VerseList from "./VerseList";
 
@@ -17,6 +18,7 @@ export default function AppendedChapter({
   selectedVerse,
   onVerseNumberTap,
   onWordTap,
+  onPlaceTap,
 }) {
   const { book, chapter, verses } = chapterData;
   const bookInfo = getBook(book);
@@ -24,11 +26,18 @@ export default function AppendedChapter({
   const { getHighlight } = useHighlights(book, chapter);
   const { getNote } = useNotes(book, chapter);
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapter, verses);
+  const { places } = useBiblePlaces(book, chapter);
 
   // Wrap tap handler to inject this chapter's book/chapter context
   const handleVerseNumberTap = useCallback(
     (verse) => onVerseNumberTap(verse, book, chapter),
     [onVerseNumberTap, book, chapter]
+  );
+
+  // The atlas panel needs to know which chapter's geography it is showing
+  const handlePlaceTap = useCallback(
+    (place) => onPlaceTap?.(place, { book, chapter, places }),
+    [onPlaceTap, book, chapter, places]
   );
 
   return (
@@ -63,6 +72,8 @@ export default function AppendedChapter({
         chapterWords={chapterWords}
         book={book}
         chapter={chapter}
+        places={places}
+        onPlaceTap={onPlaceTap ? handlePlaceTap : undefined}
       />
       {/* Per-chapter study tools — show at the bottom of every appended chapter */}
       <Suspense fallback={null}>

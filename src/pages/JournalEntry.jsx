@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import useJournal from "../hooks/useJournal";
+import useT from "../hooks/useT";
 import { tokenizeRefs, refToUrl } from "../utils/scriptureRef";
 
 const MOODS = [
@@ -16,6 +17,7 @@ export default function JournalEntry() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const t = useT();
   const { getEntry, saveEntry, deleteEntry } = useJournal();
   const isNew = id === "new";
 
@@ -25,6 +27,7 @@ export default function JournalEntry() {
   const urlVerse   = searchParams.get("verse")   || "";
   const urlText    = searchParams.get("text")    || "";
 
+  const [mode,        setMode]        = useState(isNew ? "edit" : "view");
   const [title,       setTitle]       = useState("");
   const [content,     setContent]     = useState("");
   const [mood,        setMood]        = useState("");
@@ -32,6 +35,7 @@ export default function JournalEntry() {
   const [chapter,     setChapter]     = useState(urlChapter);
   const [verseNumber, setVerseNumber] = useState(urlVerse);
   const [verseText,   setVerseText]   = useState(urlText);
+  const [createdAt,   setCreatedAt]   = useState(null);
   const [loaded,      setLoaded]      = useState(isNew);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const textareaRef = useRef(null);
@@ -48,6 +52,7 @@ export default function JournalEntry() {
           setChapter(entry.chapter?.toString() || "");
           setVerseNumber(entry.verseNumber?.toString() || "");
           setVerseText(entry.verseText || "");
+          setCreatedAt(entry.createdAt || null);
         }
         setLoaded(true);
       });
@@ -100,6 +105,137 @@ export default function JournalEntry() {
     );
   }
 
+  // ── VIEW MODE ──────────────────────────────────────────────────────────────
+  if (mode === "view" && !isNew) {
+    const moodLabel = MOODS.find((m) => m.value === mood)?.label;
+    return (
+      <div className="max-w-lg mx-auto px-4 py-6 pb-24">
+        {/* Top bar */}
+        <div className="flex items-center justify-between mb-5">
+          <Link
+            to="/journal"
+            className="text-sm text-warm-brown-light hover:text-warm-brown flex items-center gap-1"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+            {t("journal.title")}
+          </Link>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="text-sm text-red-400 hover:text-red-500"
+            >
+              {t("journal.delete")}
+            </button>
+            <button
+              onClick={() => setMode("edit")}
+              className="bg-gold text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-gold/90 transition-colors"
+            >
+              {t("general.edit")}
+            </button>
+          </div>
+        </div>
+
+        {/* Verse quote block */}
+        {verseText && (
+          <div className="mb-4 bg-scripture-bg rounded-xl border border-gold/20 px-4 py-3">
+            <p className="text-xs font-semibold text-gold mb-1.5">{refLabel}</p>
+            <p className="text-sm text-warm-brown leading-relaxed font-scripture italic">
+              "{verseText}"
+            </p>
+          </div>
+        )}
+
+        {/* Title */}
+        <h1 className="text-xl font-semibold text-warm-brown mb-3">
+          {title || "Untitled"}
+        </h1>
+
+        {/* Mood chip */}
+        {moodLabel && (
+          <div className="mb-3">
+            <span className="text-xs px-3 py-1.5 rounded-full bg-gold text-white">
+              {moodLabel}
+            </span>
+          </div>
+        )}
+
+        {/* Ref chip (when no verse text) */}
+        {hasRef && !verseText && (
+          <div className="mb-4">
+            <Link
+              to={`/read/${encodeURIComponent(book)}/${chapter}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 text-gold rounded-full text-xs font-semibold hover:bg-gold/20 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+              {refLabel}
+            </Link>
+          </div>
+        )}
+
+        {/* Ref chip (open in reader) when verse text present */}
+        {hasRef && verseText && (
+          <div className="mb-4">
+            <Link
+              to={`/read/${encodeURIComponent(book)}/${chapter}`}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gold/10 text-gold rounded-full text-xs font-semibold hover:bg-gold/20 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
+                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+              </svg>
+              Open in reader
+            </Link>
+          </div>
+        )}
+
+        {/* Rich content with tappable scripture refs */}
+        <div className="bg-scripture-bg rounded-xl px-4 py-3 mb-4">
+          <RichContent text={content} />
+        </div>
+
+        {/* Date */}
+        {createdAt && (
+          <p className="text-xs text-warm-brown-light/50">
+            {t("journal.written")} {new Date(createdAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })}
+          </p>
+        )}
+
+        {/* Delete confirmation */}
+        {showDeleteConfirm && (
+          <>
+            <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setShowDeleteConfirm(false)} />
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="bg-white rounded-2xl p-6 shadow-xl max-w-xs w-full">
+                <h3 className="text-warm-brown font-semibold mb-2">{t("journal.confirmDelete")}</h3>
+                <p className="text-sm text-warm-brown-light mb-4">This cannot be undone.</p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="flex-1 py-2.5 rounded-lg text-sm border border-cream-dark text-warm-brown-light hover:bg-cream transition-colors"
+                  >
+                    {t("general.cancel")}
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="flex-1 py-2.5 rounded-lg text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"
+                  >
+                    {t("journal.delete")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // ── EDIT MODE ──────────────────────────────────────────────────────────────
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
       {/* Top bar */}
@@ -111,7 +247,7 @@ export default function JournalEntry() {
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          Journal
+          {t("journal.title")}
         </Link>
         <div className="flex gap-2">
           {!isNew && (
@@ -119,7 +255,15 @@ export default function JournalEntry() {
               onClick={() => setShowDeleteConfirm(true)}
               className="text-sm text-red-400 hover:text-red-500"
             >
-              Delete
+              {t("journal.delete")}
+            </button>
+          )}
+          {!isNew && (
+            <button
+              onClick={() => setMode("view")}
+              className="text-sm text-warm-brown-light hover:text-warm-brown"
+            >
+              {t("general.cancel")}
             </button>
           )}
           <button
@@ -127,7 +271,7 @@ export default function JournalEntry() {
             disabled={!content.trim()}
             className="bg-gold text-white rounded-lg px-4 py-1.5 text-sm font-medium hover:bg-gold/90 disabled:opacity-40 transition-colors"
           >
-            Save
+            {t("journal.save")}
           </button>
         </div>
       </div>
@@ -247,20 +391,20 @@ export default function JournalEntry() {
           <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setShowDeleteConfirm(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 shadow-xl max-w-xs w-full">
-              <h3 className="text-warm-brown font-semibold mb-2">Delete Entry?</h3>
+              <h3 className="text-warm-brown font-semibold mb-2">{t("journal.confirmDelete")}</h3>
               <p className="text-sm text-warm-brown-light mb-4">This cannot be undone.</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   className="flex-1 py-2.5 rounded-lg text-sm border border-cream-dark text-warm-brown-light hover:bg-cream transition-colors"
                 >
-                  Cancel
+                  {t("general.cancel")}
                 </button>
                 <button
                   onClick={handleDelete}
                   className="flex-1 py-2.5 rounded-lg text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"
                 >
-                  Delete
+                  {t("journal.delete")}
                 </button>
               </div>
             </div>

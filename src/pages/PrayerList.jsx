@@ -6,9 +6,11 @@ import { useAuth } from "../stores/AuthContext";
 import { useToast } from "../components/Toast";
 import SkeletonList from "../components/SkeletonList";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import useT from "../hooks/useT";
 
 export default function PrayerList() {
   useDocumentTitle("Prayer List");
+  const t = useT();
   const [prayers, setPrayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -91,21 +93,21 @@ export default function PrayerList() {
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-xl font-bold text-warm-brown">Prayer List</h1>
-          <p className="text-sm text-warm-brown-light">{activeCount} active {activeCount === 1 ? "request" : "requests"}</p>
+          <h1 className="text-xl font-bold text-warm-brown">{t("prayer.title")}</h1>
+          <p className="text-sm text-warm-brown-light">{activeCount} {t("prayer.active")} {activeCount === 1 ? t("prayer.request") : t("prayer.requests")}</p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
           className="bg-gold text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gold/90 transition-colors flex items-center gap-1.5"
         >
           {showForm ? (
-            "Cancel"
+            t("general.cancel")
           ) : (
             <>
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
               </svg>
-              Add Prayer
+              {t("prayer.addPrayer")}
             </>
           )}
         </button>
@@ -118,14 +120,14 @@ export default function PrayerList() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="What would you like to pray for?"
+            placeholder={t("prayer.whatToPray")}
             className="w-full bg-cream rounded-lg px-3 py-2.5 text-sm text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30 mb-2"
             autoFocus
           />
           <textarea
             value={details}
             onChange={(e) => setDetails(e.target.value)}
-            placeholder="Details, scripture, or notes (optional)"
+            placeholder={t("prayer.detailsPlaceholder")}
             className="w-full bg-cream rounded-lg px-3 py-2.5 text-xs text-warm-brown placeholder-warm-brown-light/40 resize-none h-20 focus:outline-none focus:ring-2 focus:ring-gold/30 mb-3"
           />
           <button
@@ -133,7 +135,7 @@ export default function PrayerList() {
             disabled={!title.trim()}
             className="w-full bg-gold text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gold/90 disabled:opacity-40 transition-colors"
           >
-            Save Prayer
+            {t("prayer.savePrayer")}
           </button>
         </div>
       )}
@@ -141,9 +143,9 @@ export default function PrayerList() {
       {/* Filters */}
       <div className="flex gap-2 mb-4">
         {[
-          { id: "active", label: "Active", count: activeCount },
-          { id: "answered", label: "Answered", count: answeredCount },
-          { id: "all", label: "All", count: prayers.length },
+          { id: "active", label: t("prayer.active"), count: activeCount },
+          { id: "answered", label: t("prayer.answered"), count: answeredCount },
+          { id: "all", label: t("prayer.all"), count: prayers.length },
         ].map((f) => (
           <button
             key={f.id}
@@ -167,28 +169,28 @@ export default function PrayerList() {
               <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
             </svg>
           </div>
-          <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">Pray. Track. Remember.</h2>
+          <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">{t("prayer.prayTrackRemember")}</h2>
           <p className="text-warm-brown-light text-sm mb-1 max-w-xs mx-auto leading-relaxed">
-            Write down what you're praying for. Mark it answered when God moves. Watch His faithfulness grow over time.
+            {t("prayer.prayDescription")}
           </p>
           <p className="text-xs text-warm-brown-light/70 mb-6 max-w-xs mx-auto">
-            "Be careful for nothing; but in every thing by prayer..." — Philippians 4:6
+            {t("prayer.philippians46")}
           </p>
           <button
             onClick={() => setShowForm(true)}
             className="inline-block bg-gold text-white rounded-full px-6 py-3 text-sm font-semibold hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
           >
-            Add your first prayer
+            {t("prayer.addFirstPrayer")}
           </button>
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-sm text-warm-brown-light">
             {filter === "answered"
-              ? "No answered prayers yet. Keep praying!"
+              ? t("prayer.noAnsweredPrayers")
               : filter === "active"
-              ? "All prayers answered! Add a new one."
-              : "No prayers found."}
+              ? t("prayer.allPrayersAnswered")
+              : t("prayer.noPrayersFound")}
           </p>
         </div>
       ) : (
@@ -201,7 +203,7 @@ export default function PrayerList() {
                   className={`w-6 h-6 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-colors min-w-[24px] ${
                     p.status === "answered" ? "border-green-500 bg-green-500" : "border-cream-dark hover:border-gold"
                   }`}
-                  aria-label={p.status === "answered" ? "Mark as active" : "Mark as answered"}
+                  aria-label={p.status === "answered" ? t("prayer.markActive") : t("prayer.markAnswered")}
                 >
                   {p.status === "answered" && (
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" className="w-3.5 h-3.5">
@@ -228,7 +230,7 @@ export default function PrayerList() {
                 <button
                   onClick={() => setConfirmDelete(p.id)}
                   className="text-warm-brown-light/30 hover:text-red-400 transition-colors p-1 min-w-[32px] min-h-[32px] flex items-center justify-center"
-                  aria-label="Delete prayer"
+                  aria-label={t("prayer.delete")}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
                     <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
@@ -246,20 +248,20 @@ export default function PrayerList() {
           <div className="fixed inset-0 bg-black/30 z-40" onClick={() => setConfirmDelete(null)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 shadow-xl max-w-xs w-full">
-              <h3 className="text-warm-brown font-semibold mb-2">Remove Prayer?</h3>
-              <p className="text-sm text-warm-brown-light mb-4">This will permanently remove this prayer request.</p>
+              <h3 className="text-warm-brown font-semibold mb-2">{t("prayer.removePrayer")}</h3>
+              <p className="text-sm text-warm-brown-light mb-4">{t("prayer.removePrayerMsg")}</p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setConfirmDelete(null)}
                   className="flex-1 py-2.5 rounded-lg text-sm border border-cream-dark text-warm-brown-light hover:bg-cream transition-colors"
                 >
-                  Cancel
+                  {t("general.cancel")}
                 </button>
                 <button
                   onClick={() => removePrayer(confirmDelete)}
                   className="flex-1 py-2.5 rounded-lg text-sm bg-red-500 text-white hover:bg-red-600 transition-colors"
                 >
-                  Remove
+                  {t("prayer.remove")}
                 </button>
               </div>
             </div>

@@ -13,7 +13,10 @@ const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 export default function Settings() {
   useDocumentTitle("Settings");
   const { fontSize, setFontSize, fontFamily, setFontFamily, darkMode, toggleDarkMode, studyMode, toggleStudyMode, colorTheme, setColorTheme, rotatingTheme, toggleRotatingTheme, translation, setTranslation, language, setLanguage } = useApp();
-  const { isLoggedIn, user, signOut } = useAuth();
+  const { isLoggedIn, user, signOut, deleteAccount } = useAuth();
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteAccountError, setDeleteAccountError] = useState(null);
   const t = useT();
 
   return (
@@ -23,17 +26,76 @@ export default function Settings() {
       {/* Account */}
       <SettingsSection title={t("settings.account")}>
         {isLoggedIn ? (
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-warm-brown">{user?.email || t("settings.signedIn")}</p>
-              <p className="text-xs text-warm-brown-light">{t("settings.signedIn")}</p>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-warm-brown">{user?.email || t("settings.signedIn")}</p>
+                <p className="text-xs text-warm-brown-light">{t("settings.signedIn")}</p>
+              </div>
+              <button onClick={signOut} className="text-xs text-red-400 hover:text-red-500">{t("settings.signOut")}</button>
             </div>
-            <button onClick={signOut} className="text-xs text-red-400 hover:text-red-500">{t("settings.signOut")}</button>
+            <button
+              onClick={() => { setDeleteAccountError(null); setShowDeleteAccountModal(true); }}
+              className="text-xs text-red-400 hover:text-red-500"
+            >
+              Delete Account
+            </button>
+            {deleteAccountError && (
+              <p className="text-xs text-red-500">{deleteAccountError}</p>
+            )}
           </div>
         ) : (
           <Link to="/login" className="text-sm text-gold hover:text-gold/80">{t("settings.signInToSync")}</Link>
         )}
       </SettingsSection>
+
+      {/* Delete Account confirmation modal */}
+      {showDeleteAccountModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/40" onClick={() => !deletingAccount && setShowDeleteAccountModal(false)} />
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-acct-title"
+            aria-describedby="delete-acct-desc"
+            className="relative bg-white rounded-2xl shadow-2xl border border-cream-dark max-w-sm w-full p-6"
+          >
+            <h2 id="delete-acct-title" className="text-lg font-bold text-warm-brown mb-2">
+              Delete Account?
+            </h2>
+            <p id="delete-acct-desc" className="text-sm text-warm-brown-light leading-relaxed mb-6">
+              This will permanently delete your account and all associated data — highlights, notes, memory verses, journal entries, and reading progress. This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteAccountModal(false)}
+                disabled={deletingAccount}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-gold text-white hover:bg-gold/90 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={deletingAccount}
+                onClick={async () => {
+                  setDeletingAccount(true);
+                  setDeleteAccountError(null);
+                  try {
+                    await deleteAccount();
+                    setShowDeleteAccountModal(false);
+                    window.location.href = "/";
+                  } catch (err) {
+                    setDeleteAccountError(err.message || "Deletion failed. Please try again.");
+                    setDeletingAccount(false);
+                  }
+                }}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-red-500 text-white hover:bg-red-600 transition-colors disabled:opacity-50"
+              >
+                {deletingAccount ? "Deleting…" : "Delete Account"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Language */}
       <SettingsSection title={t("settings.language")}>

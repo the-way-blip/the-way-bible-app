@@ -6,10 +6,12 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import usePageMeta from "../hooks/usePageMeta";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
+import useT from "../hooks/useT";
 import {
   highlightVerses,
   unhighlightVerses,
   countExistingHighlights,
+  getTopicColor,
 } from "../utils/topicHighlight";
 
 const HIGHLIGHT_COLORS = [
@@ -39,6 +41,8 @@ export default function Topics() {
   const [picker, setPicker] = useState(null); // topic name when color picker open
   const [busy, setBusy] = useState(false);
   const [existingCounts, setExistingCounts] = useState({}); // { topicName: highlightedVerseCount }
+  const [topicColors, setTopicColors] = useState({}); // { topicName: colorKey }
+  const t = useT();
   const showToast = useToast();
   const { user, profile } = useAuth();
 
@@ -46,7 +50,7 @@ export default function Topics() {
   // Onboarding uses lowercase values like "salvation", "spiritual_warfare". Match
   // case-insensitively against topic.name (which is "Salvation", etc.)
   const userTopicKeys = new Set(
-    (profile?.topics || []).map((t) => t.replace(/_/g, " ").toLowerCase())
+    (profile?.topics || []).map((key) => key.replace(/_/g, " ").toLowerCase())
   );
   const isPersonalTopic = (name) => userTopicKeys.has(name.toLowerCase());
 
@@ -107,6 +111,9 @@ export default function Topics() {
   const refreshHighlightCount = useCallback(async (topic) => {
     const count = await countExistingHighlights(topic.verses);
     setExistingCounts((prev) => ({ ...prev, [topic.name]: count }));
+    // Also refresh the active color so verse rows update
+    const color = await getTopicColor(topic.verses);
+    setTopicColors((prev) => ({ ...prev, [topic.name]: color || null }));
   }, []);
 
   // On mount: load existing highlight counts in the background for currently visible topics
@@ -126,11 +133,14 @@ export default function Topics() {
 
   const handleHighlightAll = async (topic, color) => {
     setBusy(true);
+    // Optimistically apply color immediately so verse rows turn highlighted right away
+    setTopicColors((prev) => ({ ...prev, [topic.name]: color }));
     try {
       const written = await highlightVerses(topic.verses, color, user?.id);
       showToast(`Highlighted ${written} verse${written === 1 ? "" : "s"} in ${topic.name}`, { icon: "✨" });
       await refreshHighlightCount(topic);
     } catch {
+      setTopicColors((prev) => ({ ...prev, [topic.name]: null }));
       showToast("Couldn't apply highlights — please try again.", { icon: "⚠️" });
     } finally {
       setBusy(false);
@@ -140,6 +150,7 @@ export default function Topics() {
 
   const handleRemoveAll = async (topic) => {
     setBusy(true);
+    setTopicColors((prev) => ({ ...prev, [topic.name]: null }));
     try {
       const removed = await unhighlightVerses(topic.verses, user?.id);
       showToast(`Removed ${removed} highlight${removed === 1 ? "" : "s"} from ${topic.name}`, { icon: "🧹" });
@@ -154,8 +165,8 @@ export default function Topics() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
-      <h1 className="text-xl font-bold text-warm-brown mb-1">Topics</h1>
-      <p className="text-sm text-warm-brown-light mb-4">Browse key verses by topic</p>
+      <h1 className="text-xl font-bold text-warm-brown mb-1">{t("topics.title")}</h1>
+      <p className="text-sm text-warm-brown-light mb-4">{t("topics.subtitle")}</p>
 
       {/* Search */}
       <div className="relative mb-4">
@@ -166,21 +177,21 @@ export default function Topics() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search topics or verses..."
+          placeholder={t("topics.searchPlaceholder")}
           className="w-full bg-white rounded-xl border border-cream-dark pl-10 pr-4 py-2.5 text-sm text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:border-gold/30"
         />
       </div>
 
       {/* Quick topic chips — personal first */}
       <div className="flex gap-1.5 overflow-x-auto pb-2 mb-4 scrollbar-hide">
-        {sortedTopics.slice(0, 8).map((t) => {
-          const isPersonal = isPersonalTopic(t.name);
+        {sortedTopics.slice(0, 8).map((chip) => {
+          const isPersonal = isPersonalTopic(chip.name);
           return (
             <button
-              key={t.name}
+              key={chip.name}
               onClick={() => {
                 setSearch("");
-                const idx = filtered.findIndex((f) => f.name === t.name);
+                const idx = filtered.findIndex((f) => f.name === chip.name);
                 if (idx >= 0) handleExpand(idx);
               }}
               className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full transition-colors ${
@@ -189,7 +200,7 @@ export default function Topics() {
                   : "bg-cream text-warm-brown hover:bg-gold/10 hover:text-gold"
               }`}
             >
-              {t.name}
+              {chip.name}
             </button>
           );
         })}
@@ -197,12 +208,12 @@ export default function Topics() {
 
       {userTopicKeys.size > 0 && !search && (
         <p className="text-[10px] font-bold text-gold uppercase tracking-wider mb-2">
-          For you
+          {t("topics.forYou")}
         </p>
       )}
 
       <p className="text-[10px] text-warm-brown-light/60 mb-3">
-        {filtered.length} {filtered.length === 1 ? "topic" : "topics"}
+        {filtered.length} {filtered.length === 1 ? t("topics.topic") : t("topics.topics")}
       </p>
 
       <div className="space-y-2">
@@ -229,8 +240,8 @@ export default function Topics() {
                 <div className="px-4 py-2.5 bg-cream/40 border-b border-cream-dark/60 flex items-center justify-between gap-2">
                   <span className="text-[11px] text-warm-brown-light">
                     {existingCounts[topic.name] > 0
-                      ? `${existingCounts[topic.name]} verse${existingCounts[topic.name] === 1 ? "" : "s"} already highlighted`
-                      : "Highlight every verse in this topic"}
+                      ? `${existingCounts[topic.name]} ${existingCounts[topic.name] === 1 ? t("topics.verse") : t("topics.verses")} ${t("topics.alreadyHighlighted")}`
+                      : t("topics.highlightEvery")}
                   </span>
                   <div className="relative">
                     <button
@@ -242,7 +253,7 @@ export default function Topics() {
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
                         <path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
                       </svg>
-                      Highlight all
+                      {t("topics.highlightAll")}
                     </button>
 
                     {picker === topic.name && (
@@ -250,7 +261,7 @@ export default function Topics() {
                         className="absolute right-0 top-full mt-1.5 z-20 bg-white rounded-xl border border-cream-dark shadow-lg p-2 w-44"
                         onMouseLeave={() => setPicker(null)}
                       >
-                        <p className="text-[10px] text-warm-brown-light/80 px-1.5 pb-1.5">Pick a color</p>
+                        <p className="text-[10px] text-warm-brown-light/80 px-1.5 pb-1.5">{t("topics.pickColor")}</p>
                         <div className="flex items-center gap-1.5 px-1">
                           {HIGHLIGHT_COLORS.map((c) => (
                             <button
@@ -272,7 +283,7 @@ export default function Topics() {
                               onClick={() => handleRemoveAll(topic)}
                               className="w-full text-left text-xs text-warm-brown-light hover:text-red-500 px-1.5 py-1 disabled:opacity-50"
                             >
-                              Remove all highlights
+                              {t("topics.removeAllHighlights")}
                             </button>
                           </>
                         )}
@@ -284,6 +295,12 @@ export default function Topics() {
                 {topic.verses.map((ref, j) => {
                   const parsed = parseRef(ref);
                   const vt = verseTexts[ref];
+                  const activeColor = topicColors[topic.name];
+                  const hlBg = activeColor === "yellow" ? "bg-highlight-yellow"
+                    : activeColor === "green" ? "bg-highlight-green"
+                    : activeColor === "blue" ? "bg-highlight-blue"
+                    : activeColor === "pink" ? "bg-highlight-pink"
+                    : "";
 
                   // Load text on scroll into view
                   if (!vt) loadVerseText(ref);
@@ -291,7 +308,7 @@ export default function Topics() {
                   return (
                     <div
                       key={j}
-                      className="px-4 py-3 border-b border-cream-dark/50 last:border-b-0 hover:bg-cream/30 transition-colors"
+                      className={`px-4 py-3 border-b border-cream-dark/50 last:border-b-0 transition-colors ${hlBg || "hover:bg-cream/30"}`}
                     >
                       <div className="flex items-center justify-between mb-1">
                         {parsed ? (
@@ -337,7 +354,7 @@ export default function Topics() {
                       {vt?.loading ? (
                         <div className="flex items-center gap-1.5 py-1">
                           <div className="w-3 h-3 border border-gold/30 border-t-gold rounded-full animate-spin" />
-                          <span className="text-[10px] text-warm-brown-light/40">Loading...</span>
+                          <span className="text-[10px] text-warm-brown-light/40">{t("general.loading")}</span>
                         </div>
                       ) : vt?.text ? (
                         <p className="text-xs text-warm-brown-light leading-relaxed line-clamp-3 font-scripture italic">
@@ -354,7 +371,7 @@ export default function Topics() {
         })}
 
         {filtered.length === 0 && (
-          <p className="text-center text-sm text-warm-brown-light py-8">No topics match your search.</p>
+          <p className="text-center text-sm text-warm-brown-light py-8">{t("topics.noTopics")}</p>
         )}
       </div>
 

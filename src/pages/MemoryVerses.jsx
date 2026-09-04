@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import useMemoryVerses from "../hooks/useMemoryVerses";
 import ShareSheet from "../components/ShareSheet";
 import useDocumentTitle from "../hooks/useDocumentTitle";
+import useT from "../hooks/useT";
 
 export default function MemoryVerses() {
   useDocumentTitle("Memory Verses");
+  const t = useT();
   const { verses, removeVerse } = useMemoryVerses();
   const [shareData, setShareData] = useState(null);
 
@@ -19,9 +21,9 @@ export default function MemoryVerses() {
     <div className="max-w-lg mx-auto px-4 py-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-warm-brown mb-1">Memory Verses</h1>
+          <h1 className="text-xl font-bold text-warm-brown mb-1">{t("memory.title")}</h1>
           <p className="text-sm text-warm-brown-light">
-            {verses.length} {verses.length === 1 ? "verse" : "verses"} saved
+            {verses.length} {t("memory.practice").toLowerCase()}
           </p>
         </div>
         {verses.length > 0 && (
@@ -29,7 +31,7 @@ export default function MemoryVerses() {
             to="/memory/practice"
             className="bg-gold text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-gold/90 transition-colors relative"
           >
-            Practice
+            {t("memory.practice")}
             {dueCount > 0 && (
               <span className="absolute -top-1.5 -right-1.5 bg-red-400 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                 {dueCount > 9 ? "9+" : dueCount}
@@ -71,16 +73,16 @@ export default function MemoryVerses() {
               className="block bg-gold/10 border border-gold/30 rounded-xl p-3 mb-5 text-center"
             >
               <p className="text-sm font-medium text-gold">
-                {dueCount} {dueCount === 1 ? "verse" : "verses"} due for review
+                {dueCount} {t("memory.due")}
               </p>
-              <p className="text-[11px] text-warm-brown-light mt-0.5">Tap to practice now</p>
+              <p className="text-[11px] text-warm-brown-light mt-0.5">{t("memory.startPractice")}</p>
             </Link>
           )}
 
           {[
-            { label: "Learning", items: learning },
-            { label: "Reviewing", items: reviewing },
-            { label: "Mastered", items: mastered },
+            { label: t("memory.learned"), items: learning },
+            { label: t("memory.practice"), items: reviewing },
+            { label: t("memory.mastered"), items: mastered },
           ].map(({ label, items }) => items.length > 0 && (
             <div key={label} className="mb-6">
               <h2 className="text-xs font-medium text-warm-brown-light uppercase tracking-wider mb-3">

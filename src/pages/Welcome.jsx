@@ -46,6 +46,7 @@ function Header() {
           <Logo className="h-28 sm:h-36" />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
+          <a href="/bible" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">Read online</a>
           <a href="#features" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">Features</a>
           <a href="#plan" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">How it works</a>
           <Link to="/login?mode=signin" className="text-sm text-warm-brown-light hover:text-warm-brown px-2">Sign in</Link>
@@ -434,7 +435,7 @@ function FinalCTA() {
 function Footer() {
   return (
     <footer className="bg-[#3a2820] dark:bg-[#0f0a07] text-[#faf7f2]/70">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-3 gap-8 text-sm">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid sm:grid-cols-2 md:grid-cols-4 gap-8 text-sm">
         <div>
           <img src="/Logo%20White.png" alt="TheWay Bible App" className="h-28 sm:h-36 w-auto mb-4" />
           <p className="leading-relaxed">TheWay Bible App — a tool to read, study, grow, and follow Jesus at the depth you choose.</p>
@@ -445,6 +446,15 @@ function Footer() {
             <li><a href="#features" className="hover:text-[#faf7f2]">Features</a></li>
             <li><a href="#plan" className="hover:text-[#faf7f2]">How it works</a></li>
             <li><Link to="/login" className="hover:text-[#faf7f2]">Sign in</Link></li>
+          </ul>
+        </div>
+        <div>
+          <h4 className="font-semibold text-[#faf7f2] mb-3">Read</h4>
+          <ul className="space-y-2">
+            <li><a href="/bible" className="hover:text-[#faf7f2]">Bible (KJV)</a></li>
+            <li><a href="/verses-about" className="hover:text-[#faf7f2]">Verses by topic</a></li>
+            <li><a href="/bible/john/3/16" className="hover:text-[#faf7f2]">John 3:16</a></li>
+            <li><a href="/bible/psalms/23" className="hover:text-[#faf7f2]">Psalm 23</a></li>
           </ul>
         </div>
         <div>

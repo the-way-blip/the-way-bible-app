@@ -2,6 +2,16 @@
 <html lang="en" dir="ltr">
   <head>
     <meta charset="UTF-8" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H116EGYPXS"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-H116EGYPXS');
+    </script>
+
     <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
@@ -27,6 +37,11 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png" />
     <title>TheWay Bible App — Read. Study. Grow. Follow Jesus.</title>
+
+    <!-- mapbox-gl is vendored as a classic UMD script at public/mapbox-gl.js
+         (Rolldown's ES module output is rejected by WKWebView on Capacitor
+         iOS). It is injected on demand by src/services/mapboxLoader.js when
+         the atlas is first opened, so the 1.8 MB payload stays off page load. -->
 
     <!-- Structured data for rich Google search results -->
     <script type="application/ld+json">

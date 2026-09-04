@@ -4,9 +4,11 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import usePageMeta from "../hooks/usePageMeta";
 import SkeletonList from "../components/SkeletonList";
 import { useToast } from "../components/Toast";
+import useT from "../hooks/useT";
 
 export default function Bookmarks() {
   useDocumentTitle("Bookmarks");
+  const t = useT();
   usePageMeta({
     description: "Saved chapters and verses to return to. Sync across devices.",
     ogTitle: "Bookmarks — TheWay Bible App",
@@ -16,13 +18,13 @@ export default function Bookmarks() {
 
   const handleRemove = async (b) => {
     await removeBookmark(b.book, b.chapter, b.verse);
-    showToast(`Bookmark removed`, { icon: "🔖" });
+    showToast(t("reader.bookmarkRemoved"), { icon: "🔖" });
   };
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
-      <h1 className="text-xl font-bold text-warm-brown mb-1">Bookmarks</h1>
-      <p className="text-sm text-warm-brown-light mb-6">Saved chapters and verses to return to.</p>
+      <h1 className="text-xl font-bold text-warm-brown mb-1">{t("bookmarks.title")}</h1>
+      <p className="text-sm text-warm-brown-light mb-6">{t("bookmarks.subtitle")}</p>
 
       {loading ? (
         <SkeletonList count={4} />
@@ -33,18 +35,18 @@ export default function Bookmarks() {
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
           </div>
-          <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">Save chapters for later</h2>
+          <h2 className="font-serif text-xl font-bold text-warm-brown mb-2">{t("bookmarks.empty")}</h2>
           <p className="text-warm-brown-light text-sm mb-1 max-w-xs mx-auto leading-relaxed">
-            Found a chapter you want to come back to? Tap the bookmark icon while reading to save it here.
+            {t("bookmarks.emptyMsg")}
           </p>
           <p className="text-xs text-warm-brown-light/70 mb-6">
-            Bookmarks sync across your devices.
+            {t("bookmarks.syncNote")}
           </p>
           <Link
             to="/read/Genesis/1"
             className="inline-block bg-gold text-white rounded-full px-6 py-3 text-sm font-semibold hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
           >
-            Open a chapter
+            {t("bookmarks.openChapter")}
           </Link>
         </div>
       ) : (
@@ -67,7 +69,7 @@ export default function Bookmarks() {
               </Link>
               <button
                 onClick={() => handleRemove(b)}
-                aria-label={`Remove bookmark for ${b.book} ${b.chapter}`}
+                aria-label={`${t("bookmarks.remove")} ${b.book} ${b.chapter}`}
                 className="p-2 text-warm-brown-light/40 hover:text-red-500 transition-colors shrink-0"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">

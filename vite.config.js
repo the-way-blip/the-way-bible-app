@@ -41,6 +41,9 @@ export default defineConfig({
         // Mapbox's terms also don't allow stashing their tiles offline.
         globIgnores: ['**/mapbox-gl.js', '**/mapbox-gl.css', '**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+        // Server-rendered SEO pages (/bible/*, /verses-about/*, sitemaps) must
+        // never be answered with the app shell by the service worker.
+        navigateFallbackDenylist: [/^\/bible(\/|$)/, /^\/verses-about(\/|$)/, /^\/sitemap/, /^\/api\//],
         // Runtime caching strategies
         runtimeCaching: [
           {

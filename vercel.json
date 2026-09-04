@@ -1,13 +1,56 @@
 {
   "rewrites": [
-    { "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known).*)", "destination": "/index.html" }
+    {
+      "source": "/sitemap.xml",
+      "destination": "/api/bible-page?kind=sitemap-index"
+    },
+    {
+      "source": "/sitemaps/:file",
+      "destination": "/api/bible-page?kind=sitemap&file=:file"
+    },
+    {
+      "source": "/bible",
+      "destination": "/api/bible-page?kind=bible"
+    },
+    {
+      "source": "/bible/:book",
+      "destination": "/api/bible-page?kind=book&book=:book"
+    },
+    {
+      "source": "/bible/:book/:chapter",
+      "destination": "/api/bible-page?kind=chapter&book=:book&chapter=:chapter"
+    },
+    {
+      "source": "/bible/:book/:chapter/:verse",
+      "destination": "/api/bible-page?kind=verse&book=:book&chapter=:chapter&verse=:verse"
+    },
+    {
+      "source": "/verses-about",
+      "destination": "/api/bible-page?kind=topics"
+    },
+    {
+      "source": "/verses-about/:topic",
+      "destination": "/api/bible-page?kind=topic&topic=:topic"
+    },
+    {
+      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|verses-about|sitemap).*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {
       "source": "/.well-known/apple-app-site-association",
       "headers": [
-        { "key": "Content-Type", "value": "application/json" }
+        {
+          "key": "Content-Type",
+          "value": "application/json"
+        }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/bible-page.js": {
+      "includeFiles": "seo/data/*.json"
+    }
+  }
 }

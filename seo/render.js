@@ -175,22 +175,27 @@ const refLink = (ref) => {
 /* ------------------------------------------------------------------ shell */
 const CSS = `
 :root{--cream:#faf7f2;--cream-dark:#f0ebe3;--parchment:#f5f0e8;--brown:#5c4033;--brown-light:#806252;--gold:#c9a84c;--gold-dark:#a8862f;--paper:#fdfbf7;--line:#e6dfd3}
-*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+.wrap{padding-left:max(20px,env(safe-area-inset-left));padding-right:max(20px,env(safe-area-inset-right))}
 body{margin:0;background:var(--cream);color:var(--brown);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--gold-dark);text-decoration:none}a:hover{text-decoration:underline}
 .wrap{max-width:760px;margin:0 auto;padding:0 20px}
 header.top{border-bottom:1px solid var(--line);background:var(--paper)}
 header.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:56px;gap:12px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
 form.search{display:flex;flex:1;min-width:180px;max-width:360px;margin:0 auto}
-form.search input{flex:1;min-width:0;border:1px solid var(--line);border-right:0;border-radius:9px 0 0 9px;padding:8px 12px;font:14px Inter,system-ui,sans-serif;color:var(--brown);background:var(--cream)}
+form.search input{flex:1;min-width:0;border:1px solid var(--line);border-right:0;border-radius:9px 0 0 9px;padding:8px 12px;font:16px Inter,system-ui,sans-serif;color:var(--brown);background:var(--cream);-webkit-appearance:none;appearance:none}
 form.search input:focus{outline:none;border-color:var(--gold)}
-form.search button{border:1px solid var(--gold);background:var(--gold);color:#fff;border-radius:0 9px 9px 0;padding:0 12px;font-size:16px;cursor:pointer}
+form.search button{border:1px solid var(--gold);background:var(--gold);color:#fff;border-radius:0 9px 9px 0;padding:0 14px;min-width:44px;font-size:18px;cursor:pointer}
 form.search.big{max-width:none;margin:0 0 22px}form.search.big input{font-size:16px;padding:12px 14px}form.search.big button{padding:0 18px;font:600 15px Inter,system-ui,sans-serif}
 mark{background:#fff3b0;color:inherit;padding:0 2px;border-radius:3px}
-@media(max-width:640px){form.search{order:3;flex-basis:100%;max-width:none}}
+@media(max-width:640px){form.search{order:3;flex-basis:100%;max-width:none}header.top .wrap{padding-top:6px;padding-bottom:8px;gap:6px 12px}.brand{font-size:15px}.brand img{width:24px;height:24px}
+.appbar .wrap{gap:10px;padding-top:7px;padding-bottom:7px}.appbar img{display:none}.appbar .t b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.appbar .cta{padding:8px 12px;font-size:13px}
+main{padding:18px 0 40px}.crumbs{margin:0 0 10px;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}.sub{font-size:14px;margin:0 0 16px}
+.actions .btn{flex:1 1 auto;text-align:center;padding:12px 14px}.actions .btn.primary{flex-basis:100%}
+.topicv blockquote{font-size:17px}.commentary p{font-size:15px}h2{margin:28px 0 10px}}
 .brand{display:flex;align-items:center;gap:10px;color:var(--brown);font-weight:700;letter-spacing:-.01em}
 .brand img{width:28px;height:28px;border-radius:7px}
-nav.main{display:flex;gap:18px;font-size:14px}nav.main a{color:var(--brown-light)}
+nav.main{display:flex;gap:6px;font-size:14px}nav.main a{color:var(--brown-light);padding:10px 6px}
 nav.main .cta{background:var(--gold);color:#fff;padding:7px 12px;border-radius:8px;font-weight:600}
 nav.main .cta:hover{text-decoration:none;background:var(--gold-dark)}
 .appbar{background:var(--brown);color:#fff}
@@ -222,7 +227,7 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 .ctx p.hl{background:#fff3b0;border-radius:6px;padding:6px 10px;margin-left:-10px;margin-right:-10px}
 .commentary{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
 .commentary p{margin:0 0 .6em;font-size:15px;line-height:1.65}.commentary .cite{margin:0;font-size:13px;color:var(--brown-light);font-style:italic}
-ul.refs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px 14px;font-size:15px}
+ul.refs{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;font-size:14px}ul.refs a{display:inline-block;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 12px;color:var(--brown)}ul.refs a:hover{border-color:var(--gold);text-decoration:none}
 ul.words{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 ul.words li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px}
 ul.words b{font-family:Georgia,serif;font-size:16px}ul.words .tr{color:var(--gold-dark);font-style:italic;margin:0 6px}ul.words .code{color:var(--brown-light);font-size:12px;margin-left:6px}
@@ -243,7 +248,7 @@ footer.bottom a{color:var(--brown-light)}
 @media(max-width:560px){h1{font-size:28px}.scripture{font-size:20px;padding:20px}nav.main .hide{display:none}}
 `;
 
-function shell({ title, description, canonical, h, jsonld, ogImage, noindex, pageType = "bible-other", ref = "" }) {
+function shell({ title, description, canonical, h, jsonld, ogImage, noindex, pageType = "bible-other", ref = "", hideSearch = false }) {
   const url = SITE + canonical;
   // GA4: same property as the app. content_group / page_type / bible_ref let reports
   // split verse vs chapter vs topic traffic; seo_cta_click measures hand-off into the app.
@@ -280,10 +285,10 @@ ${ga}
 <body>
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">TheWay Bible</a>
-<form class="search" action="/bible/search" role="search"><input type="search" name="q" placeholder="Search verse, topic, or word" aria-label="Search the Bible"><button type="submit" aria-label="Search">⌕</button></form>
+${hideSearch ? "" : `<form class="search" action="/bible/search" role="search"><input type="search" name="q" placeholder="Search verse, topic, or word" aria-label="Search the Bible" enterkeyhint="search" autocapitalize="none" autocorrect="off"><button type="submit" aria-label="Search">⌕</button></form>`}
 <nav class="main"><a href="/bible">Read</a><a href="/verses-about">Topics</a><a href="/verse-of-the-day" class="hide">Verse of the day</a></nav>
 </div></header>
-<div class="appbar"><div class="wrap"><img src="/icon-192.png" alt="" width="36" height="36"><div class="t"><b>TheWay Bible for iPhone</b><span>Study, memorize, journal, and pray — free.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the iOS app</a></div></div>
+<div class="appbar"><div class="wrap"><img src="/icon-192.png" alt="" width="36" height="36"><div class="t"><b>TheWay Bible for iPhone</b><span>Study, memorize, journal, and pray — free.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the app</a></div></div>
 <main><div class="wrap">
 ${h}
 </div></main>
@@ -570,10 +575,10 @@ function searchVerses(q, limit = 50) {
 
 function searchPage(qRaw) {
   const q = plain(String(qRaw || "")).slice(0, 120);
-  const form = `<form class="search big" action="/bible/search" role="search"><input type="search" name="q" value="${attr(q)}" placeholder="Search a verse, topic, or word…" aria-label="Search" autofocus><button type="submit">Search</button></form>`;
+  const form = `<form class="search big" action="/bible/search" role="search"><input type="search" name="q" value="${attr(q)}" placeholder="Search a verse, topic, or word…" aria-label="Search" enterkeyhint="search" autocapitalize="none" autocorrect="off"${q ? "" : " autofocus"}><button type="submit">Search</button></form>`;
   const noindexPage = (title, h, description = "Search the King James Bible by verse, topic, or word.") =>
     ({ status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=0, s-maxage=3600" },
-      body: shell({ title, description, canonical: "/bible/search", h, jsonld: webPageLd([{ "@type": "SearchResultsPage", name: title, url: SITE + "/bible/search" }]), noindex: true, pageType: "search", ref: q }) });
+      body: shell({ title, description, canonical: "/bible/search", h, jsonld: webPageLd([{ "@type": "SearchResultsPage", name: title, url: SITE + "/bible/search" }]), noindex: true, pageType: "search", ref: q, hideSearch: true }) });
 
   if (!q) {
     const h = `${crumbs([["Home", "/"], ["Search", "/bible/search"]])}<h1>Search the Bible <span class="badge">${VERSION}</span></h1>
@@ -600,7 +605,7 @@ function searchPage(qRaw) {
   const { hits, total = 0, res } = searchVerses(q);
   const mark = (t) => esc(t).replace(res, (m) => `<mark>${m}</mark>`);
   const gaSearch = `<script>if(typeof gtag==='function')gtag('event','view_search_results',{search_term:${js(q)},results:${total}});</script>`;
-  const h = `${crumbs([["Home", "/"], ["Search", "/bible/search"], [q, "/bible/search"]])}<h1>Search results for “${esc(q)}” <span class="badge">${VERSION}</span></h1>
+  const h = `${crumbs([["Home", "/"], ["Search", "/bible/search"], [q, "/bible/search"]])}<h1 style="font-size:26px">Results for “${esc(q)}” <span class="badge">${VERSION}</span></h1>
 <p class="sub">${total ? `${total.toLocaleString()} verse${total === 1 ? "" : "s"} contain${total === 1 ? "s" : ""} ${qWords.length > 1 ? "all of those words" : "that word"}${total > hits.length ? ` — showing the first ${hits.length}` : ""}.` : "No verses contain every word you typed. Try fewer words, or a reference like John 3:16."}</p>${form}
 ${topicHits.length ? `<h2>Topics</h2><div class="chips">${topicHits.map((t) => `<a href="/verses-about/${t.slug}">${esc(topicPhrase(t))}</a>`).join("")}</div>` : ""}
 ${hits.length ? `<h2>Verses</h2><div class="results">${hits.map(({ b, c, v, t }) => `<div class="topicv"><p class="r"><a href="${verseUrl(b, c, v)}">${esc(refLabel(b, c, v))}</a></p><blockquote>${mark(plain(t))}</blockquote></div>`).join("")}</div>` : ""}

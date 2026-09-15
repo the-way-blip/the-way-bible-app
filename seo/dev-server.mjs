@@ -6,6 +6,7 @@ const ROUTES = [
   [/^\/sitemap\.xml$/, () => ({ kind: "sitemap-index" })],
   [/^\/sitemaps\/([^/]+)$/, (m) => ({ kind: "sitemap", file: m[1] })],
   [/^\/verses-about\/?$/, () => ({ kind: "topics" })],
+  [/^\/verse-of-the-day\/?$/, () => ({ kind: "votd" })],
   [/^\/verses-about\/([^/]+)\/?$/, (m) => ({ kind: "topic", topic: m[1] })],
   [/^\/bible\/?$/, () => ({ kind: "bible" })],
   [/^\/bible\/([^/]+)\/?$/, (m) => ({ kind: "book", book: m[1] })],

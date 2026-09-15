@@ -29,11 +29,15 @@
       "destination": "/api/bible-page?kind=topics"
     },
     {
+      "source": "/verse-of-the-day",
+      "destination": "/api/bible-page?kind=votd"
+    },
+    {
       "source": "/verses-about/:topic",
       "destination": "/api/bible-page?kind=topic&topic=:topic"
     },
     {
-      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|verses-about|sitemap).*)",
+      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|verses-about|verse-of-the-day|sitemap).*)",
       "destination": "/index.html"
     }
   ],

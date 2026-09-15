@@ -20,6 +20,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { TOPICS, TOPIC_BY_SLUG } from "./topics.js";
+import { votdRef } from "./votd.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -242,7 +243,7 @@ ${h}
 </div></main>
 <footer class="bottom"><div class="wrap">
 <span>© ${new Date().getFullYear()} TheWay Bible App · Scripture text: ${VERSION_LONG} (public domain)</span>
-<span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@thewaybible.app">Contact</a></span>
+<span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@thewaybible.app">Contact</a></span>
 </div></footer>
 </body>
 </html>`;
@@ -291,6 +292,8 @@ function bibleIndex() {
 <p class="sub">The complete King James Version — 66 books, 1,189 chapters, 31,102 verses. Every verse has its own page with context, cross references, and Greek/Hebrew key words.</p>
 <h2>Old Testament — ${ot.length} books</h2>${list(ot)}
 <h2>New Testament — ${nt.length} books</h2>${list(nt)}
+<h2>Verse of the day</h2>
+<p class="sub" style="margin-bottom:14px"><a href="/verse-of-the-day">A new verse every day →</a></p>
 <h2>Verses by topic</h2>
 <div class="chips">${TOPICS.slice(0, 24).map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)}</a>`).join("")}<a href="/verses-about">All topics →</a></div>
 ${promo()}`;
@@ -440,6 +443,32 @@ ${promo()}`;
   return ok(shell({ title: `${n} Bible Verses About ${t.name} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: first ? `${SITE}/api/og?ref=${encodeURIComponent(first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
 }
 
+function votdPage() {
+  const ref = votdRef();
+  const r = parseRef(ref);
+  const label = refLabel(r.book, r.chapter, r.from, r.to);
+  const text = plain(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "));
+  const dateStr = new Date().toLocaleDateString("en-US", { timeZone: "UTC", month: "long", day: "numeric", year: "numeric" });
+  const scripture = `<blockquote class="scripture">${verseHtml(text)}<span class="ref">${esc(label)} · ${VERSION_LONG}</span></blockquote>`;
+  const topics = []; for (let v = r.from; v <= r.to; v++) for (const t of verseTopics().get(`${r.book.abbr}|${r.chapter}|${v}`) || []) if (!topics.includes(t)) topics.push(t);
+  const h = `${crumbs([["Home", "/"], ["Verse of the day", "/verse-of-the-day"]])}
+<h1>Verse of the day <span class="badge">${VERSION}</span></h1>
+<p class="sub">${esc(dateStr)} · a new verse every day, drawn from a curated pool of the Bible's best-known encouragement, comfort, and truth.</p>
+${scripture}
+<div class="actions"><a class="btn primary" href="${appChapterUrl(r.book, r.chapter, r.from)}" data-cta="votd-study-app">Study in the app</a><a class="btn" href="${verseUrl(r.book, r.chapter, r.from, r.to)}" data-cta="votd-read-verse">Read ${esc(label)} in context</a><a class="btn" href="/api/og?ref=${encodeURIComponent(label)}" data-cta="votd-share-image" download="${attr(label.replace(/[: ]/g, "-"))}.png">Share image</a></div>
+${topics.length ? `<h2>Topics</h2><div class="chips">${topics.map((t) => `<a href="/verses-about/${t.slug}">Bible verses about ${esc(t.name)}</a>`).join("")}</div>` : ""}
+<p style="font-size:14px;margin-top:20px">Come back tomorrow for a new verse, or <a href="/verses-about">browse verses by topic</a> and <a href="/bible">read the whole Bible</a> any time.</p>
+${promo(r.book, r.chapter, r.from)}`;
+  const description = `Today's Bible verse of the day (${dateStr}): ${label} — "${snippet(text, 140)}" A new King James Version verse every day.`;
+  const jsonld = webPageLd([
+    { "@type": "WebPage", name: "Verse of the Day", url: SITE + "/verse-of-the-day", description, isPartOf: { "@id": SITE + "/#website" },
+      mainEntity: { "@type": "CreativeWork", name: label, text, inLanguage: "en", isPartOf: { "@type": "Book", name: "The Holy Bible, King James Version" }, license: "https://creativecommons.org/publicdomain/mark/1.0/" } },
+    breadcrumbLd([["Home", "/"], ["Verse of the day", "/verse-of-the-day"]]),
+  ]);
+  return ok(shell({ title: `Verse of the Day – ${label} | ${SITE_NAME}`, description, canonical: "/verse-of-the-day", h, jsonld, ogImage: `${SITE}/api/og?ref=${encodeURIComponent(label)}`, pageType: "verse-of-the-day", ref: label }),
+    "public, max-age=0, s-maxage=3600, stale-while-revalidate=300");
+}
+
 /* ------------------------------------------------------------------ sitemaps */
 const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
@@ -449,7 +478,7 @@ function sitemapIndex() {
 }
 function sitemapFile(name) {
   if (name === "pages") {
-    const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/privacy", "0.3"], ["/terms", "0.3"]];
+    const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
     for (const b of books()) { urls.push([bookUrl(b), "0.7"]); b.chapters.forEach((_, i) => urls.push([chapterUrl(b, i + 1), "0.6"])); }
     return xml(urlset(urls));
@@ -474,6 +503,7 @@ export function render(q = {}) {
   if (kind === "sitemap-index") return sitemapIndex();
   if (kind === "sitemap") return sitemapFile(String(q.file || "").replace(/\.xml$/, ""));
   if (kind === "topics") return topicsIndex();
+  if (kind === "votd") return votdPage();
   if (kind === "topic") {
     const slug = String(q.topic || "").toLowerCase();
     const t = TOPIC_BY_SLUG.get(slug);

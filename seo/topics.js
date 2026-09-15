@@ -61,6 +61,27 @@ const extra = [
     verses: ["Deuteronomy 31:6", "Psalm 25:16", "Isaiah 41:10", "Matthew 28:20", "Psalm 68:6", "Hebrews 13:5", "Psalm 139:7-10", "Joshua 1:9", "Psalm 27:10", "John 14:18", "Psalm 23:4", "1 Peter 5:7"] },
   { name: "Comfort", aliases: ["comforting", "gods-comfort"],
     verses: ["2 Corinthians 1:3-4", "Psalm 23:4", "Matthew 11:28-30", "Psalm 34:18", "Isaiah 40:1", "John 14:27", "Psalm 119:50", "Isaiah 51:12", "Psalm 46:1", "Matthew 5:4", "Isaiah 49:13", "Psalm 147:3"] },
+
+  // Seasonal / holiday topics — each keeps its own slug distinct from any
+  // overlapping evergreen topic above (e.g. "thanksgiving-day" not
+  // "thanksgiving", which already 301s to Thankfulness) so neither
+  // cannibalizes the other's title tag.
+  { name: "Christmas", aliases: ["christmas-eve", "birth-of-jesus", "the-nativity", "xmas"],
+    verses: ["Luke 2:1-7", "Luke 2:10-11", "Luke 2:14", "Matthew 1:21", "Matthew 1:23", "Isaiah 9:6", "Isaiah 7:14", "Matthew 2:1-2", "Luke 1:30-31", "John 1:14", "Titus 2:11", "Luke 2:6-7"] },
+  { name: "Easter", aliases: ["resurrection-sunday", "resurrection-day", "he-is-risen", "good-friday", "holy-week"],
+    verses: ["Matthew 28:5-6", "Luke 24:6-7", "Mark 16:6", "John 11:25-26", "1 Corinthians 15:3-4", "1 Corinthians 15:20-22", "Romans 6:4", "John 20:1-2", "Acts 2:24", "Romans 10:9", "1 Peter 1:3", "John 3:16"] },
+  { name: "Thanksgiving Day", aliases: ["thanksgiving-dinner", "happy-thanksgiving"],
+    verses: ["Psalm 100:4-5", "1 Chronicles 16:34", "Psalm 107:1", "1 Thessalonians 5:18", "Colossians 3:15", "Psalm 118:1", "Psalm 95:2-3", "Philippians 4:6", "2 Corinthians 9:15", "Psalm 92:1", "Ephesians 5:20", "Psalm 136:1"] },
+  { name: "New Year", aliases: ["new-years", "new-years-eve", "a-new-year", "fresh-start"],
+    verses: ["Lamentations 3:22-23", "Philippians 3:13-14", "Isaiah 43:18-19", "2 Corinthians 5:17", "Ecclesiastes 3:1", "Proverbs 16:9", "Jeremiah 29:11", "Psalm 90:12", "Revelation 21:5", "Joshua 1:9", "Psalm 118:24", "Isaiah 41:10"] },
+  { name: "Mother's Day", aliases: ["mothers", "for-mom", "a-mothers-love"],
+    verses: ["Proverbs 31:28", "Proverbs 31:25-26", "Proverbs 31:10", "Isaiah 66:13", "Exodus 20:12", "Proverbs 22:6", "1 Thessalonians 2:7", "Proverbs 31:30", "Psalm 127:3", "Titus 2:3-5", "Colossians 3:20", "Proverbs 23:22"] },
+  { name: "Father's Day", aliases: ["fathers", "for-dad", "godly-fathers"],
+    verses: ["Ephesians 6:4", "Proverbs 22:6", "Psalm 103:13", "Deuteronomy 6:6-7", "Proverbs 23:24", "Proverbs 3:12", "Colossians 3:21", "Psalm 127:3-5", "Malachi 4:6", "Proverbs 20:7", "Ephesians 6:1-4", "Genesis 18:19"] },
+  { name: "Valentine's Day", aliases: ["valentines", "romantic-love", "for-my-spouse"],
+    verses: ["1 Corinthians 13:4-7", "Song of Solomon 8:7", "1 John 4:19", "Romans 12:10", "1 Corinthians 13:13", "Ephesians 5:25", "Proverbs 18:22", "Song of Solomon 2:16", "1 Peter 4:8", "Colossians 3:14", "John 15:12", "1 Corinthians 16:14"] },
+  { name: "Graduation", aliases: ["graduating", "graduates", "class-of"],
+    verses: ["Jeremiah 29:11", "Proverbs 3:5-6", "Philippians 4:13", "Joshua 1:9", "Proverbs 16:3", "Isaiah 41:10", "Psalm 32:8", "2 Timothy 1:7", "Philippians 1:6", "Proverbs 4:7", "Ecclesiastes 3:1", "Proverbs 3:6"] },
 ];
 
 // Aliases for the app's own topics (their slugs come from the name)

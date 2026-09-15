@@ -30,7 +30,7 @@ const VERSION_LONG = "King James Version";
 const GA_ID = "G-H116EGYPXS"; // same GA4 property as the app (index.html)
 
 /* ------------------------------------------------------------------ data */
-let _books, _xrefs, _lex, _words, _titles, _bySlug, _byName, _verseTopics;
+let _books, _xrefs, _lex, _words, _titles, _bySlug, _byName, _verseTopics, _commentary;
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(DIR, "data", f), "utf8"));
 
 export function books() {
@@ -44,6 +44,17 @@ const xrefs = () => (_xrefs ??= readJson("xrefs.json"));
 const lexicon = () => (_lex ??= readJson("lexicon.json"));
 const wordsIndex = () => (_words ??= readJson("words.json"));
 const titlesIndex = () => (_titles ??= readJson("titles.json"));
+function commentaryIndex() {
+  if (!_commentary) {
+    try { _commentary = readJson("commentary.json"); }
+    catch { _commentary = {}; }
+  }
+  return _commentary;
+}
+/** Matthew Henry excerpt covering a verse key ("Jhn|3|16"), if any: { excerpt, range }. */
+function commentaryFor(key) {
+  return commentaryIndex()[key] || null;
+}
 
 const SLUG_ALIASES = {
   psalm: "psalms", "song-of-songs": "song-of-solomon", songs: "song-of-solomon", canticles: "song-of-solomon",
@@ -179,6 +190,8 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 .chapter .ttl{font-style:italic;color:var(--brown-light);font-size:16px;margin:0 0 .6em}
 .ctx p{margin:0 0 .5em;font-family:Georgia,serif;font-size:17px;line-height:1.6}.ctx .n{font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;color:var(--gold-dark);margin-right:6px}
 .ctx p.hl{background:#fff3b0;border-radius:6px;padding:6px 10px;margin-left:-10px;margin-right:-10px}
+.commentary{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.commentary p{margin:0 0 .6em;font-size:15px;line-height:1.65}.commentary .cite{margin:0;font-size:13px;color:var(--brown-light);font-style:italic}
 ul.refs{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px 14px;font-size:15px}
 ul.words{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 ul.words li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px}
@@ -383,6 +396,7 @@ function versePage(b, c, from, to) {
   for (let v = from; v <= to; v++) for (const r of xr[`${b.abbr}|${c}|${v}`] || []) if (!refs.includes(r) && parseRef(r)) refs.push(r);
   const words = keyWords(Array.from({ length: to - from + 1 }, (_, i) => `${b.abbr}|${c}|${from + i}`), single ? 6 : 8);
   const topics = []; for (let v = from; v <= to; v++) for (const t of verseTopics().get(`${b.abbr}|${c}|${v}`) || []) if (!topics.includes(t)) topics.push(t);
+  const commentary = commentaryFor(`${b.abbr}|${c}|${from}`);
 
   const h = `${crumbs([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)], [chapterLabel(b, c), chapterUrl(b, c)], [label, verseUrl(b, c, from, to)]])}
 <h1>${esc(label)} <span class="badge">${VERSION}</span></h1>
@@ -391,6 +405,7 @@ ${scripture}
 <div class="actions"><a class="btn primary" href="${appChapterUrl(b, c, from)}" data-cta="verse-study-app">Study in the app</a><a class="btn" href="${chapterUrl(b, c)}#${from}" data-cta="verse-read-chapter">Read ${esc(chapterLabel(b, c))} in full</a><a class="btn" href="/api/og?ref=${encodeURIComponent(label)}" data-cta="verse-share-image" download="${attr(label.replace(/[: ]/g, "-"))}.png">Share image</a></div>
 <h2>${esc(label)} in context</h2><div class="ctx">${context}</div>
 <p style="font-size:14px"><a href="${chapterUrl(b, c)}">Read all of ${esc(chapterLabel(b, c))} →</a></p>
+${commentary ? `<h2>Commentary</h2><div class="commentary"><p>${esc(commentary.excerpt)}</p><p class="cite">— Matthew Henry's Concise Commentary${commentary.range && commentary.range !== String(from) ? ` on verses ${esc(commentary.range)}` : ""}</p></div>` : ""}
 ${refs.length ? `<h2>Cross references</h2><ul class="refs">${refs.slice(0, 12).map((r) => `<li>${refLink(r)}</li>`).join("")}</ul>` : ""}
 ${words.length ? `<h2>Key words (Strong's)</h2><ul class="words">${words.map((w) => `<li><b>${esc(w.word)}</b><span class="tr">${esc(w.translit)}</span>${esc(w.def)}<a class="code" href="/word/${w.code}" data-cta="verse-word-study">${w.code} →</a></li>`).join("")}</ul>` : ""}
 ${topics.length ? `<h2>Topics</h2><div class="chips">${topics.map((t) => `<a href="/verses-about/${t.slug}">Bible verses about ${esc(t.name)}</a>`).join("")}</div>` : ""}

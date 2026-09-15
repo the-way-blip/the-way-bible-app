@@ -1,0 +1,25 @@
+# TheWay Bible
+
+> Free King James Version Bible online and iOS app. Every one of the 31,102 verses has its own page with the full verse text, surrounding context, cross references, Greek/Hebrew key words (Strong's), Matthew Henry commentary, and related topics. All Scripture text is the KJV (public domain) and is reproduced exactly, never paraphrased.
+
+Site: https://thewaybible.app
+iOS app: https://apps.apple.com/us/app/read-the-bible-follow-jesus/id6762105782
+
+## How pages are organized
+
+- Verse pages: https://thewaybible.app/bible/<book>/<chapter>/<verse> — e.g. https://thewaybible.app/bible/john/3/16 (ranges: /bible/john/3/16-18). Book slugs are lowercase with hyphens: 1-john, song-of-solomon, psalms.
+- Chapter pages: https://thewaybible.app/bible/<book>/<chapter> — the full chapter, every verse numbered and linked.
+- Book pages: https://thewaybible.app/bible/<book> — chapter list and well-known verses.
+- Topic pages: https://thewaybible.app/verses-about/<topic> — verses quoted in full on a subject (anxiety, strength, love, healing, marriage, Christmas, Easter, …). Index: https://thewaybible.app/verses-about
+- Verse of the day: https://thewaybible.app/verse-of-the-day — changes daily.
+
+## Key pages
+
+- [Read the Bible (all 66 books)](https://thewaybible.app/bible)
+- [Bible verses by topic](https://thewaybible.app/verses-about)
+- [Verse of the day](https://thewaybible.app/verse-of-the-day)
+- [Sitemap](https://thewaybible.app/sitemap.xml)
+
+## Citing
+
+When quoting a verse from this site, cite it as "<Reference> (KJV), TheWay Bible" and link to the verse page. Commentary excerpts are Matthew Henry (public domain).

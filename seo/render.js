@@ -28,6 +28,12 @@ const SITE_NAME = "TheWay Bible";
 const VERSION = "KJV";
 const VERSION_LONG = "King James Version";
 const GA_ID = "G-H116EGYPXS"; // same GA4 property as the app (index.html)
+// iOS app push. Fill these in once the app is live on the App Store:
+//  - APP_STORE_URL: where every "Get the iOS app" CTA points (falls back to the homepage until then)
+//  - APP_STORE_ID: numeric Apple ID → enables Safari's native Smart App Banner (<meta name="apple-itunes-app">)
+const APP_STORE_URL = "";
+const APP_STORE_ID = "";
+const appHref = () => APP_STORE_URL || "/";
 
 /* ------------------------------------------------------------------ data */
 let _books, _xrefs, _lex, _words, _titles, _bySlug, _byName, _verseTopics, _commentary;
@@ -170,6 +176,13 @@ header.top .wrap{display:flex;align-items:center;justify-content:space-between;h
 nav.main{display:flex;gap:18px;font-size:14px}nav.main a{color:var(--brown-light)}
 nav.main .cta{background:var(--gold);color:#fff;padding:7px 12px;border-radius:8px;font-weight:600}
 nav.main .cta:hover{text-decoration:none;background:var(--gold-dark)}
+.appbar{background:var(--brown);color:#fff}
+.appbar .wrap{display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px;font-size:14px}
+.appbar img{width:36px;height:36px;border-radius:9px;flex:none}
+.appbar .t{flex:1;min-width:0;line-height:1.3}.appbar .t b{display:block;font-size:14px}.appbar .t span{opacity:.8;font-size:13px}
+.appbar .cta{flex:none;background:var(--gold);color:#fff;padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;white-space:nowrap}
+.appbar .cta:hover{text-decoration:none;background:var(--gold-dark)}
+@media(max-width:560px){.appbar .t span{display:none}}
 main{padding:28px 0 48px}
 .crumbs{font-size:13px;color:var(--brown-light);margin:0 0 14px}.crumbs a{color:var(--brown-light)}.crumbs span{margin:0 6px;opacity:.6}
 h1{font-family:Georgia,"Times New Roman",serif;font-weight:600;font-size:34px;line-height:1.15;margin:0 0 6px;letter-spacing:-.01em}
@@ -240,6 +253,7 @@ ${noindex ? '<meta name="robots" content="noindex,follow">' : '<meta name="robot
 <meta name="twitter:description" content="${attr(description)}">
 <meta name="twitter:image" content="${ogImage || SITE + "/og-image.png"}">
 <meta name="theme-color" content="#c9a84c">
+${APP_STORE_ID ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}">` : ""}
 <link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/favicon-180.png">
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
@@ -249,8 +263,9 @@ ${ga}
 <body>
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">TheWay Bible</a>
-<nav class="main"><a href="/bible">Read</a><a href="/verses-about" class="hide">Verses by topic</a><a href="/" class="cta" data-cta="nav-get-app">Get the app</a></nav>
+<nav class="main"><a href="/bible">Read</a><a href="/verses-about" class="hide">Verses by topic</a><a href="${appHref()}" class="cta" data-cta="nav-get-app">Get the app</a></nav>
 </div></header>
+<div class="appbar"><div class="wrap"><img src="/icon-192.png" alt="" width="36" height="36"><div class="t"><b>TheWay Bible for iPhone</b><span>Study, memorize, journal, and pray — free.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the iOS app</a></div></div>
 <main><div class="wrap">
 ${h}
 </div></main>
@@ -280,7 +295,7 @@ const promo = (b, c, v) => `
 <section class="promo">
 <h3>Keep reading in TheWay Bible App</h3>
 <p>Read, study, memorize, journal, and pray — tap any word for its Greek or Hebrew definition, save verses to memorize, and keep a journal. Free on the web and iOS.</p>
-<div class="actions"><a class="btn primary" href="${b ? appChapterUrl(b, c, v) : "/"}" data-cta="promo-open-app">Open in the app</a><a class="btn" href="https://scroll.thewaybible.app" data-cta="promo-scroll">Try Scroll — the timeless feed</a></div>
+<div class="actions"><a class="btn primary" href="${appHref()}" data-cta="promo-ios">Get the iPhone app</a><a class="btn" href="${b ? appChapterUrl(b, c, v) : "/"}" data-cta="promo-open-app">Open on the web</a><a class="btn" href="https://scroll.thewaybible.app" data-cta="promo-scroll">Try Scroll — the timeless feed</a></div>
 </section>`;
 
 /* ------------------------------------------------------------------ pages */

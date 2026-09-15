@@ -65,6 +65,14 @@ function commentaryFor(key) {
 const SLUG_ALIASES = {
   psalm: "psalms", "song-of-songs": "song-of-solomon", songs: "song-of-solomon", canticles: "song-of-solomon",
   revelations: "revelation", "the-revelation": "revelation",
+  // common abbreviations typed into the search box
+  gen: "genesis", ex: "exodus", exod: "exodus", lev: "leviticus", num: "numbers", deut: "deuteronomy", dt: "deuteronomy", josh: "joshua", judg: "judges", jdg: "judges",
+  "1-sam": "1-samuel", "2-sam": "2-samuel", "1-kgs": "1-kings", "2-kgs": "2-kings", "1-chr": "1-chronicles", "2-chr": "2-chronicles", neh: "nehemiah", est: "esther",
+  ps: "psalms", psa: "psalms", pss: "psalms", prov: "proverbs", pr: "proverbs", eccl: "ecclesiastes", ecc: "ecclesiastes", song: "song-of-solomon", sos: "song-of-solomon",
+  isa: "isaiah", jer: "jeremiah", lam: "lamentations", ezek: "ezekiel", dan: "daniel", hos: "hosea", mic: "micah", hab: "habakkuk", zeph: "zephaniah", zech: "zechariah", mal: "malachi",
+  matt: "matthew", mt: "matthew", mk: "mark", mrk: "mark", lk: "luke", jn: "john", jhn: "john", rom: "romans", "1-cor": "1-corinthians", "2-cor": "2-corinthians", gal: "galatians",
+  eph: "ephesians", phil: "philippians", php: "philippians", col: "colossians", "1-thess": "1-thessalonians", "2-thess": "2-thessalonians", "1-tim": "1-timothy", "2-tim": "2-timothy",
+  tit: "titus", phlm: "philemon", heb: "hebrews", jas: "james", "1-pet": "1-peter", "2-pet": "2-peter", "1-jn": "1-john", "2-jn": "2-john", "3-jn": "3-john", rev: "revelation",
 };
 function bySlug() {
   if (!_bySlug) {
@@ -124,6 +132,8 @@ function verseTopics() {
 /* ------------------------------------------------------------------ text */
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const attr = esc;
+/** Safe JS string literal for inline scripts (quotes, backslashes, and </script> all neutralised). */
+const js = (s) => JSON.stringify(String(s)).replace(/</g, "\\u003c");
 
 /** Plain text (verse text is already clean; this only normalises whitespace). */
 export function plain(t) {
@@ -170,7 +180,14 @@ body{margin:0;background:var(--cream);color:var(--brown);font:16px/1.6 Inter,sys
 a{color:var(--gold-dark);text-decoration:none}a:hover{text-decoration:underline}
 .wrap{max-width:760px;margin:0 auto;padding:0 20px}
 header.top{border-bottom:1px solid var(--line);background:var(--paper)}
-header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:56px;gap:16px}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:56px;gap:12px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
+form.search{display:flex;flex:1;min-width:180px;max-width:360px;margin:0 auto}
+form.search input{flex:1;min-width:0;border:1px solid var(--line);border-right:0;border-radius:9px 0 0 9px;padding:8px 12px;font:14px Inter,system-ui,sans-serif;color:var(--brown);background:var(--cream)}
+form.search input:focus{outline:none;border-color:var(--gold)}
+form.search button{border:1px solid var(--gold);background:var(--gold);color:#fff;border-radius:0 9px 9px 0;padding:0 12px;font-size:16px;cursor:pointer}
+form.search.big{max-width:none;margin:0 0 22px}form.search.big input{font-size:16px;padding:12px 14px}form.search.big button{padding:0 18px;font:600 15px Inter,system-ui,sans-serif}
+mark{background:#fff3b0;color:inherit;padding:0 2px;border-radius:3px}
+@media(max-width:640px){form.search{order:3;flex-basis:100%;max-width:none}}
 .brand{display:flex;align-items:center;gap:10px;color:var(--brown);font-weight:700;letter-spacing:-.01em}
 .brand img{width:28px;height:28px;border-radius:7px}
 nav.main{display:flex;gap:18px;font-size:14px}nav.main a{color:var(--brown-light)}
@@ -231,8 +248,8 @@ function shell({ title, description, canonical, h, jsonld, ogImage, noindex, pag
   // GA4: same property as the app. content_group / page_type / bible_ref let reports
   // split verse vs chapter vs topic traffic; seo_cta_click measures hand-off into the app.
   const ga = `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
-<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${GA_ID}',{content_group:'${pageType}',page_type:'${pageType}',bible_ref:'${attr(ref)}'});
-document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[data-cta]'):null;if(!a||typeof gtag!=='function')return;gtag('event','seo_cta_click',{cta:a.getAttribute('data-cta'),page_type:'${pageType}',bible_ref:'${attr(ref)}',link_url:a.getAttribute('href'),transport_type:'beacon'})});</script>`;
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${GA_ID}',{content_group:${js(pageType)},page_type:${js(pageType)},bible_ref:${js(ref)}});
+document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[data-cta]'):null;if(!a||typeof gtag!=='function')return;gtag('event','seo_cta_click',{cta:a.getAttribute('data-cta'),page_type:${js(pageType)},bible_ref:${js(ref)},link_url:a.getAttribute('href'),transport_type:'beacon'})});</script>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -263,6 +280,7 @@ ${ga}
 <body>
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">TheWay Bible</a>
+<form class="search" action="/bible/search" role="search"><input type="search" name="q" placeholder="Search verse, topic, or word" aria-label="Search the Bible"><button type="submit" aria-label="Search">⌕</button></form>
 <nav class="main"><a href="/bible">Read</a><a href="/verses-about" class="hide">Verses by topic</a><a href="${appHref()}" class="cta" data-cta="nav-get-app">Get the app</a></nav>
 </div></header>
 <div class="appbar"><div class="wrap"><img src="/icon-192.png" alt="" width="36" height="36"><div class="t"><b>TheWay Bible for iPhone</b><span>Study, memorize, journal, and pray — free.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the iOS app</a></div></div>
@@ -303,6 +321,7 @@ const ok = (body, cache = "public, max-age=0, s-maxage=2592000, stale-while-reva
   status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": cache }, body,
 });
 const redirect = (to) => ({ status: 301, headers: { Location: to, "Cache-Control": "public, s-maxage=2592000" }, body: "" });
+const found = (to) => ({ status: 302, headers: { Location: to, "Cache-Control": "public, s-maxage=86400" }, body: "" });
 const xml = (body) => ({ status: 200, headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=0, s-maxage=86400" }, body });
 
 export function notFound() {
@@ -507,6 +526,88 @@ ${promo(r.book, r.chapter, r.from)}`;
     "public, max-age=0, s-maxage=3600, stale-while-revalidate=300");
 }
 
+/* ------------------------------------------------------------------ search */
+/**
+ * Loose reference parser for the search box: "john 3:16", "John 3 16", "jn 3:16-18",
+ * "psalm 23", "1 john", "1john4:8" → { book, chapter?, from?, to? } or null.
+ */
+function parseLooseRef(q) {
+  const m = /^\s*(\d?\s*[a-z]+(?:\s+(?:of\s+)?[a-z]+)*)\.?\s*(?:(\d+)(?:\s*[:.,\s]\s*(\d+)(?:\s*[-–]\s*(\d+))?)?)?\s*$/i.exec(q);
+  if (!m) return null;
+  const book = findBook(m[1].replace(/\s+/g, "-"));
+  if (!book) return null;
+  if (!m[2]) return { book };
+  const chapter = +m[2];
+  if (chapter < 1 || chapter > book.chapters.length) return null;
+  if (!m[3]) return { book, chapter };
+  const len = book.chapters[chapter - 1].length;
+  const from = +m[3], to = m[4] ? Math.min(+m[4], len) : from;
+  if (from < 1 || from > len || to < from) return { book, chapter };
+  return { book, chapter, from, to };
+}
+
+const STOP = new Set(["the", "and", "of", "a", "to", "in", "that", "he", "shall", "unto", "for", "i", "his", "is", "be", "not", "they", "him", "with", "it", "all", "thou", "thy", "was", "my", "them", "which", "me", "you", "ye", "as", "have", "from", "but", "are", "this", "their", "were", "on", "or", "by", "an", "will", "so", "we", "our", "us"]);
+const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+function searchVerses(q, limit = 50) {
+  const phrase = q.toLowerCase().replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim();
+  const words = phrase.split(" ").filter((w) => w && !STOP.has(w));
+  const terms = words.length ? words : phrase.split(" ").filter(Boolean);
+  if (!terms.length) return { hits: [], terms: [] };
+  const res = new RegExp(terms.map((t) => `\\b${escRe(t)}`).join("|"), "gi");
+  const wordRes = terms.map((t) => new RegExp(`\\b${escRe(t)}`, "i"));
+  const hits = [];
+  for (const b of books()) b.chapters.forEach((ch, ci) => ch.forEach((v, vi) => {
+    const t = v;
+    if (!wordRes.every((re) => re.test(t))) return;
+    const lower = t.toLowerCase();
+    const score = (lower.includes(phrase) ? 100 : 0) + terms.length * 10 - Math.min(t.length / 40, 8);
+    hits.push({ b, c: ci + 1, v: vi + 1, t, score });
+  }));
+  hits.sort((x, y) => y.score - x.score || x.b.index - y.b.index || x.c - y.c || x.v - y.v);
+  return { hits: hits.slice(0, limit), total: hits.length, terms, res };
+}
+
+function searchPage(qRaw) {
+  const q = plain(String(qRaw || "")).slice(0, 120);
+  const form = `<form class="search big" action="/bible/search" role="search"><input type="search" name="q" value="${attr(q)}" placeholder="Search a verse, topic, or word…" aria-label="Search" autofocus><button type="submit">Search</button></form>`;
+  const noindexPage = (title, h, description = "Search the King James Bible by verse, topic, or word.") =>
+    ({ status: 200, headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "public, max-age=0, s-maxage=3600" },
+      body: shell({ title, description, canonical: "/bible/search", h, jsonld: webPageLd([{ "@type": "SearchResultsPage", name: title, url: SITE + "/bible/search" }]), noindex: true, pageType: "search", ref: q }) });
+
+  if (!q) {
+    const h = `${crumbs([["Home", "/"], ["Search", "/bible/search"]])}<h1>Search the Bible <span class="badge">${VERSION}</span></h1>
+<p class="sub">Type a reference (John 3:16, Psalm 23, 1 John 4:8), a topic (anxiety, marriage, funerals), or any word or phrase.</p>${form}
+<h2>Popular topics</h2><div class="chips">${TOPICS.slice(0, 30).map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)}</a>`).join("")}<a href="/verses-about">All ${TOPICS.length} topics →</a></div>${promo()}`;
+    return noindexPage(`Search the Bible (KJV) | ${SITE_NAME}`, h);
+  }
+
+  // 1. A reference → go straight there.
+  const r = parseLooseRef(q);
+  if (r) {
+    if (r.from) return found(verseUrl(r.book, r.chapter, r.from, r.to));
+    if (r.chapter) return found(chapterUrl(r.book, r.chapter));
+    return found(bookUrl(r.book));
+  }
+  // 2. An exact topic name/slug → go straight there.
+  const slugQ = q.toLowerCase().replace(/&/g, "and").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const exact = TOPIC_BY_SLUG.get(slugQ) || TOPIC_BY_SLUG.get(slugQ.replace(/^(bible-)?verses?-(about|for|on)-/, ""));
+  if (exact) return found(`/verses-about/${exact.slug}`);
+
+  // 3. Full-text: matching topics + verses containing every word.
+  const qWords = q.toLowerCase().split(/[^a-z0-9']+/).filter((w) => w && !STOP.has(w));
+  const topicHits = TOPICS.filter((t) => { const hay = `${t.name} ${t.aliases.join(" ")}`.toLowerCase().replace(/-/g, " "); return qWords.some((w) => hay.includes(w)); }).slice(0, 10);
+  const { hits, total = 0, res } = searchVerses(q);
+  const mark = (t) => esc(t).replace(res, (m) => `<mark>${m}</mark>`);
+  const gaSearch = `<script>if(typeof gtag==='function')gtag('event','view_search_results',{search_term:${js(q)},results:${total}});</script>`;
+  const h = `${crumbs([["Home", "/"], ["Search", "/bible/search"], [q, "/bible/search"]])}<h1>Search results for “${esc(q)}” <span class="badge">${VERSION}</span></h1>
+<p class="sub">${total ? `${total.toLocaleString()} verse${total === 1 ? "" : "s"} contain${total === 1 ? "s" : ""} ${qWords.length > 1 ? "all of those words" : "that word"}${total > hits.length ? ` — showing the first ${hits.length}` : ""}.` : "No verses contain every word you typed. Try fewer words, or a reference like John 3:16."}</p>${form}
+${topicHits.length ? `<h2>Topics</h2><div class="chips">${topicHits.map((t) => `<a href="/verses-about/${t.slug}">${esc(topicPhrase(t))}</a>`).join("")}</div>` : ""}
+${hits.length ? `<h2>Verses</h2><div class="results">${hits.map(({ b, c, v, t }) => `<div class="topicv"><p class="r"><a href="${verseUrl(b, c, v)}">${esc(refLabel(b, c, v))}</a></p><blockquote>${mark(plain(t))}</blockquote></div>`).join("")}</div>` : ""}
+${gaSearch}${promo()}`;
+  return noindexPage(`“${q}” – Bible search results (KJV) | ${SITE_NAME}`, h, `Bible verses containing “${q}” in the King James Version.`);
+}
+
 /* ------------------------------------------------------------------ sitemaps */
 const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
@@ -542,6 +643,7 @@ export function render(q = {}) {
   if (kind === "sitemap") return sitemapFile(String(q.file || "").replace(/\.xml$/, ""));
   if (kind === "topics") return topicsIndex();
   if (kind === "votd") return votdPage();
+  if (kind === "search") return searchPage(q.q);
   if (kind === "topic") {
     const slug = String(q.topic || "").toLowerCase();
     const t = TOPIC_BY_SLUG.get(slug);

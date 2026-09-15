@@ -7,6 +7,7 @@ const ROUTES = [
   [/^\/sitemaps\/([^/]+)$/, (m) => ({ kind: "sitemap", file: m[1] })],
   [/^\/verses-about\/?$/, () => ({ kind: "topics" })],
   [/^\/verse-of-the-day\/?$/, () => ({ kind: "votd" })],
+  [/^\/bible\/search\/?$/, () => ({ kind: "search" })],
   [/^\/verses-about\/([^/]+)\/?$/, (m) => ({ kind: "topic", topic: m[1] })],
   [/^\/bible\/?$/, () => ({ kind: "bible" })],
   [/^\/bible\/([^/]+)\/?$/, (m) => ({ kind: "book", book: m[1] })],
@@ -22,6 +23,7 @@ if (process.argv[1] && process.argv[1].endsWith("dev-server.mjs")) {
   http.createServer((req, res) => {
     const url = new URL(req.url, "http://x");
     const q = routeToQuery(decodeURIComponent(url.pathname));
+    if (q && q.kind === "search") q.q = url.searchParams.get("q") || "";
     const out = q ? render(q) : { status: 404, headers: { "Content-Type": "text/plain" }, body: "not an SEO route" };
     res.writeHead(out.status, out.headers); res.end(out.body);
   }).listen(port, () => console.log(`http://localhost:${port}/bible/john/3/16`));

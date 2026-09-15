@@ -13,6 +13,10 @@
       "destination": "/api/bible-page?kind=bible"
     },
     {
+      "source": "/bible/search",
+      "destination": "/api/bible-page?kind=search"
+    },
+    {
       "source": "/bible/:book",
       "destination": "/api/bible-page?kind=book&book=:book"
     },

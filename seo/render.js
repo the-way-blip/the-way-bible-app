@@ -281,7 +281,7 @@ ${ga}
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">TheWay Bible</a>
 <form class="search" action="/bible/search" role="search"><input type="search" name="q" placeholder="Search verse, topic, or word" aria-label="Search the Bible"><button type="submit" aria-label="Search">⌕</button></form>
-<nav class="main"><a href="/bible">Read</a><a href="/verses-about" class="hide">Verses by topic</a><a href="${appHref()}" class="cta" data-cta="nav-get-app">Get the app</a></nav>
+<nav class="main"><a href="/bible">Read</a><a href="/verses-about">Topics</a><a href="/verse-of-the-day" class="hide">Verse of the day</a></nav>
 </div></header>
 <div class="appbar"><div class="wrap"><img src="/icon-192.png" alt="" width="36" height="36"><div class="t"><b>TheWay Bible for iPhone</b><span>Study, memorize, journal, and pray — free.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the iOS app</a></div></div>
 <main><div class="wrap">

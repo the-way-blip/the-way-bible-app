@@ -31,8 +31,8 @@ const GA_ID = "G-H116EGYPXS"; // same GA4 property as the app (index.html)
 // iOS app push. Fill these in once the app is live on the App Store:
 //  - APP_STORE_URL: where every "Get the iOS app" CTA points (falls back to the homepage until then)
 //  - APP_STORE_ID: numeric Apple ID → enables Safari's native Smart App Banner (<meta name="apple-itunes-app">)
-const APP_STORE_URL = "";
-const APP_STORE_ID = "";
+const APP_STORE_URL = "https://apps.apple.com/us/app/read-the-bible-follow-jesus/id6762105782";
+const APP_STORE_ID = "6762105782";
 const appHref = () => APP_STORE_URL || "/";
 
 /* ------------------------------------------------------------------ data */

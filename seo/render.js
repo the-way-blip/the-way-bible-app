@@ -423,7 +423,7 @@ ${scripture}
 ${commentary ? `<h2>Commentary</h2><div class="commentary"><p>${esc(commentary.excerpt)}</p><p class="cite">— Matthew Henry's Concise Commentary${commentary.range && commentary.range !== String(from) ? ` on verses ${esc(commentary.range)}` : ""}</p></div>` : ""}
 ${refs.length ? `<h2>Cross references</h2><ul class="refs">${refs.slice(0, 12).map((r) => `<li>${refLink(r)}</li>`).join("")}</ul>` : ""}
 ${words.length ? `<h2>Key words (Strong's)</h2><ul class="words">${words.map((w) => `<li><b>${esc(w.word)}</b><span class="tr">${esc(w.translit)}</span>${esc(w.def)}<a class="code" href="/word/${w.code}" data-cta="verse-word-study">${w.code} →</a></li>`).join("")}</ul>` : ""}
-${topics.length ? `<h2>Topics</h2><div class="chips">${topics.map((t) => `<a href="/verses-about/${t.slug}">Bible verses about ${esc(t.name)}</a>`).join("")}</div>` : ""}
+${topics.length ? `<h2>Topics</h2><div class="chips">${topics.map((t) => `<a href="/verses-about/${t.slug}">${esc(topicPhrase(t))}</a>`).join("")}</div>` : ""}
 <div class="pn"><span>${prev ? `<a href="${verseUrl(prev[0], prev[1], prev[2])}">← ${esc(refLabel(prev[0], prev[1], prev[2]))}</a>` : ""}</span><span>${next ? `<a href="${verseUrl(next[0], next[1], next[2])}">${esc(refLabel(next[0], next[1], next[2]))} →</a>` : ""}</span></div>
 ${promo(b, c, from)}`;
 
@@ -451,26 +451,34 @@ ${promo()}`;
   return ok(shell({ title: `Bible Verses by Topic – ${TOPICS.length} Topics (KJV) | ${SITE_NAME}`, description: `Bible verses by topic in the King James Version: anxiety, strength, love, healing, hope, marriage, forgiveness, and ${TOPICS.length - 7} more. Every verse in full, linked to its chapter.`, canonical: "/verses-about", h, jsonld, pageType: "verses-index" }));
 }
 
+/** "Bible verses about Anxiety" / "Bible verses for Weddings" / "Short Bible Verses" — per-topic phrasing. */
+const topicPhrase = (t, cap = false) => {
+  if (t.heading) return t.heading;
+  const prep = t.prep || "about";
+  return cap ? `Bible Verses ${prep[0].toUpperCase()}${prep.slice(1)} ${t.name}` : `Bible verses ${prep} ${t.name}`;
+};
+
 function topicPage(t) {
   const items = t.verses.map((ref) => ({ ref, r: parseRef(ref) })).filter((x) => x.r);
   const n = items.length;
+  const phraseLower = t.heading ? t.heading : `Bible verses ${t.prep || "about"} ${t.name.toLowerCase()}`;
   const list = items.map(({ ref, r }) => `<div class="topicv"><p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a> <span style="font-weight:400;color:var(--brown-light)">· ${VERSION}</span></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote></div>`).join("");
   const related = TOPICS.filter((o) => o !== t && o.verses.some((v) => t.verses.includes(v))).slice(0, 8);
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
-<h1>${n} Bible verses about ${esc(t.name)} <span class="badge">${VERSION}</span></h1>
+<h1>${n} ${esc(topicPhrase(t))} <span class="badge">${VERSION}</span></h1>
 <p class="sub">Each verse is quoted in full from the King James Version. Tap the reference to read it in context, see cross references, and study the original words.</p>
 ${list}
 ${related.length ? `<h2>Related topics</h2><div class="chips">${related.map((o) => `<a href="/verses-about/${o.slug}">${esc(o.name)}</a>`).join("")}</div>` : ""}
 <p style="font-size:14px;margin-top:20px"><a href="/verses-about">All ${TOPICS.length} topics →</a></p>
 ${promo()}`;
   const first = items[0];
-  const description = `${n} Bible verses about ${t.name.toLowerCase()} from the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}. Read each one in context.`;
+  const description = `${n} ${phraseLower} from the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}. Read each one in context.`;
   const jsonld = webPageLd([
-    { "@type": "CollectionPage", name: `Bible verses about ${t.name}`, url: SITE + `/verses-about/${t.slug}`, description, isPartOf: { "@id": SITE + "/#website" },
+    { "@type": "CollectionPage", name: topicPhrase(t), url: SITE + `/verses-about/${t.slug}`, description, isPartOf: { "@id": SITE + "/#website" },
       mainEntity: { "@type": "ItemList", numberOfItems: n, itemListElement: items.map(({ ref, r }, i) => ({ "@type": "ListItem", position: i + 1, name: ref, url: SITE + verseUrl(r.book, r.chapter, r.from, r.to) })) } },
     breadcrumbLd([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]]),
   ]);
-  return ok(shell({ title: `${n} Bible Verses About ${t.name} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: first ? `${SITE}/api/og?ref=${encodeURIComponent(first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
+  return ok(shell({ title: `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: first ? `${SITE}/api/og?ref=${encodeURIComponent(first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
 }
 
 function votdPage() {
@@ -486,7 +494,7 @@ function votdPage() {
 <p class="sub">${esc(dateStr)} · a new verse every day, drawn from a curated pool of the Bible's best-known encouragement, comfort, and truth.</p>
 ${scripture}
 <div class="actions"><a class="btn primary" href="${appChapterUrl(r.book, r.chapter, r.from)}" data-cta="votd-study-app">Study in the app</a><a class="btn" href="${verseUrl(r.book, r.chapter, r.from, r.to)}" data-cta="votd-read-verse">Read ${esc(label)} in context</a><a class="btn" href="/api/og?ref=${encodeURIComponent(label)}" data-cta="votd-share-image" download="${attr(label.replace(/[: ]/g, "-"))}.png">Share image</a></div>
-${topics.length ? `<h2>Topics</h2><div class="chips">${topics.map((t) => `<a href="/verses-about/${t.slug}">Bible verses about ${esc(t.name)}</a>`).join("")}</div>` : ""}
+${topics.length ? `<h2>Topics</h2><div class="chips">${topics.map((t) => `<a href="/verses-about/${t.slug}">${esc(topicPhrase(t))}</a>`).join("")}</div>` : ""}
 <p style="font-size:14px;margin-top:20px">Come back tomorrow for a new verse, or <a href="/verses-about">browse verses by topic</a> and <a href="/bible">read the whole Bible</a> any time.</p>
 ${promo(r.book, r.chapter, r.from)}`;
   const description = `Today's Bible verse of the day (${dateStr}): ${label} — "${snippet(text, 140)}" A new King James Version verse every day.`;

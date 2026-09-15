@@ -10,6 +10,7 @@
  * `aliases` are alternate slugs that 301 to the canonical page.
  */
 import appTopics from "../src/data/topicIndex.js";
+import { MORE_TOPICS } from "./topics-more.js";
 
 const slugOf = (name) =>
   name.toLowerCase().replace(/&/g, "and").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -130,7 +131,7 @@ const fromApp = appTopics.map((t) => {
   return { name: t.name, slug, aliases: appAliases[slug] || [], verses: withMore(slug, t.verses) };
 });
 
-export const TOPICS = [...fromApp, ...extra.map((t) => ({ ...t, slug: slugOf(t.name), verses: withMore(slugOf(t.name), t.verses) }))]
+export const TOPICS = [...fromApp, ...[...extra, ...MORE_TOPICS].map((t) => ({ ...t, slug: slugOf(t.name), verses: withMore(slugOf(t.name), t.verses) }))]
   .sort((a, b) => a.name.localeCompare(b.name));
 
 export const TOPIC_BY_SLUG = new Map();

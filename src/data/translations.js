@@ -1,7 +1,9 @@
 /**
  * Available Bible translations.
- * - source: "bible-api" (KJV, free public-domain — bible-api.com)
- *         | "api-bible" (modern translations via API.Bible — needs API key server-side)
+ * - source: "bible-api" (public-domain texts — bible-api.com, free, no key, no quota)
+ *         | "api-bible" (copyrighted translations via API.Bible — needs API key server-side,
+ *           5,000 calls/month on the free plan, so only use it where we have to)
+ * - apiCode: bible-api.com translation code (only for bible-api sources)
  * - bibleId: API.Bible's bible id (only for api-bible sources)
  * - copyright: short attribution shown under the chapter text
  * - details: longer info shown in Settings — translation philosophy, history, etc.
@@ -14,6 +16,7 @@ const TRANSLATIONS = [
     language: "English",
     description: "The classic 1611 translation. Public domain.",
     source: "bible-api",
+    apiCode: "kjv",
     copyright: "Public domain.",
     isDefault: true,
     details: {
@@ -85,8 +88,8 @@ const TRANSLATIONS = [
     short: "ASV",
     language: "English",
     description: "1901 formal translation. Public domain.",
-    source: "api-bible",
-    bibleId: "06125adad2d5898a-01",
+    source: "bible-api",
+    apiCode: "asv",
     copyright: "Public domain.",
     details: {
       year: "1901",
@@ -103,8 +106,8 @@ const TRANSLATIONS = [
     short: "WEB",
     language: "English",
     description: "Modern public-domain update of the ASV.",
-    source: "api-bible",
-    bibleId: "9879dbb7cfe39e4d-04",
+    source: "bible-api",
+    apiCode: "web",
     copyright: "Public domain.",
     details: {
       year: "2000 (ongoing)",

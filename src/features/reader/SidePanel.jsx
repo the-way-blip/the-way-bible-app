@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { getChapterCrossReferences } from "../../services/crossReferences";
 import { fetchCommentaries } from "../../services/commentaryService";
-import { USFM_BOOK_IDS } from "../../data/translations";
+import { getVerseTextCached } from "../../services/bibleApi";
 import useJournal from "../../hooks/useJournal";
 import { tokenizeRefs } from "../../utils/scriptureRef";
 import useT from "../../hooks/useT";
@@ -118,12 +118,9 @@ function CommentaryTab({ book, chapter }) {
     setLoading(true);
     setCommentaries([]);
     setExpanded(null);
-    fetchCommentaries(book, chapter).then((data) => {
-      if (!cancelled) {
-        setCommentaries(data);
-        setLoading(false);
-      }
-    });
+    fetchCommentaries(book, chapter)
+      .then((data) => { if (!cancelled) { setCommentaries(data); setLoading(false); } })
+      .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [book, chapter]);
 
@@ -199,33 +196,19 @@ function CommentaryTab({ book, chapter }) {
 }
 
 /* ─── Compare Tab ─── */
+// Text comes from the shared chapter cache (services/bibleApi getVerseTextCached):
+// one chapter fetch per translation, then every verse tap in that chapter is
+// served locally. Sources per translation live in data/translations.js.
 const COMPARE_TRANSLATIONS = [
-  { id: "KJV",  name: "King James Version",    short: "KJV",  source: "bible-api" },
-  { id: "CSB",  name: "Christian Standard",     short: "CSB",  source: "api-bible", bibleId: "a556c5305ee15c3f-01" },
-  { id: "NLT",  name: "New Living Translation", short: "NLT",  source: "api-bible", bibleId: "d6e14a625393b4da-01" },
-  { id: "AMP",  name: "Amplified Bible",        short: "AMP",  source: "api-bible", bibleId: "a81b73293d3080c9-01" },
-  { id: "ASV",  name: "American Standard",      short: "ASV",  source: "api-bible", bibleId: "06125adad2d5898a-01" },
+  { id: "KJV", name: "King James Version",    short: "KJV" },
+  { id: "CSB", name: "Christian Standard",     short: "CSB" },
+  { id: "NLT", name: "New Living Translation", short: "NLT" },
+  { id: "AMP", name: "Amplified Bible",        short: "AMP" },
+  { id: "ASV", name: "American Standard",      short: "ASV" },
 ];
 
-async function fetchVerseText(translation, book, chapter, verse) {
-  if (translation.source === "bible-api") {
-    const res = await fetch(
-      `https://bible-api.com/${encodeURIComponent(book)}+${chapter}:${verse}?translation=kjv`
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.text?.trim() || null;
-  }
-
-  // API.Bible — via our verse proxy
-  const bookId = USFM_BOOK_IDS[book];
-  if (!bookId) return null;
-  const res = await fetch(
-    `/api/bible-verse?bibleId=${translation.bibleId}&book=${bookId}&chapter=${chapter}&verse=${verse}`
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.text?.trim() || null;
+function fetchVerseText(translation, book, chapter, verse) {
+  return getVerseTextCached(book, chapter, verse, translation.id);
 }
 
 function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
@@ -239,6 +222,7 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
     if (selectedVerse && selectedVerse !== verse) {
       setVerse(selectedVerse);
       setInputVerse(String(selectedVerse));
+      runCompare(selectedVerse);
     }
   }, [selectedVerse]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -262,21 +246,17 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
     [book, chapter]
   );
 
-  // Auto-load when verse or chapter changes
-  useEffect(() => {
-    runCompare(verse);
-  }, [verse, runCompare]);
-
-  // Also reload when book/chapter changes
+  // When book/chapter changes, reset verse and run compare once
   useEffect(() => {
     const v = selectedVerse || 1;
     setVerse(v);
     setInputVerse(String(v));
+    runCompare(v);
   }, [book, chapter]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGo = () => {
     const v = parseInt(inputVerse, 10);
-    if (v > 0) setVerse(v);
+    if (v > 0) { setVerse(v); runCompare(v); }
   };
 
   return (
@@ -290,7 +270,7 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
           min="1"
           onChange={(e) => setInputVerse(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleGo()}
-          className="w-14 bg-white rounded-lg px-2 py-1 text-xs text-center text-warm-brown focus:outline-none focus:ring-1 focus:ring-gold/30"
+          className="w-14 bg-white rounded-lg px-2 py-1 text-[16px] text-center text-warm-brown focus:outline-none focus:ring-1 focus:ring-gold/30"
         />
         <button
           type="button"
@@ -345,19 +325,16 @@ function CompareTab({ book, chapter, selectedVerse, currentTranslation }) {
 function CrossRefsTab({ book, chapter }) {
   const t = useT();
   const [refs, setRefs] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState({});
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setExpanded({});
-    getChapterCrossReferences(book, chapter).then((data) => {
-      if (!cancelled) {
-        setRefs(data);
-        setLoading(false);
-      }
-    });
+    getChapterCrossReferences(book, chapter)
+      .then((data) => { if (!cancelled) { setRefs(data); setLoading(false); } })
+      .catch(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
   }, [book, chapter]);
 
@@ -447,6 +424,7 @@ function CrossRefsTab({ book, chapter }) {
 function WordStudyTab({ wordInfo }) {
   const t = useT();
   const [chipSearch, setChipSearch] = useState(null);
+  const chipAbortRef = useRef(null);
 
   if (!wordInfo) {
     return (
@@ -491,9 +469,12 @@ function WordStudyTab({ wordInfo }) {
     const trimmed = eng.trim().replace(/[^a-zA-Z\s]/g, "").trim();
     if (!trimmed) return;
     if (chipSearch?.word === trimmed) { setChipSearch(null); return; }
+    chipAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    chipAbortRef.current = ctrl;
     setChipSearch({ word: trimmed, results: [], loading: true });
     try {
-      const res = await fetch("/data/search-index.json");
+      const res = await fetch("/data/search-index.json", { signal: ctrl.signal });
       const index = await res.json();
       const lower = trimmed.toLowerCase();
       const found = [];
@@ -504,9 +485,9 @@ function WordStudyTab({ wordInfo }) {
           if (found.length >= 30) break;
         }
       }
-      setChipSearch({ word: trimmed, results: found, loading: false });
-    } catch {
-      setChipSearch({ word: trimmed, results: [], loading: false });
+      if (!ctrl.signal.aborted) setChipSearch({ word: trimmed, results: found, loading: false });
+    } catch (e) {
+      if (e.name !== "AbortError") setChipSearch({ word: trimmed, results: [], loading: false });
     }
   };
 
@@ -748,7 +729,7 @@ function JournalTab({ book, chapter }) {
           onChange={(e) => setText(e.target.value)}
           onInput={(e) => { e.target.style.height = "auto"; e.target.style.height = Math.max(96, e.target.scrollHeight) + "px"; }}
           placeholder={t("panel.reflectionPlaceholder")}
-          className="w-full bg-white rounded-lg px-3 py-2 text-xs text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-1 focus:ring-gold/30 font-scripture leading-relaxed"
+          className="w-full bg-white rounded-lg px-3 py-2 text-[16px] text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-1 focus:ring-gold/30 font-scripture leading-relaxed"
           style={{ minHeight: "96px" }}
         />
         <button

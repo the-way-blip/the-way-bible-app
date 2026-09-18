@@ -35,7 +35,7 @@ function getDB() {
           db.createObjectStore("readingPlanProgress", { keyPath: "id" });
         }
       },
-    });
+    }).catch((err) => { dbPromise = null; throw err; });
   }
   return dbPromise;
 }

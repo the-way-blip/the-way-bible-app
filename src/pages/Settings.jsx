@@ -70,7 +70,7 @@ export default function Settings() {
               <button
                 onClick={() => setShowDeleteAccountModal(false)}
                 disabled={deletingAccount}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold bg-gold text-white hover:bg-gold/90 transition-colors disabled:opacity-50"
+                className="flex-1 py-3 rounded-xl text-sm font-semibold border border-cream-dark text-warm-brown-light hover:bg-cream transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -149,7 +149,7 @@ export default function Settings() {
           <input
             type="range"
             min="14"
-            max="24"
+            max="28"
             step="2"
             value={fontSize}
             onChange={(e) => setFontSize(parseInt(e.target.value))}
@@ -481,7 +481,7 @@ function DataManagement({ t }) {
       a.href = url;
       a.download = `the-way-backup-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
-      URL.revokeObjectURL(url);
+      setTimeout(() => URL.revokeObjectURL(url), 100);
     } catch (err) {
       alert("Export failed: " + err.message);
     }
@@ -579,9 +579,11 @@ function DataManagement({ t }) {
         isOpen={showDeleteModal}
         onCancel={() => setShowDeleteModal(false)}
         onConfirm={() => {
-          indexedDB.deleteDatabase("scripture-study");
           localStorage.clear();
-          window.location.href = "/";
+          new Promise((res) => {
+            const req = indexedDB.deleteDatabase("scripture-study");
+            req.onsuccess = res; req.onerror = res; req.onblocked = res;
+          }).then(() => { window.location.href = "/"; });
         }}
       />
     </div>

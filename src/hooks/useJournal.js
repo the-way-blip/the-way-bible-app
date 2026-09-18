@@ -10,7 +10,7 @@ export default function useJournal() {
 
   const load = useCallback(async () => {
     const items = await dbGetAll("journal");
-    setEntries(items.sort((a, b) => b.createdAt - a.createdAt));
+    setEntries(items.filter((item) => !String(item.id || "").startsWith("prayer-")).sort((a, b) => b.createdAt - a.createdAt));
     setLoading(false);
   }, []);
 

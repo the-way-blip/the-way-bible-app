@@ -9,7 +9,8 @@ async function loadData() {
   if (loading) return loading;
   loading = fetch("/data/cross-references.json")
     .then((r) => r.json())
-    .then((d) => { data = d; return d; });
+    .then((d) => { data = d; loading = null; return d; })
+    .catch((err) => { loading = null; throw err; });
   return loading;
 }
 

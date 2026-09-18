@@ -6,6 +6,7 @@ let concordanceCache = null;
 async function getConcordance() {
   if (concordanceCache) return concordanceCache;
   const res = await fetch("/data/concordance.json");
+  if (!res.ok) throw new Error(`concordance fetch failed: ${res.status}`);
   concordanceCache = await res.json();
   return concordanceCache;
 }

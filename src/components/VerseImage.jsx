@@ -240,7 +240,7 @@ export default function VerseImage({ content, reference, onClose }) {
       // Render at preview resolution (scaled down for perf)
       const previewW = Math.min(size.w, 540);
       const previewH = previewW * (size.h / size.w);
-      drawCanvas(previewCanvasRef.current, previewW, previewH);
+      drawCanvas(previewCanvasRef.current, previewW, previewH).catch(() => {});
     }
   }, [drawCanvas, size]);
 

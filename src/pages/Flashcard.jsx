@@ -86,14 +86,12 @@ export default function Flashcard() {
   }
 
   // Generate first-letter hint
-  const firstLetterHint = current?.text
-    .split(/\s+/)
+  const firstLetterHint = current?.text?.split(/\s+/)
     .map((w) => w[0] + "_".repeat(Math.max(0, w.replace(/[.,;:!?]/g, "").length - 1)) + (w.match(/[.,;:!?]$/)?.[0] || ""))
     .join(" ");
 
   // Generate fill-in-the-blank (hide every 3rd word)
-  const fillBlank = current?.text
-    .split(/\s+/)
+  const fillBlank = current?.text?.split(/\s+/)
     .map((w, i) => (i % 3 === 2 ? "____" : w))
     .join(" ");
 
@@ -184,7 +182,7 @@ export default function Flashcard() {
               value={userInput}
               onChange={(e) => setUserInput(e.target.value)}
               placeholder={t("memory.typePlaceholder")}
-              className="w-full h-24 bg-cream rounded-lg px-3 py-2 text-sm text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30 font-scripture"
+              className="w-full h-24 bg-cream rounded-lg px-3 py-2 text-[16px] text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30 font-scripture"
             />
             {!flipped ? (
               <button
@@ -213,10 +211,10 @@ export default function Flashcard() {
         <div className="mt-4">
           <p className="text-xs text-warm-brown-light text-center mb-3">{t("memory.howWell")}</p>
           <div className="grid grid-cols-4 gap-2">
-            <button onClick={() => handleRate(1)} className="py-3 rounded-xl text-sm font-medium bg-red-50 text-red-500 hover:bg-red-100 transition-colors">{t("memory.again")}</button>
-            <button onClick={() => handleRate(2)} className="py-3 rounded-xl text-sm font-medium bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors">{t("memory.hard")}</button>
-            <button onClick={() => handleRate(3)} className="py-3 rounded-xl text-sm font-medium bg-green-50 text-green-600 hover:bg-green-100 transition-colors">{t("memory.good")}</button>
-            <button onClick={() => handleRate(5)} className="py-3 rounded-xl text-sm font-medium bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors">{t("memory.easy")}</button>
+            <button onClick={() => handleRate(1).catch(() => {})} className="py-3 rounded-xl text-sm font-medium bg-red-50 text-red-500 hover:bg-red-100 transition-colors">{t("memory.again")}</button>
+            <button onClick={() => handleRate(2).catch(() => {})} className="py-3 rounded-xl text-sm font-medium bg-orange-50 text-orange-500 hover:bg-orange-100 transition-colors">{t("memory.hard")}</button>
+            <button onClick={() => handleRate(3).catch(() => {})} className="py-3 rounded-xl text-sm font-medium bg-green-50 text-green-600 hover:bg-green-100 transition-colors">{t("memory.good")}</button>
+            <button onClick={() => handleRate(5).catch(() => {})} className="py-3 rounded-xl text-sm font-medium bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors">{t("memory.easy")}</button>
           </div>
         </div>
       )}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PLANS, { getPlan, getCurrentDay } from "../data/readingPlans";
 import useReadingPlanProgress from "../hooks/useReadingPlanProgress";
@@ -26,14 +26,17 @@ export default function ReadingPlan() {
     );
   }
 
+  // If a plan no longer exists in code, clean up the stale record
+  useEffect(() => {
+    if (activeRecord && !getPlan(activeRecord.id)) {
+      stopPlan(activeRecord.id);
+    }
+  }, [activeRecord, getPlan, stopPlan]);
+
   // If a plan is active, show that plan's daily view
   if (activeRecord) {
     const plan = getPlan(activeRecord.id);
-    if (!plan) {
-      // Plan was removed in code — gracefully reset
-      stopPlan(activeRecord.id);
-      return null;
-    }
+    if (!plan) return null;
     return (
       <ActivePlanView
         plan={plan}

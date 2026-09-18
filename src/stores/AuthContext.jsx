@@ -49,24 +49,26 @@ export function AuthProvider({ children }) {
 
     let subscription;
 
-    getSupabase().then((sb) => {
-      if (!sb) { setLoading(false); return; }
+    getSupabase()
+      .then((sb) => {
+        if (!sb) { setLoading(false); return; }
 
-      sb.auth.getSession().then(({ data: { session } }) => {
-        if (session?.user) handleUserLogin(session.user);
-        setLoading(false);
-      });
+        sb.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user) handleUserLogin(session.user);
+          setLoading(false);
+        });
 
-      const { data: { subscription: sub } } = sb.auth.onAuthStateChange((_event, session) => {
-        if (session?.user) {
-          handleUserLogin(session.user);
-        } else {
-          setUser(null);
-          setProfile(null);
-        }
-      });
-      subscription = sub;
-    });
+        const { data: { subscription: sub } } = sb.auth.onAuthStateChange((_event, session) => {
+          if (session?.user) {
+            handleUserLogin(session.user);
+          } else {
+            setUser(null);
+            setProfile(null);
+          }
+        });
+        subscription = sub;
+      })
+      .catch(() => { setLoading(false); });
 
     // Listen for universal-link opens (e.g. email confirmation / password reset)
     let urlListener;
@@ -193,7 +195,12 @@ export function AuthProvider({ children }) {
     // Clear local state after successful server-side deletion
     await sb.auth.signOut();
     localStorage.clear();
-    indexedDB.deleteDatabase("scripture-study");
+    await new Promise((resolve) => {
+      const req = indexedDB.deleteDatabase("scripture-study");
+      req.onsuccess = resolve;
+      req.onerror = resolve;
+      req.onblocked = resolve;
+    });
     setUser(null);
     setProfile(null);
   }

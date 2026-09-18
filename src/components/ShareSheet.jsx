@@ -1,7 +1,7 @@
 import { useState } from "react";
 import VerseImage from "./VerseImage";
 
-export default function ShareSheet({ content, reference, onClose }) {
+export default function ShareSheet({ content, reference, translation, onClose }) {
   const [copied, setCopied] = useState(false);
   const [showImageGen, setShowImageGen] = useState(false);
 
@@ -10,8 +10,9 @@ export default function ShareSheet({ content, reference, onClose }) {
     ? `https://thewaybible.app/?utm_source=share&utm_medium=text&utm_content=${encodeURIComponent(reference)}`
     : "https://thewaybible.app/?utm_source=share";
 
+  const translationLabel = translation || "KJV";
   const shareText = reference
-    ? `"${content}"\n— ${reference} (KJV)\n\n${shareUrl}`
+    ? `"${content}"\n— ${reference} (${translationLabel})\n\n${shareUrl}`
     : `${content}\n\n${shareUrl}`;
 
   const handleCopy = async () => {
@@ -67,7 +68,7 @@ export default function ShareSheet({ content, reference, onClose }) {
               "{content}"
             </p>
             {reference && (
-              <p className="text-xs text-gold mt-2">{reference} KJV</p>
+              <p className="text-xs text-gold mt-2">{reference} {translationLabel}</p>
             )}
           </div>
 

@@ -122,7 +122,7 @@ export default function Layout() {
   const [showTour, setShowTour] = useState(
     () => !localStorage.getItem("hasSeenTour")
   );
-  const showTourOnRoute = location.pathname === "/" || location.pathname === "/onboarding";
+  const showTourOnRoute = ["/", "/onboarding", "/home"].includes(location.pathname) || location.pathname.startsWith("/read/");
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">

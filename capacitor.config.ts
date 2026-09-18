@@ -5,12 +5,11 @@ const config: CapacitorConfig = {
   appName: "The Way",
   webDir: "dist",
   server: {
-    // For development: uncomment and set to your local IP to live-reload
-    // url: "http://192.168.1.X:5174",
-    // cleartext: true,
+    url: "https://thewaybible.app",
+    cleartext: false,
   },
   ios: {
-    contentInset: "automatic",
+    contentInset: "never",
     backgroundColor: "#faf7f2",
     preferredContentMode: "mobile",
     scheme: "The Way",

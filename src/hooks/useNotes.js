@@ -13,7 +13,7 @@ export default function useNotes(book, chapter) {
     setNotes(items);
   }, [book, chapter]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load().catch(() => {}); }, [load]);
 
   const saveNote = async (verseNumber, text, tags = []) => {
     const id = `${book}-${chapter}-${verseNumber}`;

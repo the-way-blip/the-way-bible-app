@@ -469,6 +469,8 @@ function Footer() {
       <div className="border-t border-[#faf7f2]/10">
         <p className="text-center text-xs text-[#faf7f2]/40 py-4">
           © {new Date().getFullYear()} TheWay Bible App. All rights reserved.
+          {" "}&middot;{" "}
+          <a href="https://rogerscitybaptistchurch.com" target="_blank" rel="noopener noreferrer" className="hover:text-[#faf7f2]/70">Rogers City Baptist Church</a>
         </p>
       </div>
     </footer>

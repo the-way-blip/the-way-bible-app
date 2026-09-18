@@ -55,7 +55,7 @@ export default function JournalEntry() {
           setCreatedAt(entry.createdAt || null);
         }
         setLoaded(true);
-      });
+      }).catch(() => setLoaded(true));
     }
   }, [id, isNew]);
 
@@ -377,7 +377,7 @@ export default function JournalEntry() {
           setContent(e.target.value);
         }}
         placeholder="Write your reflections… (verse references like John 3:16 will become tappable links)"
-        className="w-full min-h-[280px] bg-scripture-bg rounded-xl px-4 py-3 text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30 font-scripture leading-relaxed"
+        className="w-full min-h-[280px] bg-scripture-bg rounded-xl px-4 py-3 text-[16px] text-warm-brown placeholder-warm-brown-light/40 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30 font-scripture leading-relaxed"
         autoFocus={isNew}
         style={{ overflow: "hidden" }}
       />
@@ -424,21 +424,21 @@ function RefInputRow({ book, setBook, chapter, setChapter, verse, setVerse }) {
         value={book}
         onChange={(e) => setBook(e.target.value)}
         placeholder="Book (e.g. John)"
-        className="flex-1 text-sm bg-cream-dark rounded-lg px-3 py-2 text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+        className="flex-1 text-[16px] bg-cream-dark rounded-lg px-3 py-2 text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
       />
       <input
         type="number"
         value={chapter}
         onChange={(e) => setChapter(e.target.value)}
         placeholder="Ch"
-        className="w-14 text-sm bg-cream-dark rounded-lg px-3 py-2 text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+        className="w-14 text-[16px] bg-cream-dark rounded-lg px-3 py-2 text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
       />
       <input
         type="number"
         value={verse}
         onChange={(e) => setVerse(e.target.value)}
         placeholder="V"
-        className="w-14 text-sm bg-cream-dark rounded-lg px-3 py-2 text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
+        className="w-14 text-[16px] bg-cream-dark rounded-lg px-3 py-2 text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
       />
     </div>
   );

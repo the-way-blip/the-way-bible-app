@@ -24,12 +24,9 @@ const PlaceExplorer = lazy(() => import("../features/reader/PlaceExplorer"));
 import { useApp } from "../stores/AppContext";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
-import useSwipe from "../hooks/useSwipe";
 import useBookmarks from "../hooks/useBookmarks";
 import { syncReadingProgressUpdate } from "../services/supabaseSync";
 import { submitReadingMilestone } from "../services/ghlService";
-import useInfiniteScroll from "../hooks/useInfiniteScroll";
-import AppendedChapter from "../features/reader/AppendedChapter";
 
 export default function Reader() {
   const t = useT();
@@ -49,15 +46,10 @@ export default function Reader() {
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const showToast = useToast();
 
-  // Swipe navigation
-  const swipeHandlers = useSwipe(
-    () => next && goTo(next),   // swipe left → next chapter
-    () => prev && goTo(prev),   // swipe right → prev chapter
-  );
-
   const [selectedVerse, setSelectedVerse] = useState(null);
   const [activeChapterCtx, setActiveChapterCtx] = useState({ book, chapter: chapterNum });
   const [displayedChapter, setDisplayedChapter] = useState({ book, chapter: chapterNum });
+  const [nextChapterPulsed, setNextChapterPulsed] = useState(false);
   const [showNav, setShowNav] = useState(false);
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(
@@ -132,103 +124,18 @@ export default function Reader() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [prev, next, toggleStudyMode]);
 
-  // Infinite / continuous scroll
-  const { extraChapters, extraChaptersBefore, loadingNext, loadingPrev, loadNextChapter, loadPrevChapter } = useInfiniteScroll(book, chapterNum, translation);
-  const sentinelRef = useRef(null);
-  const topSentinelRef = useRef(null);
   const scrollContainerRef = useRef(null);
-  const prevChaptersLenRef = useRef(0);
   const scrollSaveTimeout = useRef(null);
   const navigatedDirectly = useRef(true);
 
-  // IntersectionObserver to trigger loading the next chapter
+  // Save lastRead on mount so BottomNav always knows where we are
   useEffect(() => {
-    const sentinel = sentinelRef.current;
-    const root = scrollContainerRef.current;
-    if (!sentinel || !root) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadNextChapter();
-        }
-      },
-      { root, rootMargin: "400px" }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [loadNextChapter, data]);
-
-  // IntersectionObserver for loading previous chapter (scroll up)
-  useEffect(() => {
-    const sentinel = topSentinelRef.current;
-    const root = scrollContainerRef.current;
-    if (!sentinel || !root) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadPrevChapter();
-        }
-      },
-      { root, rootMargin: "200px" }
-    );
-
-    observer.observe(sentinel);
-    return () => observer.disconnect();
-  }, [loadPrevChapter, data]);
-
-  // Maintain scroll position when prepending chapters
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || extraChaptersBefore.length === 0) return;
-    if (extraChaptersBefore.length > prevChaptersLenRef.current) {
-      // A new chapter was prepended — adjust scroll to keep current content in place
-      requestAnimationFrame(() => {
-        const firstOriginal = container.querySelector(`[data-chapter-ref="${book}-${chapterNum}"]`);
-        if (firstOriginal) {
-          const offset = firstOriginal.offsetTop - 60; // account for sticky header
-          container.scrollTop = offset;
-        }
-      });
-    }
-    prevChaptersLenRef.current = extraChaptersBefore.length;
-  }, [extraChaptersBefore.length, book, chapterNum]);
-
-  // Update URL as user scrolls into appended chapters (replaceState to avoid history pollution)
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container || (extraChapters.length === 0 && extraChaptersBefore.length === 0)) return;
-
-    const handleScroll = () => {
-      const markers = container.querySelectorAll("[data-chapter-ref]");
-      const containerTop = container.getBoundingClientRect().top;
-      // Header is sticky ~50px, so use an offset
-      const offset = 120;
-
-      let currentRef = `${book}-${chapterNum}`;
-      for (const marker of markers) {
-        const rect = marker.getBoundingClientRect();
-        if (rect.top - containerTop < offset) {
-          currentRef = marker.getAttribute("data-chapter-ref");
-        }
-      }
-
-      const [scrollBook, scrollChapter] = currentRef.split(/-(?=[^-]+$)/);
-      const expectedPath = `/read/${encodeURIComponent(scrollBook)}/${scrollChapter}`;
-      if (window.location.pathname !== expectedPath) {
-        window.history.replaceState(null, "", expectedPath);
-        // Update displayed header title and document title
-        const chNum = parseInt(scrollChapter);
-        setDisplayedChapter({ book: scrollBook, chapter: chNum });
-        document.title = `${scrollBook} ${chNum} — The Way`;
-      }
-    };
-
-    container.addEventListener("scroll", handleScroll, { passive: true });
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [book, chapterNum, extraChapters, extraChaptersBefore]);
+    try {
+      const progress = JSON.parse(localStorage.getItem("readingProgress") || "{}");
+      progress.lastRead = { book, chapter: chapterNum };
+      localStorage.setItem("readingProgress", JSON.stringify(progress));
+    } catch {}
+  }, [book, chapterNum]);
 
   // Debounced scroll position saving
   useEffect(() => {
@@ -292,17 +199,9 @@ export default function Reader() {
     navigatedDirectly.current = false;
   }, [data, book, chapterNum]);
 
-  // Find selected verse data — check primary chapter first, then appended chapters
-  const selectedVerseData = (() => {
-    if (!selectedVerse) return null;
-    if (activeChapterCtx.book === book && activeChapterCtx.chapter === chapterNum) {
-      return data?.verses?.find((v) => v.verse === selectedVerse);
-    }
-    const ch = extraChapters.find(
-      (c) => c.book === activeChapterCtx.book && c.chapter === activeChapterCtx.chapter
-    );
-    return ch?.verses?.find((v) => v.verse === selectedVerse);
-  })();
+  const selectedVerseData = selectedVerse
+    ? (data?.verses?.find((v) => v.verse === selectedVerse) ?? null)
+    : null;
 
   const saveProgress = () => {
     try {
@@ -479,7 +378,7 @@ export default function Reader() {
   return (
     <div className="flex h-[calc(100svh-3.5rem)]">
       {/* ─── Left: Scripture Reader ─── */}
-      <div ref={scrollContainerRef} className="flex-1 min-w-0 overflow-y-auto" {...swipeHandlers}>
+      <div ref={scrollContainerRef} className="flex-1 min-w-0 overflow-y-auto">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
           <header className="sticky top-0 bg-cream/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-between">
@@ -662,118 +561,55 @@ export default function Reader() {
 
           {data && (
             <article aria-label={`${bookInfo?.name || book} chapter ${chapterNum}`}>
-              {/* Sentinel for backward infinite scroll */}
-              <div ref={topSentinelRef} className="h-1" />
-
-              {/* Loading indicator for previous chapter */}
-              {loadingPrev && (
-                <div className="flex items-center justify-center py-6 gap-2">
-                  <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs text-warm-brown-light">{t("reader.loadingPrev")}</span>
-                </div>
+              <VerseList
+                verses={data.verses}
+                getHighlight={getHighlight}
+                getNote={getNote}
+                selectedVerse={activeChapterCtx.book === book && activeChapterCtx.chapter === chapterNum ? selectedVerse : null}
+                onVerseNumberTap={handleVerseNumberTap}
+                onWordTap={handleWordTap}
+                chapterWords={chapterWords}
+                book={book}
+                chapter={chapterNum}
+                places={chapterPlaces}
+                onPlaceTap={openAtlas}
+              />
+              {/* Translation copyright notice */}
+              {getTranslation(translation).copyright && translation !== "KJV" && (
+                <p className="text-[10px] text-warm-brown-light/50 px-6 pb-2 leading-relaxed">
+                  {getTranslation(translation).copyright}
+                </p>
               )}
+              {/* Study tools for this chapter */}
+              <Suspense fallback={null}>
+                <ChapterTools book={book} chapter={chapterNum} />
+              </Suspense>
 
-              {/* Prepended chapters (continuous scroll backward) */}
-              {extraChaptersBefore.map((ch) => (
-                <AppendedChapter
-                  key={`${ch.book}-${ch.chapter}`}
-                  chapterData={ch}
-                  selectedVerse={activeChapterCtx.book === ch.book && activeChapterCtx.chapter === ch.chapter ? selectedVerse : null}
-                  onVerseNumberTap={handleVerseNumberTap}
-                  onWordTap={handleWordTap}
-                  onPlaceTap={openAtlas}
-                />
-              ))}
-
-              <div data-chapter-ref={`${book}-${chapterNum}`}>
-                {/* Show chapter divider when prepended chapters exist above */}
-                {extraChaptersBefore.length > 0 && (
-                  <div className="mx-4 mt-12 mb-4 bg-cream-dark rounded-xl p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="flex-1 h-px bg-gold/30" />
-                      <h2 className="text-sm font-bold text-warm-brown whitespace-nowrap">
-                        {bookInfo?.name || book} {chapterNum}
-                      </h2>
-                      <div className="flex-1 h-px bg-gold/30" />
-                    </div>
-                    <div className="flex items-center justify-center gap-4 text-[10px]">
-                      <span className="text-warm-brown-light/60">
-                        {data.verses.length} {t("reader.verses")}
-                      </span>
-                    </div>
-                  </div>
+              {/* Next / Prev chapter navigation */}
+              <div className="px-6 py-8 space-y-3">
+                {next && (
+                  <button
+                    onClick={() => goTo(next)}
+                    className="w-full flex items-center justify-center gap-3 bg-gold text-white rounded-2xl py-4 text-base font-semibold hover:bg-gold/90 active:scale-[0.98] transition-all shadow-md shadow-gold/20"
+                  >
+                    {next.book} {next.chapter}
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-5 h-5">
+                      <polyline points="9 6 15 12 9 18" />
+                    </svg>
+                  </button>
                 )}
-                <VerseList
-                  verses={data.verses}
-                  getHighlight={getHighlight}
-                  getNote={getNote}
-                  selectedVerse={activeChapterCtx.book === book && activeChapterCtx.chapter === chapterNum ? selectedVerse : null}
-                  onVerseNumberTap={handleVerseNumberTap}
-                  onWordTap={handleWordTap}
-                  chapterWords={chapterWords}
-                  book={book}
-                  chapter={chapterNum}
-                  places={chapterPlaces}
-                  onPlaceTap={openAtlas}
-                />
-                {/* Translation copyright notice */}
-                {getTranslation(translation).copyright && translation !== "KJV" && (
-                  <p className="text-[10px] text-warm-brown-light/50 px-6 pb-2 leading-relaxed">
-                    {getTranslation(translation).copyright}
-                  </p>
+                {prev && (
+                  <button
+                    onClick={() => goTo(prev)}
+                    className="w-full flex items-center justify-center gap-2 text-warm-brown-light text-sm py-3 rounded-xl hover:bg-cream-dark transition-colors"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    {prev.book} {prev.chapter}
+                  </button>
                 )}
-                {/* Study tools for this chapter (parallel passages, audio, maps, YouTube) */}
-                <Suspense fallback={null}>
-                  <ChapterTools book={book} chapter={chapterNum} />
-                </Suspense>
               </div>
-
-              {/* Appended chapters (continuous scroll) */}
-              {extraChapters.map((ch) => (
-                <AppendedChapter
-                  key={`${ch.book}-${ch.chapter}`}
-                  chapterData={ch}
-                  selectedVerse={activeChapterCtx.book === ch.book && activeChapterCtx.chapter === ch.chapter ? selectedVerse : null}
-                  onVerseNumberTap={handleVerseNumberTap}
-                  onWordTap={handleWordTap}
-                  onPlaceTap={openAtlas}
-                />
-              ))}
-
-              {/* Sentinel for infinite scroll — triggers loading next chapter */}
-              <div ref={sentinelRef} className="h-1" />
-
-              {/* Loading indicator for next chapter */}
-              {loadingNext && (
-                <div className="flex items-center justify-center py-6 gap-2">
-                  <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-                  <span className="text-xs text-warm-brown-light">{t("reader.loadingNext")}</span>
-                </div>
-              )}
-
-              {/* Chapter navigation */}
-              <nav aria-label="Chapter navigation" className="flex items-center justify-between px-6 py-4">
-                <button
-                  onClick={() => goTo(prev)}
-                  disabled={!prev}
-                  className="flex items-center gap-1.5 text-sm text-warm-brown-light hover:text-warm-brown disabled:opacity-30 disabled:cursor-not-allowed min-h-[44px] px-3 rounded-lg hover:bg-cream-dark transition-colors"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                  {prev ? `${prev.book} ${prev.chapter}` : ""}
-                </button>
-                <button
-                  onClick={() => goTo(next)}
-                  disabled={!next}
-                  className="flex items-center gap-1.5 text-sm text-warm-brown-light hover:text-warm-brown disabled:opacity-30 disabled:cursor-not-allowed min-h-[44px] px-3 rounded-lg hover:bg-cream-dark transition-colors"
-                >
-                  {next ? `${next.book} ${next.chapter}` : ""}
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
-                    <polyline points="9 6 15 12 9 18" />
-                  </svg>
-                </button>
-              </nav>
             </article>
           )}
         </div>
@@ -790,11 +626,12 @@ export default function Reader() {
               const startX = e.clientX;
               const startWidth = sidebarWidth;
               const onMove = (ev) => {
-                const newWidth = Math.max(280, Math.min(600, startWidth - (ev.clientX - startX)));
-                setSidebarWidth(newWidth);
+                finalWidth = Math.max(280, Math.min(600, startWidth - (ev.clientX - startX)));
+                setSidebarWidth(finalWidth);
               };
+              let finalWidth = startWidth;
               const onUp = () => {
-                localStorage.setItem("sidebarWidth", sidebarWidth);
+                localStorage.setItem("sidebarWidth", finalWidth);
                 document.removeEventListener("mousemove", onMove);
                 document.removeEventListener("mouseup", onUp);
               };
@@ -865,7 +702,7 @@ export default function Reader() {
       {/* Share sheet */}
       {shareData && (
         <Suspense fallback={null}>
-          <ShareSheet content={shareData.content} reference={shareData.reference} onClose={() => setShareData(null)} />
+          <ShareSheet content={shareData.content} reference={shareData.reference} translation={translation} onClose={() => setShareData(null)} />
         </Suspense>
       )}
 

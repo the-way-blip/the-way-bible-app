@@ -251,7 +251,7 @@ export default function VerseActions({
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
               placeholder={t("verse.writeNote")}
-              className="w-full h-24 bg-cream rounded-lg px-3 py-2 text-sm text-warm-brown placeholder-warm-brown-light/50 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30"
+              className="w-full h-24 bg-cream rounded-lg px-3 py-2 text-[16px] text-warm-brown placeholder-warm-brown-light/50 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30"
               autoFocus
             />
             <div className="flex items-center justify-between mt-2">

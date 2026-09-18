@@ -7,7 +7,12 @@
  *   → https://bible.helloao.org/api/c/matthew-henry/JHN/3.json
  */
 
+import { checkOrigin, rateLimit } from "../_rateLimit.js";
+
 export default async function handler(req, res) {
+  if (!checkOrigin(req)) return res.status(403).json({ error: "Forbidden" });
+  if (rateLimit(req, { windowMs: 60_000, max: 60 })) return res.status(429).json({ error: "Too many requests" });
+
   const path = req.query.path?.join("/") || "";
   // path = "{commentaryId}/{book}/{chapter}"
   const url = `https://bible.helloao.org/api/c/${path}.json`;

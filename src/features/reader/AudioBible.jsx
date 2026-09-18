@@ -54,7 +54,7 @@ export default function AudioBible({ book, chapter }) {
   // Cleanup on unmount / chapter change
   const stop = useCallback(() => {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
-    queueRef.current = [];
+    queueRef.current = { cancelled: true };
     setIsPlaying(false);
     setIsPaused(false);
     setCurrentVerse(0);

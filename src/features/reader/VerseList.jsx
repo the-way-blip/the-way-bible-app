@@ -27,7 +27,7 @@ function formatReference(book, chapter, verseNumbers) {
  * automatically when they select+copy. If the selection isn't inside the
  * verse list, fall through to the default copy behavior.
  */
-function handleCopyEvent(e, container, book, chapter) {
+function handleCopyEvent(e, container, book, chapter, translation) {
   if (!container || !book || !chapter) return;
   const selection = window.getSelection?.();
   if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
@@ -40,7 +40,7 @@ function handleCopyEvent(e, container, book, chapter) {
   const verseEls = container.querySelectorAll("[data-verse]");
   const coveredVerses = [];
   for (const el of verseEls) {
-    if (range.intersectsNode(el)) {
+    if (typeof range.intersectsNode === "function" && range.intersectsNode(el)) {
       const n = parseInt(el.getAttribute("data-verse"), 10);
       if (Number.isFinite(n)) coveredVerses.push(n);
     }
@@ -55,7 +55,8 @@ function handleCopyEvent(e, container, book, chapter) {
   if (!cleaned) return;
 
   const reference = formatReference(book, chapter, coveredVerses);
-  const formatted = `"${cleaned}"\n— ${reference} (KJV)`;
+  const translationLabel = translation || "KJV";
+  const formatted = `"${cleaned}"\n— ${reference} (${translationLabel})`;
 
   if (e.clipboardData) {
     e.clipboardData.setData("text/plain", formatted);
@@ -93,7 +94,7 @@ export default function VerseList({
   if (!verses || verses.length === 0) return null;
 
   return (
-    <div ref={containerRef} onCopy={(e) => handleCopyEvent(e, containerRef.current, book, chapter)}>
+    <div ref={containerRef} onCopy={(e) => handleCopyEvent(e, containerRef.current, book, chapter, translation)}>
       {/* Notice when study mode is on but word-study data only covers KJV */}
       {studyMode && !wordStudyAvailable && (
         <div className="mx-2 mb-2 px-3 py-2 bg-gold/10 rounded-lg flex items-center gap-2">
@@ -106,7 +107,7 @@ export default function VerseList({
         </div>
       )}
     <div
-      className={`font-scripture px-5 py-4 bg-scripture-bg rounded-xl mx-2 max-w-xl mx-auto`}
+      className={`font-scripture px-5 py-4 bg-scripture-bg rounded-xl max-w-xl mx-auto`}
       style={{
         fontSize: `${fontSize}px`,
         fontFamily,

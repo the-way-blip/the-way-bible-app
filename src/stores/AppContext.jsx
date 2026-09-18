@@ -104,8 +104,9 @@ export function AppProvider({ children }) {
 
   const toggleStudyMode = () => {
     setStudyMode((s) => {
-      localStorage.setItem("studyMode", !s);
-      return !s;
+      const next = !s;
+      localStorage.setItem("studyMode", next);
+      return next;
     });
   };
 
@@ -116,8 +117,9 @@ export function AppProvider({ children }) {
 
   const toggleVerseNumbers = () => {
     setShowVerseNumbersState((v) => {
-      localStorage.setItem("showVerseNumbers", !v);
-      return !v;
+      const next = !v;
+      localStorage.setItem("showVerseNumbers", next);
+      return next;
     });
   };
 
@@ -137,12 +139,12 @@ export function AppProvider({ children }) {
   };
 
   const toggleRotatingTheme = () => {
-    setRotatingTheme((r) => {
-      const next = !r;
-      localStorage.setItem("rotatingTheme", next);
-      return next;
-    });
+    setRotatingTheme((r) => !r);
   };
+
+  useEffect(() => {
+    localStorage.setItem("rotatingTheme", rotatingTheme);
+  }, [rotatingTheme]);
 
   const setTranslation = (id) => {
     // Validate the id exists in our list; fall back to KJV
@@ -162,6 +164,12 @@ export function AppProvider({ children }) {
       if (!spanishTranslations.includes(currentTrans)) {
         setTranslationState("RVR");
         localStorage.setItem("translation", "RVR");
+      }
+    } else {
+      const currentTrans = localStorage.getItem("translation") || "KJV";
+      if (currentTrans === "RVR") {
+        setTranslationState("KJV");
+        localStorage.setItem("translation", "KJV");
       }
     }
   };

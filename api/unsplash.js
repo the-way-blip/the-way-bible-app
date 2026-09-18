@@ -5,7 +5,12 @@
  * Usage: GET /api/unsplash?query=mountain&orientation=squarish
  * Returns: { results: [{ id, urls: { full, regular, small }, alt, author, authorUrl }] }
  */
+import { checkOrigin, rateLimit } from "./_rateLimit.js";
+
 export default async function handler(req, res) {
+  if (!checkOrigin(req)) return res.status(403).json({ error: "Forbidden" });
+  if (rateLimit(req, { windowMs: 60_000, max: 30 })) return res.status(429).json({ error: "Too many requests" });
+
   const accessKey = process.env.UNSPLASH_ACCESS_KEY;
   if (!accessKey) {
     return res.status(200).json({ results: [], error: "not_configured" });

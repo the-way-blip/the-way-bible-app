@@ -347,7 +347,7 @@ function bibleIndex() {
 <h2>Verse of the day</h2>
 <p class="sub" style="margin-bottom:14px"><a href="/verse-of-the-day">A new verse every day →</a></p>
 <h2>Verses by topic</h2>
-<div class="chips">${TOPICS.slice(0, 24).map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)}</a>`).join("")}<a href="/verses-about">All topics →</a></div>
+<div class="chips">${FEATURED_TOPICS.map((s) => TOPIC_BY_SLUG.get(s)).filter(Boolean).map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)}</a>`).join("")}<a href="/verses-about">All ${TOPICS.length} topics →</a></div>
 ${promo()}`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: "The Holy Bible, King James Version", url: SITE + "/bible", isPartOf: { "@id": SITE + "/#website" } },
@@ -463,40 +463,51 @@ ${promo(b, c, from)}`;
 }
 
 function topicsIndex() {
+  const topicList = (arr) => `<div class="books">${arr.map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)} <small>· ${t.verses.length}</small></a>`).join("")}</div>`;
+  const sections = [["Life, faith, and everyday things", TOPICS.filter((t) => !t.group)],
+    ...TOPIC_GROUPS.map((g) => [g, TOPICS.filter((t) => t.group === g)])].filter(([, arr]) => arr.length);
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"]])}
 <h1>Bible verses by topic <span class="badge">${VERSION}</span></h1>
-<p class="sub">${TOPICS.length} topics. Each page lists the verses in full, in the King James Version, with a link to read every one in context.</p>
-<div class="books">${TOPICS.map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)} <small>· ${t.verses.length}</small></a>`).join("")}</div>
+<p class="sub">${TOPICS.length} topics — what you are walking through, who is in the story, and what God is called. Every verse is quoted in full in the King James Version, with a link to read it in context.</p>
+${sections.map(([label, arr]) => `<h2>${esc(label)} — ${arr.length}</h2>${topicList(arr)}`).join("")}
 ${promo()}`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: "Bible verses by topic", url: SITE + "/verses-about", isPartOf: { "@id": SITE + "/#website" } },
     breadcrumbLd([["Home", "/"], ["Verses by topic", "/verses-about"]]),
   ]);
-  return ok(shell({ title: `Bible Verses by Topic – ${TOPICS.length} Topics (KJV) | ${SITE_NAME}`, description: `Bible verses by topic in the King James Version: anxiety, strength, love, healing, hope, marriage, forgiveness, and ${TOPICS.length - 7} more. Every verse in full, linked to its chapter.`, canonical: "/verses-about", h, jsonld, pageType: "verses-index" }));
+  return ok(shell({ title: `Bible Verses by Topic – ${TOPICS.length} Topics (KJV) | ${SITE_NAME}`, description: `Bible verses by topic in the King James Version — anxiety, strength, love, healing, marriage and ${TOPICS.length - 5} more, including the people of the Bible, the names of God, and the best-known stories. Every verse quoted in full.`, canonical: "/verses-about", h, jsonld, pageType: "verses-index" }));
 }
 
 /** "Bible verses about Anxiety" / "Bible verses for Weddings" / "Short Bible Verses" — per-topic phrasing. */
 const topicPhrase = (t, cap = false) => {
   if (t.heading) return t.heading;
   const prep = t.prep || "about";
-  return cap ? `Bible Verses ${prep[0].toUpperCase()}${prep.slice(1)} ${t.name}` : `Bible verses ${prep} ${t.name}`;
+  const name = t.name.replace(/^The /, "the ");   // mid-sentence: "about the Armor of God"
+  return cap ? `Bible Verses ${prep[0].toUpperCase()}${prep.slice(1)} ${name}` : `Bible verses ${prep} ${name}`;
 };
+
+// Sections on /verses-about, in the order they are shown.
+const TOPIC_GROUPS = ["People of the Bible", "Names & Titles of God", "Stories & Teachings"];
+// Chips on /bible — a spread of the most-searched pages, not the first 24 alphabetically.
+const FEATURED_TOPICS = ["fear-and-anxiety", "strength", "love", "healing", "hope", "faith", "peace", "prayer", "marriage", "forgiveness", "grief-and-loss", "encouragement", "trusting-god", "gods-love", "protection", "joy", "david", "jesus", "the-names-of-god", "the-fruit-of-the-spirit", "most-popular-bible-verses", "verses-to-memorize", "short-bible-verses", "christmas"];
 
 function topicPage(t) {
   const items = t.verses.map((ref) => ({ ref, r: parseRef(ref) })).filter((x) => x.r);
   const n = items.length;
-  const phraseLower = t.heading ? t.heading : `Bible verses ${t.prep || "about"} ${t.name.toLowerCase()}`;
+  const phrase = topicPhrase(t);
   const list = items.map(({ ref, r }) => `<div class="topicv"><p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a> <span style="font-weight:400;color:var(--brown-light)">· ${VERSION}</span></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote></div>`).join("");
   const related = TOPICS.filter((o) => o !== t && o.verses.some((v) => t.verses.includes(v))).slice(0, 8);
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
 <h1>${n} ${esc(topicPhrase(t))} <span class="badge">${VERSION}</span></h1>
-<p class="sub">Each verse is quoted in full from the King James Version. Tap the reference to read it in context, see cross references, and study the original words.</p>
+<p class="sub">${t.blurb ? esc(t.blurb) + " " : ""}Each verse is quoted in full from the King James Version — tap a reference to read it in context, see cross references, and study the original words.</p>
 ${list}
 ${related.length ? `<h2>Related topics</h2><div class="chips">${related.map((o) => `<a href="/verses-about/${o.slug}">${esc(o.name)}</a>`).join("")}</div>` : ""}
 <p style="font-size:14px;margin-top:20px"><a href="/verses-about">All ${TOPICS.length} topics →</a></p>
 ${promo()}`;
   const first = items[0];
-  const description = `${n} ${phraseLower} from the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}. Read each one in context.`;
+  const description = t.blurb
+    ? `${t.blurb} ${n} verses in the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}.`
+    : `${n} ${phrase} from the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}. Read each one in context.`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: topicPhrase(t), url: SITE + `/verses-about/${t.slug}`, description, isPartOf: { "@id": SITE + "/#website" },
       mainEntity: { "@type": "ItemList", numberOfItems: n, itemListElement: items.map(({ ref, r }, i) => ({ "@type": "ListItem", position: i + 1, name: ref, url: SITE + verseUrl(r.book, r.chapter, r.from, r.to) })) } },
@@ -583,7 +594,7 @@ function searchPage(qRaw) {
   if (!q) {
     const h = `${crumbs([["Home", "/"], ["Search", "/bible/search"]])}<h1>Search the Bible <span class="badge">${VERSION}</span></h1>
 <p class="sub">Type a reference (John 3:16, Psalm 23, 1 John 4:8), a topic (anxiety, marriage, funerals), or any word or phrase.</p>${form}
-<h2>Popular topics</h2><div class="chips">${TOPICS.slice(0, 30).map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)}</a>`).join("")}<a href="/verses-about">All ${TOPICS.length} topics →</a></div>${promo()}`;
+<h2>Popular topics</h2><div class="chips">${FEATURED_TOPICS.map((s) => TOPIC_BY_SLUG.get(s)).filter(Boolean).map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)}</a>`).join("")}<a href="/verses-about">All ${TOPICS.length} topics →</a></div>${promo()}`;
     return noindexPage(`Search the Bible (KJV) | ${SITE_NAME}`, h);
   }
 

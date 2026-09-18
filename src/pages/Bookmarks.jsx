@@ -68,7 +68,7 @@ export default function Bookmarks() {
                 </p>
               </Link>
               <button
-                onClick={() => handleRemove(b)}
+                onClick={() => handleRemove(b).catch(() => {})}
                 aria-label={`${t("bookmarks.remove")} ${b.book} ${b.chapter}`}
                 className="p-2 text-warm-brown-light/40 hover:text-red-500 transition-colors shrink-0"
               >

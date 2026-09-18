@@ -14,7 +14,7 @@ export default function useMemoryVerses() {
 
   useEffect(() => { load(); }, [load]);
 
-  const addVerse = async (book, chapter, verseNumber, text) => {
+  const addVerse = useCallback(async (book, chapter, verseNumber, text) => {
     const id = `${book}-${chapter}-${verseNumber}`;
     const existing = verses.find((v) => v.id === id);
     if (existing) return;
@@ -37,23 +37,23 @@ export default function useMemoryVerses() {
     await dbPut("memoryVerses", record);
     syncPush("memoryVerses", record, user?.id);
     await load();
-  };
+  }, [verses, user?.id, load]);
 
-  const removeVerse = async (id) => {
+  const removeVerse = useCallback(async (id) => {
     await dbDelete("memoryVerses", id);
     syncDelete("memoryVerses", id, user?.id);
     await load();
-  };
+  }, [user?.id, load]);
 
-  const updateVerse = async (verse) => {
+  const updateVerse = useCallback(async (verse) => {
     await dbPut("memoryVerses", verse);
     syncPush("memoryVerses", verse, user?.id);
     await load();
-  };
+  }, [user?.id, load]);
 
-  const isMemoryVerse = (book, chapter, verseNumber) => {
+  const isMemoryVerse = useCallback((book, chapter, verseNumber) => {
     return verses.some((v) => v.id === `${book}-${chapter}-${verseNumber}`);
-  };
+  }, [verses]);
 
   return { verses, addVerse, removeVerse, updateVerse, isMemoryVerse, reload: load };
 }

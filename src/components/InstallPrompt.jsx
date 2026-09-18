@@ -14,8 +14,8 @@ export default function InstallPrompt() {
 
   useEffect(() => {
     if (isStandalone) return;
-
-    // Track visit count — only show after 3 visits
+    if (sessionStorage.getItem("pwaVisitCounted")) return;
+    sessionStorage.setItem("pwaVisitCounted", "1");
     const visits = parseInt(localStorage.getItem("pwaVisitCount") || "0", 10) + 1;
     localStorage.setItem("pwaVisitCount", String(visits));
     if (visits >= 3) setReady(true);

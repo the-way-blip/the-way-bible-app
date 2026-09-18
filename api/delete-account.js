@@ -2,8 +2,8 @@ import { rateLimit, checkOrigin } from "./_rateLimit.js";
 import { createClient } from "@supabase/supabase-js";
 
 export default async function handler(req, res) {
-  if (!checkOrigin(req, res)) return;
-  if (rateLimit(req, res, { max: 5, windowMs: 60_000 })) return;
+  if (!checkOrigin(req)) return res.status(403).json({ error: "Forbidden" });
+  if (rateLimit(req, { max: 5, windowMs: 60_000 })) return res.status(429).json({ error: "Too many requests" });
 
   if (req.method !== "DELETE") {
     return res.status(405).json({ error: "Method not allowed" });

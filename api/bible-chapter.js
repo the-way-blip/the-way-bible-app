@@ -11,12 +11,11 @@
  *   { verses: [{ verse: number, text: string }], bookId: string, chapter: number }
  */
 
-import { checkOrigin } from "./_rateLimit.js";
+import { checkOrigin, rateLimit } from "./_rateLimit.js";
 
 export default async function handler(req, res) {
-  if (!checkOrigin(req)) {
-    return res.status(403).json({ error: "Forbidden" });
-  }
+  if (!checkOrigin(req)) return res.status(403).json({ error: "Forbidden" });
+  if (rateLimit(req, { windowMs: 60_000, max: 60 })) return res.status(429).json({ error: "Too many requests" });
 
   const { bibleId, book, chapter } = req.query;
 

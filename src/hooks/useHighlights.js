@@ -19,7 +19,7 @@ export default function useHighlights(book, chapter) {
     const id = `${book}-${chapter}-${verseNumber}`;
     const existing = highlights.find((h) => h.id === id);
 
-    if (existing && existing.color === color) {
+    if (color == null || (existing && existing.color === color)) {
       await dbDelete("highlights", id);
       syncDelete("highlights", id, user?.id);
     } else {

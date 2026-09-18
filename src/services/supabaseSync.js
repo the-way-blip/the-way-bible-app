@@ -59,16 +59,6 @@ function toCamelCase(obj) {
 }
 
 /**
- * Get the current Supabase user ID, or null.
- */
-function getUserId() {
-  // supabase.auth.getUser() is async; use the session cache instead
-  const session = supabase?.auth?.session?.();
-  // v2 client uses getSession synchronously from cache
-  return null; // will be set by caller
-}
-
-/**
  * Push a record to Supabase (upsert). Fire-and-forget.
  */
 export async function syncPush(storeName, record, userId) {
@@ -144,7 +134,7 @@ export async function syncPull(storeName, userId) {
       }
     }
 
-    return dbGetAll(storeName);
+    return await dbGetAll(storeName);
   } catch {
     return [];
   }
@@ -214,8 +204,8 @@ async function syncReadingProgress(userId) {
         completed_chapters: localProgress.completedChapters || {},
         streak: localProgress.streak || 0,
         last_read_date: localProgress.lastReadDate || null,
-        last_read_book: localProgress.lastReadBook || null,
-        last_read_chapter: localProgress.lastReadChapter || null,
+        last_read_book: localProgress.lastRead?.book || null,
+        last_read_chapter: localProgress.lastRead?.chapter || null,
         updated_at: new Date().toISOString(),
       });
     }
@@ -229,11 +219,20 @@ async function syncReadingProgress(userId) {
 
     if (data) {
       const merged = {
-        completedChapters: data.completed_chapters || localProgress.completedChapters || {},
+        completedChapters: (() => {
+          const remote = data.completed_chapters || {};
+          const local = localProgress.completedChapters || {};
+          const merged = { ...local };
+          for (const [book, chs] of Object.entries(remote)) {
+            merged[book] = [...new Set([...(merged[book] || []), ...chs])];
+          }
+          return merged;
+        })(),
         streak: Math.max(data.streak || 0, localProgress.streak || 0),
         lastReadDate: data.last_read_date || localProgress.lastReadDate,
-        lastReadBook: data.last_read_book || localProgress.lastReadBook,
-        lastReadChapter: data.last_read_chapter || localProgress.lastReadChapter,
+        lastRead: (data.last_read_book && data.last_read_chapter)
+          ? { book: data.last_read_book, chapter: data.last_read_chapter }
+          : (localProgress.lastRead || null),
       };
       localStorage.setItem("readingProgress", JSON.stringify(merged));
     }
@@ -257,8 +256,8 @@ export async function syncReadingProgressUpdate(userId) {
       completed_chapters: progress.completedChapters || {},
       streak: progress.streak || 0,
       last_read_date: progress.lastReadDate || null,
-      last_read_book: progress.lastReadBook || null,
-      last_read_chapter: progress.lastReadChapter || null,
+      last_read_book: progress.lastRead?.book || null,
+      last_read_chapter: progress.lastRead?.chapter || null,
       updated_at: new Date().toISOString(),
     });
   } catch {

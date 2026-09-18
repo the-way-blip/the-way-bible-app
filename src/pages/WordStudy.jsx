@@ -105,8 +105,12 @@ export default function WordStudy() {
         if (merged.kjv_def) {
           const firstTranslation = merged.kjv_def.split(",")[0].trim().replace(/[^a-zA-Z\s]/g, "").trim();
           if (firstTranslation) {
-            lookupConcordance(strongsId).then((c) => { if (!cancelled) setConcordance(c); });
-            lookupWebsters(firstTranslation).then((w) => { if (!cancelled) setWebsters(w); });
+            lookupConcordance(strongsId)
+              .then((c) => { if (!cancelled) setConcordance(c); })
+              .catch(() => { if (!cancelled) setConcordance(null); });
+            lookupWebsters(firstTranslation)
+              .then((w) => { if (!cancelled) setWebsters(w); })
+              .catch(() => { if (!cancelled) setWebsters(null); });
           }
         }
       } catch {

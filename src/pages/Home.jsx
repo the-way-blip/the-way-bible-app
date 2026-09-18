@@ -23,7 +23,7 @@ export default function Home() {
   const dailyVerse = getSmartDailyVerse({
     topics: profile?.topics,
     lastReadBook: (() => {
-      try { return JSON.parse(localStorage.getItem("readingProgress") || "{}").lastReadBook; } catch { return null; }
+      try { return JSON.parse(localStorage.getItem("readingProgress") || "{}").lastRead?.book; } catch { return null; }
     })(),
     profile,
   });
@@ -43,10 +43,13 @@ export default function Home() {
   }, [navigate, profile]);
 
   useEffect(() => {
-    try {
-      const p = JSON.parse(localStorage.getItem("readingProgress") || "{}");
-      setProgress(p);
-    } catch {}
+    function loadProgress() {
+      try { setProgress(JSON.parse(localStorage.getItem("readingProgress") || "{}")); } catch {}
+    }
+    loadProgress();
+    const onVisible = () => { if (!document.hidden) loadProgress(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
 
   const unlockedBadges = getUnlockedBadges(progress, verses.length);

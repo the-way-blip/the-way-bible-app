@@ -102,7 +102,7 @@ export default function Journal() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t("journal.searchPlaceholder")}
-              className="w-full bg-white rounded-xl border border-cream-dark pl-10 pr-4 py-2.5 text-sm text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:border-gold/30"
+              className="w-full bg-white rounded-xl border border-cream-dark pl-10 pr-4 py-2.5 text-[16px] text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:border-gold/30"
             />
           </div>
 

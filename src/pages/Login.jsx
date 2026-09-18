@@ -109,6 +109,11 @@ export default function Login() {
     setResetLoading(true);
 
     const sb = await getSupabase();
+    if (!sb) {
+      setResetMessage({ type: "error", text: "Service unavailable. Try again later." });
+      setResetLoading(false);
+      return;
+    }
     const { error: resetError } = await sb.auth.resetPasswordForEmail(resetEmail, {
       redirectTo: `${REDIRECT_BASE}/reset-password`,
     });

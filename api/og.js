@@ -33,7 +33,12 @@ function loadFonts() {
 
 const el = (type, style, children, props = {}) => ({ type, props: { style, children, ...props } });
 
+import { checkOrigin, rateLimit } from "./_rateLimit.js";
+
 export default async function handler(req, res) {
+  if (!checkOrigin(req)) return res.status(403).json({ error: "Forbidden" });
+  if (rateLimit(req, { windowMs: 60_000, max: 20 })) return res.status(429).json({ error: "Too many requests" });
+
   const proto = req.headers["x-forwarded-proto"] || "https";
   const origin = `${proto}://${req.headers.host}`;
   const ref = (req.query && req.query.ref) || "John 3:16";

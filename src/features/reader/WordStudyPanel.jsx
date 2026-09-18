@@ -194,11 +194,13 @@ function DictionariesTab({ word }) {
   const [webstersLoading, setWebstersLoading] = useState(false);
 
   useEffect(() => {
+    let cancelled = false;
     setWebstersLoading(true);
-    lookupWebsters(word.word).then((def) => {
-      setWebstersDef(def);
-      setWebstersLoading(false);
-    });
+    setWebstersDef(null);
+    lookupWebsters(word.word)
+      .then((def) => { if (!cancelled) { setWebstersDef(def); setWebstersLoading(false); } })
+      .catch(() => { if (!cancelled) setWebstersLoading(false); });
+    return () => { cancelled = true; };
   }, [word.word]);
 
   return (
@@ -387,13 +389,13 @@ function ReferencesTab({ word }) {
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
-    if (word.strongs) {
-      setLoading(true);
-      lookupConcordance(word.strongs).then((results) => {
-        setVerses(results);
-        setLoading(false);
-      });
-    }
+    if (!word.strongs) return;
+    let cancelled = false;
+    setLoading(true);
+    lookupConcordance(word.strongs)
+      .then((results) => { if (!cancelled) { setVerses(results); setLoading(false); } })
+      .catch(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [word.strongs]);
 
   const displayed = showAll ? verses : verses.slice(0, 5);

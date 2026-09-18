@@ -386,7 +386,7 @@ export default function Search() {
           <div className="space-y-2">
             <p className="text-xs text-warm-brown-light mb-2" aria-live="polite">{results.length} {t("search.results")}</p>
             {results.map((r, i) => (
-              <Link key={i} to={`/read/${encodeURIComponent(r.book)}/${r.chapter}`} className="block bg-white border border-cream-dark rounded-xl p-4 hover:border-gold/30 transition-colors">
+              <Link key={`${r.book}-${r.chapter}-${r.verse}`} to={`/read/${encodeURIComponent(r.book)}/${r.chapter}`} className="block bg-white border border-cream-dark rounded-xl p-4 hover:border-gold/30 transition-colors">
                 <p className="text-xs font-medium text-gold mb-1">{r.ref}</p>
                 <p className="font-scripture text-sm text-warm-brown leading-relaxed">
                   <HighlightedText text={r.text} query={r.query} />

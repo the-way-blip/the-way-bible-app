@@ -93,18 +93,17 @@ export default function Topics() {
     }
   }, []);
 
-  const handleExpand = (i) => {
-    if (expanded === i) {
+  const handleExpand = (topicName) => {
+    if (expanded === topicName) {
       setExpanded(null);
       setPicker(null);
       return;
     }
-    setExpanded(i);
+    setExpanded(topicName);
     setPicker(null);
-    // Pre-load first few verse texts
-    const topic = filtered[i];
+    const topic = sortedTopics.find((t) => t.name === topicName);
+    if (!topic) return;
     topic.verses.slice(0, 4).forEach(loadVerseText);
-    // Refresh existing-highlight count for this topic
     refreshHighlightCount(topic);
   };
 
@@ -178,7 +177,7 @@ export default function Topics() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("topics.searchPlaceholder")}
-          className="w-full bg-white rounded-xl border border-cream-dark pl-10 pr-4 py-2.5 text-sm text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:border-gold/30"
+          className="w-full bg-white rounded-xl border border-cream-dark pl-10 pr-4 py-2.5 text-[16px] text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:border-gold/30"
         />
       </div>
 
@@ -191,8 +190,7 @@ export default function Topics() {
               key={chip.name}
               onClick={() => {
                 setSearch("");
-                const idx = filtered.findIndex((f) => f.name === chip.name);
-                if (idx >= 0) handleExpand(idx);
+                handleExpand(chip.name);
               }}
               className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full transition-colors ${
                 isPersonal
@@ -217,24 +215,24 @@ export default function Topics() {
       </p>
 
       <div className="space-y-2">
-        {filtered.map((topic, i) => {
+        {filtered.map((topic) => {
           const isPersonal = isPersonalTopic(topic.name);
           return (
           <div key={topic.name} className={`bg-white rounded-xl overflow-hidden border ${isPersonal && !search ? "border-gold/40 ring-1 ring-gold/20" : "border-cream-dark"}`}>
             <button
               type="button"
-              onClick={() => handleExpand(i)}
+              onClick={() => handleExpand(topic.name)}
               className="w-full text-left px-4 py-3 flex items-center justify-between hover:bg-cream/50 transition-colors"
             >
               <span className="text-sm font-medium text-warm-brown">{topic.name}</span>
               <div className="flex items-center gap-2">
                 <span className="text-[10px] bg-gold/10 text-gold px-1.5 py-0.5 rounded-full">{topic.verses.length}</span>
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`w-4 h-4 text-warm-brown-light transition-transform ${expanded === i ? "rotate-180" : ""}`}>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`w-4 h-4 text-warm-brown-light transition-transform ${expanded === topic.name ? "rotate-180" : ""}`}>
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </div>
             </button>
-            {expanded === i && (
+            {expanded === topic.name && (
               <div className="border-t border-cream-dark">
                 {/* Bulk-highlight bar */}
                 <div className="px-4 py-2.5 bg-cream/40 border-b border-cream-dark/60 flex items-center justify-between gap-2">

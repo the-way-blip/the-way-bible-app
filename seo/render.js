@@ -35,6 +35,13 @@ const APP_STORE_URL = "https://apps.apple.com/us/app/read-the-bible-follow-jesus
 const APP_STORE_ID = "6762105782";
 const appHref = () => APP_STORE_URL || "/";
 
+// Churches TheWay works with — linked from the footer of every page.
+const CHURCHES = [
+  ["Rogers City Baptist Church", "https://rogerscitybaptistchurch.com"],
+  ["Lakeview Baptist Church", "https://mylakeviewbaptist.org"],
+  ["Tower Baptist Church", "https://towerbaptistonaway.com"],
+];
+
 /* ------------------------------------------------------------------ data */
 let _books, _xrefs, _lex, _words, _titles, _bySlug, _byName, _verseTopics, _commentary;
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(DIR, "data", f), "utf8"));
@@ -245,6 +252,7 @@ ul.words b{font-family:Georgia,serif;font-size:16px}ul.words .tr{color:var(--gol
 footer.bottom{border-top:1px solid var(--line);color:var(--brown-light);font-size:13px;padding:22px 0 36px}
 footer.bottom .wrap{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
 footer.bottom a{color:var(--brown-light)}
+footer.bottom .churches{flex-basis:100%;border-top:1px solid var(--line);padding-top:12px;opacity:.9}
 @media(max-width:560px){h1{font-size:28px}.scripture{font-size:20px;padding:20px}nav.main .hide{display:none}}
 `;
 
@@ -295,6 +303,7 @@ ${h}
 <footer class="bottom"><div class="wrap">
 <span>© ${new Date().getFullYear()} TheWay Bible App · Scripture text: ${VERSION_LONG} (public domain)</span>
 <span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@thewaybible.app">Contact</a></span>
+<span class="churches">Churches: ${CHURCHES.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${esc(n)}</a>`).join(" · ")}</span>
 </div></footer>
 </body>
 </html>`;

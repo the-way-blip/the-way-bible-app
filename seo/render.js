@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 import { TOPICS, TOPIC_BY_SLUG } from "./topics.js";
 import { votdRef } from "./votd.js";
 import { BOOK_INTROS } from "./books-intro.js";
+import { VERSE_MEANINGS } from "./meanings.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -68,6 +69,19 @@ function commentaryIndex() {
 /** Matthew Henry excerpt covering a verse key ("Jhn|3|16"), if any: { excerpt, range }. */
 function commentaryFor(key) {
   return commentaryIndex()[key] || null;
+}
+
+let _meanings;
+/** Our own "what this verse means" paragraph for an exact reference, if we have written one. */
+function meaningFor(b, c, from, to) {
+  if (!_meanings) {
+    _meanings = new Map();
+    for (const [ref, text] of Object.entries(VERSE_MEANINGS)) {
+      const r = parseRef(ref);
+      if (r) _meanings.set(`${r.book.abbr}|${r.chapter}|${r.from}|${r.to}`, text);
+    }
+  }
+  return _meanings.get(`${b.abbr}|${c}|${from}|${to}`) || null;
 }
 
 const SLUG_ALIASES = {
@@ -234,6 +248,7 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 .ctx p{margin:0 0 .5em;font-family:Georgia,serif;font-size:17px;line-height:1.6}.ctx .n{font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;color:var(--gold-dark);margin-right:6px}
 .ctx p.hl{background:#fff3b0;border-radius:6px;padding:6px 10px;margin-left:-10px;margin-right:-10px}
 .commentary{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.meaning p{font-size:17px;line-height:1.7;margin:0}
 .lead{font-size:18px;line-height:1.65;margin:0 0 18px}
 .facts{display:flex;flex-wrap:wrap;gap:8px 10px;margin:0 0 22px;font-size:14px}
 .facts span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--brown-light)}
@@ -479,12 +494,14 @@ function versePage(b, c, from, to) {
   const words = keyWords(Array.from({ length: to - from + 1 }, (_, i) => `${b.abbr}|${c}|${from + i}`), single ? 6 : 8);
   const topics = []; for (let v = from; v <= to; v++) for (const t of verseTopics().get(`${b.abbr}|${c}|${v}`) || []) if (!topics.includes(t)) topics.push(t);
   const commentary = commentaryFor(`${b.abbr}|${c}|${from}`);
+  const meaning = meaningFor(b, c, from, to);
 
   const h = `${crumbs([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)], [chapterLabel(b, c), chapterUrl(b, c)], [label, verseUrl(b, c, from, to)]])}
 <h1>${esc(label)} <span class="badge">${VERSION}</span></h1>
 <p class="sub">${esc(b.name)} · chapter ${c}${single ? ` · verse ${from}` : ` · verses ${from}–${to}`} · King James Version</p>
 ${scripture}
 <div class="actions"><a class="btn primary" href="${appChapterUrl(b, c, from)}" data-cta="verse-study-app">Study in the app</a><a class="btn" href="${chapterUrl(b, c)}#${from}" data-cta="verse-read-chapter">Read ${esc(chapterLabel(b, c))} in full</a><a class="btn" href="/api/og?ref=${encodeURIComponent(label)}" data-cta="verse-share-image" download="${attr(label.replace(/[: ]/g, "-"))}.png">Share image</a></div>
+${meaning ? `<h2>What ${esc(label)} means</h2><div class="meaning"><p>${esc(meaning)}</p></div>` : ""}
 <h2>${esc(label)} in context</h2><div class="ctx">${context}</div>
 <p style="font-size:14px"><a href="${chapterUrl(b, c)}">Read all of ${esc(chapterLabel(b, c))} →</a></p>
 ${commentary ? `<h2>Commentary</h2><div class="commentary"><p>${esc(commentary.excerpt)}</p><p class="cite">— Matthew Henry's Concise Commentary${commentary.range && commentary.range !== String(from) ? ` on verses ${esc(commentary.range)}` : ""}</p></div>` : ""}
@@ -501,6 +518,8 @@ ${promo(b, c, from)}`;
     { "@type": "WebPage", name: `${label} (KJV)`, url: SITE + canonical, description, isPartOf: { "@id": SITE + "/#website" },
       mainEntity: { "@type": "CreativeWork", name: label, text, inLanguage: "en", isPartOf: { "@type": "Book", name: "The Holy Bible, King James Version" }, license: "https://creativecommons.org/publicdomain/mark/1.0/" } },
     breadcrumbLd([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)], [chapterLabel(b, c), chapterUrl(b, c)], [label, canonical]]),
+    ...(meaning ? [{ "@type": "FAQPage", "@id": SITE + canonical + "#faq",
+      mainEntity: [{ "@type": "Question", name: `What does ${label} mean?`, acceptedAnswer: { "@type": "Answer", text: meaning } }] }] : []),
   ]);
   return ok(shell({ title, description, canonical, h, jsonld, ogImage: `${SITE}/api/og?ref=${encodeURIComponent(label)}`, pageType: "bible-verse", ref: label }));
 }

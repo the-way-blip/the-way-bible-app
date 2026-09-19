@@ -21,6 +21,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { TOPICS, TOPIC_BY_SLUG } from "./topics.js";
 import { votdRef } from "./votd.js";
+import { BOOK_INTROS } from "./books-intro.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -233,6 +234,17 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 .ctx p{margin:0 0 .5em;font-family:Georgia,serif;font-size:17px;line-height:1.6}.ctx .n{font-family:Inter,system-ui,sans-serif;font-size:12px;font-weight:600;color:var(--gold-dark);margin-right:6px}
 .ctx p.hl{background:#fff3b0;border-radius:6px;padding:6px 10px;margin-left:-10px;margin-right:-10px}
 .commentary{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.lead{font-size:18px;line-height:1.65;margin:0 0 18px}
+.facts{display:flex;flex-wrap:wrap;gap:8px 10px;margin:0 0 22px;font-size:14px}
+.facts span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--brown-light)}
+.facts span b{color:var(--brown);font-weight:600}
+ul.outline{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+ul.outline li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:15px;display:flex;gap:14px;align-items:baseline}
+ul.outline .r{flex:none;font-weight:600;color:var(--gold-dark);min-width:74px}
+.faq{display:grid;gap:10px}
+.faq details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
+.faq summary{cursor:pointer;font-weight:600;font-size:15px}
+.faq p{margin:10px 0 0;font-size:15px;color:var(--brown-light);line-height:1.6}
 .commentary p{margin:0 0 .6em;font-size:15px;line-height:1.65}.commentary .cite{margin:0;font-size:13px;color:var(--brown-light);font-style:italic}
 ul.refs{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px;font-size:14px}ul.refs a{display:inline-block;background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:7px 12px;color:var(--brown)}ul.refs a:hover{border-color:var(--gold);text-decoration:none}
 ul.words{list-style:none;padding:0;margin:0;display:grid;gap:8px}
@@ -367,6 +379,21 @@ ${promo()}`;
 
 function bookPage(b) {
   const verseCount = b.chapters.reduce((n, c) => n + c.length, 0);
+  const intro = BOOK_INTROS[b.slug];
+  const oneChapter = b.chapters.length === 1;
+  const sizeText = oneChapter ? `${verseCount} verses` : `${b.chapters.length} chapters and ${verseCount.toLocaleString()} verses`;
+  // Some books name no author ("Not named in the book; ...") and some have no
+  // settled date ("date uncertain"), so neither can be dropped into a sentence raw.
+  const undated = intro ? /^date /.test(intro.when) : false;
+  const whenChip = intro ? (undated ? `Date <b>${esc(intro.when.replace(/^date /, ""))}</b>` : `Traditionally dated <b>${esc(intro.when)}</b>`) : "";
+  const whenAnswer = intro ? (undated ? `The date is ${intro.when.replace(/^date /, "")}.` : `It is traditionally dated ${intro.when}.`) : "";
+  // Real questions people type, answered from the book's own data. Also emitted as FAQPage JSON-LD.
+  const faqs = intro ? [
+    [`Who wrote the book of ${b.name}?`, `${intro.wrote}.`],
+    [`When was ${b.name} written?`, whenAnswer],
+    [`What is the book of ${b.name} about?`, intro.summary],
+    [`How long is ${b.name}?`, `${b.name} has ${sizeText} in the King James Version.`],
+  ] : [];
   const popular = [];
   for (const t of TOPICS) for (const ref of t.verses) { const r = parseRef(ref); if (r && r.book === b && !popular.some((p) => p.ref === ref)) popular.push({ ref, r }); }
   const grid = `<div class="grid">${b.chapters.map((_, i) => `<a href="${chapterUrl(b, i + 1)}">${i + 1}</a>`).join("")}</div>`;
@@ -375,15 +402,22 @@ function bookPage(b) {
 <h1>${esc(b.name)} <span class="badge">${VERSION}</span></h1>
 <p class="sub">${b.testament === "OT" ? "Old" : "New"} Testament · ${b.chapters.length} chapter${b.chapters.length === 1 ? "" : "s"} · ${verseCount.toLocaleString()} verses</p>
 <div class="actions"><a class="btn primary" href="${chapterUrl(b, 1)}" data-cta="book-start-reading">Start reading ${esc(chapterLabel(b, 1))}</a><a class="btn" href="${appChapterUrl(b, 1)}" data-cta="book-open-app">Open in the app</a></div>
+${intro ? `<p class="lead">${esc(intro.summary)}</p>
+<p class="facts"><span>Author: <b>${esc(intro.wrote)}</b></span><span>${whenChip}</span><span>Theme: <b>${esc(intro.theme)}</b></span></p>` : ""}
 <h2>Chapters</h2>${grid}
+${intro ? `<h2>Outline of ${esc(b.name)}</h2><ul class="outline">${intro.outline.map(([range, label]) => `<li><a class="r" href="${oneChapter ? verseUrl(b, 1, +String(range).split(/[–-]/)[0], +String(range).split(/[–-]/).pop()) : chapterUrl(b, +String(range).split(/[–-]/)[0])}">${oneChapter ? "vv. " : ""}${esc(range)}</a><span>${esc(label)}</span></li>`).join("")}</ul>` : ""}
+${intro ? `<h2>Key verses</h2><div>${intro.keys.map((ref) => { const r = parseRef(ref); return r ? `<div class="topicv"><p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote></div>` : ""; }).join("")}</div>` : ""}
 ${popular.length ? `<h2>Well-known verses in ${esc(b.name)}</h2><div class="topicv">${popular.slice(0, 10).map(({ ref, r }) => `<p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote>`).join("")}</div>` : ""}
+${faqs.length ? `<h2>Common questions</h2><div class="faq">${faqs.map(([q, ans]) => `<details><summary>${esc(q)}</summary><p>${esc(ans)}</p></details>`).join("")}</div>` : ""}
 <div class="pn"><span>${prev ? `<a href="${bookUrl(prev)}">← ${esc(prev.name)}</a>` : ""}</span><span>${next ? `<a href="${bookUrl(next)}">${esc(next.name)} →</a>` : ""}</span></div>
 ${promo(b, 1)}`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: `${b.name} (KJV)`, url: SITE + bookUrl(b), isPartOf: { "@id": SITE + "/#website" }, about: { "@type": "Book", name: `The Book of ${b.name}`, isPartOf: { "@type": "Book", name: "The Holy Bible, King James Version" } } },
     breadcrumbLd([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)]]),
+    ...(faqs.length ? [{ "@type": "FAQPage", "@id": SITE + bookUrl(b) + "#faq",
+      mainEntity: faqs.map(([q, ans]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: ans } })) }] : []),
   ]);
-  return ok(shell({ title: `${b.name} (KJV) – Read All ${b.chapters.length} Chapters Online | ${SITE_NAME}`, description: `Read the Book of ${b.name} in the King James Version — all ${b.chapters.length} chapters and ${verseCount.toLocaleString()} verses online, free, with cross references and word studies on every verse.`, canonical: bookUrl(b), h, jsonld, pageType: "bible-book", ref: b.name }));
+  return ok(shell({ title: intro ? `${b.name}: Summary, Author, and Outline (KJV) | ${SITE_NAME}` : `${b.name} (KJV) – Read Online | ${SITE_NAME}`, description: intro ? snippet(`${intro.summary.split(". ")[0]}. ${intro.wrote} — ${undated ? `date ${intro.when.replace(/^date /, "")}` : `traditionally dated ${intro.when}`}. Read all ${sizeText} in the King James Version, free.`, 250) : `Read the Book of ${b.name} in the King James Version — ${sizeText} online, free.`, canonical: bookUrl(b), h, jsonld, pageType: "bible-book", ref: b.name }));
 }
 
 function chapterPage(b, c) {

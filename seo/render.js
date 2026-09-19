@@ -23,6 +23,7 @@ import { TOPICS, TOPIC_BY_SLUG } from "./topics.js";
 import { votdRef } from "./votd.js";
 import { BOOK_INTROS } from "./books-intro.js";
 import { VERSE_MEANINGS } from "./meanings.js";
+import { TOPIC_INTROS } from "./topic-intros.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -558,17 +559,20 @@ function topicPage(t) {
   const n = items.length;
   const phrase = topicPhrase(t);
   const list = items.map(({ ref, r }) => `<div class="topicv"><p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a> <span style="font-weight:400;color:var(--brown-light)">· ${VERSION}</span></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote></div>`).join("");
+  const intro = TOPIC_INTROS[t.slug] || null;
   const related = TOPICS.filter((o) => o !== t && o.verses.some((v) => t.verses.includes(v))).slice(0, 8);
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
 <h1>${n} ${esc(topicPhrase(t))} <span class="badge">${VERSION}</span></h1>
+${intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
 <p class="sub">${t.blurb ? esc(t.blurb) + " " : ""}Each verse is quoted in full from the King James Version — tap a reference to read it in context, see cross references, and study the original words.</p>
 ${list}
 ${related.length ? `<h2>Related topics</h2><div class="chips">${related.map((o) => `<a href="/verses-about/${o.slug}">${esc(o.name)}</a>`).join("")}</div>` : ""}
 <p style="font-size:14px;margin-top:20px"><a href="/verses-about">All ${TOPICS.length} topics →</a></p>
 ${promo()}`;
   const first = items[0];
-  const description = t.blurb
-    ? `${t.blurb} ${n} verses in the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}.`
+  const lead = intro ? snippet(intro, 150) : t.blurb || null;
+  const description = lead
+    ? `${lead} ${n} verses in the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}.`
     : `${n} ${phrase} from the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}. Read each one in context.`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: topicPhrase(t), url: SITE + `/verses-about/${t.slug}`, description, isPartOf: { "@id": SITE + "/#website" },

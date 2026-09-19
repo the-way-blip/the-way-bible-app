@@ -2,15 +2,22 @@
  * seo/meanings.js — plain-language "what this verse means" paragraphs, written
  * for TheWay and approved by Dillon. Everything else on a verse page (the KJV
  * text, the cross references, the Matthew Henry excerpt) is public domain and
- * sits on every other Bible site; this is the only writing here that is ours,
- * and it is what an AI assistant quotes when somebody asks what a verse means.
+ * sits on every competing Bible site; this is the only writing here that is
+ * ours, and it is what an AI assistant quotes when somebody asks what a verse
+ * means.
  *
  * Keyed by reference exactly as refLabel() prints it (so "Psalm 23:1", not
  * "Psalms 23:1"). Anything that does not resolve through parseRef is ignored,
  * and a verse with no entry simply renders without the section.
  *
- * Batch 1: the 25 most-searched verses. Keep the register plain and spoken,
- * and run the voice-check skill on new batches before they ship.
+ * Batch 1: the 25 best-known verses.
+ * Batch 2: the queries Search Console showed the site already ranking for
+ *          (Proverbs 4:25-27, Isaiah 26:3, John 15:7, Mark 12:30-31,
+ *          Proverbs 30:5, Ecclesiastes 3:1-8, John 3:35, Jeremiah 23:23-24)
+ *          plus the next tier of high-volume verses.
+ *
+ * Keep the register plain and spoken, and run the voice-check skill on every
+ * new batch before it ships.
  */
 export const VERSE_MEANINGS = {
   "John 3:16": "Jesus says this at night, to a religious leader who came with questions. The love is God's, the giving costs him his Son, and the offer is open to whosoever — not to a short list of people who had it together. Believing here isn't agreeing that it happened. It's trusting him with where you end up.",
@@ -38,4 +45,29 @@ export const VERSE_MEANINGS = {
   "1 John 1:9": "To confess is to say the same thing about it that God says, without softening it. The promise rests on his character rather than on how sorry you managed to feel: he is faithful and just to forgive. And cleansed from all unrighteousness covers the parts you didn't know to name.",
   "Psalm 119:105": "A lamp in that world lit the next step, not the whole road. That's the honest picture of guidance here — enough light for one step, not a map of the next ten years. You get more of it when you move.",
   "Genesis 1:1": "The first sentence of the Bible doesn't argue for God. It assumes him. Everything after it — the light, the sea, the animals, the man — rests on this one claim being true. If God made the beginning, nothing that comes after is outside his reach.",
+  "Proverbs 4:25-27": "Three body parts in three verses: the eyes, the feet, and the path under them. Solomon's counsel is about attention before it's about morality, because you end up where you're looking. Ponder the path of thy feet means think about where this road comes out before you take another step down it.",
+  "Isaiah 26:3": "Perfect peace is the word for peace said twice, the way you'd repeat something to make it stronger. The condition is a mind stayed on God, and stayed is a leaning word — it's what you do with your weight. The peace isn't promised to people who feel settled. It's promised to people who keep their thoughts fixed on him.",
+  "John 15:7": "This sits in the middle of the vine and the branches, so the promise belongs to a branch that's still attached. If ye abide in me, and my words abide in you is two conditions, not throat-clearing. Ask what ye will comes after them, not instead of them.",
+  "Mark 12:30-31": "A scribe asked which commandment was first and Jesus gave him two. The first takes in heart, soul, mind and strength — every part of a person, with nothing held back. The second is measured against something you already do well, which is loving yourself. He ends it flat: there is none other commandment greater than these.",
+  "Proverbs 30:5": "Every word of God is pure — the picture behind that word is metal refined until nothing false is left in it. Then comes the practical half: he is a shield unto them that put their trust in him. The shield isn't the book sitting on a shelf. It's God himself, to people who actually trust him.",
+  "Ecclesiastes 3:1-8": "Solomon lists fourteen pairs, and the hard ones are in there with the good — a time to kill, a time to break down, a time to lose. He isn't saying every season is pleasant. He's saying every season is appointed, which means the one you're in has an end.",
+  "John 3:35": "This is John the Baptist talking, not Jesus, and he says it while his own crowd is leaving him for someone else. If the Father has already given all things into the Son's hand, then John has nothing to protect. It's the sentence just before he says he must increase, but I must decrease.",
+  "Jeremiah 23:23-24": "God is answering prophets who were telling people whatever they wanted to hear. Am I a God at hand, and not a God afar off is a question with an edge on it — you can't get far enough away to work unobserved. Can any hide himself in secret places that I shall not see him. The comfort and the warning are the same fact.",
+  "Psalm 46:10": "Be still gets read as quiet your heart, but this psalm is about war — the verse before has God breaking the bow and burning the chariot. The command is closer to stop fighting and see who he is. And it's said to the nations as much as it's said to you.",
+  "Matthew 6:34": "Jesus doesn't say tomorrow has no trouble in it. He says it has its own, and it will still be there when you arrive. Dragging it into today doesn't get you ready for it, it just means you carry it twice. Sufficient unto the day is the evil thereof is honest about the day you're actually in.",
+  "1 Peter 5:7": "Casting is a throwing word. You don't set care down gently, you get rid of it. The reason is in the back half of the verse — for he careth for you — and Peter wrote it to people under real persecution. He put it straight after a line about humility, because pride is what makes a man keep carrying things.",
+  "Isaiah 53:5": "Written centuries before the cross, and every verb points away from us: wounded, bruised, chastised, and with his stripes we are healed. The transgressions and the iniquities are ours. The wounds are his. That trade is the whole verse.",
+  "Psalm 37:4": "Delight comes first, and it changes what comes second. The promise isn't that God hands over whatever you happen to want right now. It's that a heart delighting in him begins to want different things — and then he gives you the desires of your heart, because by then they're his.",
+  "John 16:33": "Jesus said this within hours of the arrest, to men who were about to scatter on him. He doesn't soften the first half: in the world ye shall have tribulation. The good cheer isn't because the trouble isn't coming. It's because he has already overcome the world it's coming from.",
+  "Deuteronomy 31:6": "Moses is handing the nation over to Joshua, knowing he isn't going with them. The courage he calls for rests on a promise about God rather than a read on the odds: he will not fail thee, nor forsake thee. The writer of Hebrews quotes this same line to Christians centuries later, which tells you how far it reaches.",
+  "Lamentations 3:22-23": "This sits in the middle of a book of grief, written by a man who watched his city burn. He isn't over it — a few verses earlier he says his strength and his hope are perished. New every morning is what he preaches to himself in the dark, and that's exactly why it carries weight.",
+  "James 1:5": "The offer is wide open — if any of you lack wisdom. God giveth to all men liberally, and upbraideth not, which means he doesn't hold the asking against you or bring up the last time. The one condition comes in the next verse: ask in faith, nothing wavering.",
+  "Romans 5:8": "The timing is the point. Not after we cleaned ourselves up, not once we were sorry enough: while we were yet sinners, Christ died for us. That's what commendeth means here — God putting his love out where nobody could mistake it for a reward.",
+  "2 Corinthians 5:17": "A new creature isn't an improved one. Old things are passed away, behold, all things are become new is the language of starting over, not touching up. And in Christ is where it happens — outside of him the verse makes no promise at all.",
+  "Ephesians 6:10-11": "Be strong in the Lord, and in the power of his might — the strength is borrowed before any armour goes on. Paul says the whole armour for a reason, since partial armour just leaves a gap. And the enemy named here is the wiles of the devil, which are schemes rather than brute force.",
+  "Colossians 3:23": "Paul wrote this to slaves, which is worth sitting with before applying it to a job you chose. Whatsoever ye do takes in the work nobody notices and nobody thanks you for. Doing it heartily, as to the Lord changes who you're working for without changing the work.",
+  "Psalm 27:1": "Three words for what God is: light, salvation, strength. David asks his own question twice — whom shall I fear, of whom shall I be afraid — and both times the answer is nobody, on account of who is with him. He wrote it while men were hunting him.",
+  "Matthew 28:19-20": "The command is to make disciples; going, baptizing and teaching are how it gets done. Teaching them to observe all things is the half that gets left off — not only to know what he commanded but to do it. Then the promise covers the whole stretch of it: lo, I am with you alway, even unto the end of the world.",
+  "1 Corinthians 10:13": "Three things are said here. What you're facing isn't unique, it's such as is common to man. God is faithful, and he won't let it run past what you can bear. And there is always a way to escape, which makes the honest question in the moment whether you're looking for it.",
+  "Psalm 91:1-2": "The secret place is close quarters — you can't dwell there and keep your distance at the same time. Watch the order: the one who dwells is the one who abides under the shadow. And the second verse is the psalmist saying it out loud, which is a different thing from only believing it.",
 };

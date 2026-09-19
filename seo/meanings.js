@@ -11,10 +11,15 @@
  * and a verse with no entry simply renders without the section.
  *
  * Batch 1: the 25 best-known verses.
- * Batch 2: the queries Search Console showed the site already ranking for
- *          (Proverbs 4:25-27, Isaiah 26:3, John 15:7, Mark 12:30-31,
- *          Proverbs 30:5, Ecclesiastes 3:1-8, John 3:35, Jeremiah 23:23-24)
- *          plus the next tier of high-volume verses.
+ * Batch 2: queries Search Console showed the site already ranking for, plus
+ *          the next tier of high-volume verses.
+ * Batch 3 (Sept 19): picked straight off the Search Console query report
+ *          sorted by impressions — pages already being shown to searchers at
+ *          about position 47 with no clicks, e.g. Isaiah 54:17 (40
+ *          impressions), Romans 15:13 (37), Matthew 17:1-8 (36), Ephesians
+ *          6:12 (28, plus 25 more for "we wrestle not against flesh and
+ *          blood"). Impressions without clicks means Google is offering the
+ *          page and nobody is choosing it; a real explanation is the fix.
  *
  * Keep the register plain and spoken, and run the voice-check skill on every
  * new batch before it ships.
@@ -70,4 +75,29 @@ export const VERSE_MEANINGS = {
   "Matthew 28:19-20": "The command is to make disciples; going, baptizing and teaching are how it gets done. Teaching them to observe all things is the half that gets left off — not only to know what he commanded but to do it. Then the promise covers the whole stretch of it: lo, I am with you alway, even unto the end of the world.",
   "1 Corinthians 10:13": "Three things are said here. What you're facing isn't unique, it's such as is common to man. God is faithful, and he won't let it run past what you can bear. And there is always a way to escape, which makes the honest question in the moment whether you're looking for it.",
   "Psalm 91:1-2": "The secret place is close quarters — you can't dwell there and keep your distance at the same time. Watch the order: the one who dwells is the one who abides under the shadow. And the second verse is the psalmist saying it out loud, which is a different thing from only believing it.",
+  "Isaiah 54:17": "No weapon that is formed against thee shall prosper is said to Israel on the far side of judgment, not handed out as a charm against every hardship. The verse ends by calling it the heritage of the servants of the LORD, so it belongs to his people. And notice it doesn't say no weapon gets formed. It says the ones that get formed don't finally win.",
+  "Romans 15:13": "Paul calls him the God of hope, which makes hope something handed to you rather than something you work up. Joy and peace come in believing — they arrive with the trusting, not before it. And the abounding is credited to the power of the Holy Ghost, so this isn't a matter of trying to feel more hopeful than you do.",
+  "Matthew 17:1-8": "Peter, James and John watch Jesus change in front of them, his face shining like the sun. Peter's instinct is to build something and stay up there, and the Father's answer cuts across it: hear ye him. When the voice stops they lift their eyes and see no man, save Jesus only, which is the whole point of the scene.",
+  "John 15:5": "A branch doesn't strain to produce grapes. It stays attached, and the fruit follows. Without me ye can do nothing is the half people skip, and it's the reason the verse gets quoted at all. Abiding isn't a burst of effort — it's staying put.",
+  "Galatians 2:20": "Paul says the old life is already over: I am crucified with Christ. What's living now is Christ in him, which is a change of occupant rather than self-improvement. And the life he still lives in the flesh he lives by the faith of the Son of God, who loved me, and gave himself for me.",
+  "Romans 3:23": "All have sinned puts everybody on the same footing, which is exactly the argument Paul is making in this chapter. Come short of the glory of God is an archery picture — the arrow falls short of the mark, whether by an inch or a mile. That's why the next verse, about being justified freely by his grace, has to follow it.",
+  "Ephesians 6:12": "We wrestle not against flesh and blood names the mistake first: the person in front of you isn't the real opponent. Paul lists principalities, powers, rulers of the darkness of this world, spiritual wickedness in high places. And wrestling is close work, not long range, which is why the armour that follows is for standing rather than charging.",
+  "Galatians 6:9": "Be not weary in well doing assumes you will get weary, or Paul wouldn't have to say it. The harvest is promised in due season, which is God's timing and not yours. The whole thing hangs on the last clause: if we faint not.",
+  "Philippians 1:6": "He which hath begun a good work in you will perform it — the confidence is in the one who started it, not in the one it's happening to. Paul puts the finish line at the day of Jesus Christ, so it was never going to be done this year. Begun and will finish are both his verbs.",
+  "James 1:2-4": "Count it all joy is an accounting word. You decide what goes in the column, which is a different thing from feeling cheerful about it. James says the trying of your faith worketh patience, and that patience has to have her perfect work. The joy isn't about the trial, it's about what the trial is making.",
+  "Romans 8:31": "If God be for us, who can be against us isn't a claim that nobody opposes you. Plenty opposed Paul and he knew their names. The question is about weight, not headcount — who can stand against the one who is for you. And it lands right after a list of what God has already done.",
+  "Romans 8:18": "Paul isn't making light of the suffering. This is a man who had been beaten, jailed and shipwrecked. He's weighing it — I reckon is deliberate arithmetic — and his conclusion is that what's coming is so much heavier that the present sufferings don't tip the scale.",
+  "Psalm 147:3": "He healeth the broken in heart, and bindeth up their wounds. Binding up is slow work, bandage rather than miracle. And it sits in the same breath as God counting the stars and calling them all by name, so the one who numbers the stars is the one doing the bandaging.",
+  "Isaiah 43:2": "When thou passest through the waters — not if. God doesn't promise a way around the river or the fire. He promises to be in them with you, and that they shall not overflow thee and shall not kindle upon thee. Passing through also means there's another side to come out on.",
+  "Psalm 118:6": "The LORD is on my side; I will not fear. The order matters: the fear goes because of who is with him, not because the threat left. What can man do unto me is a real question with a real answer — plenty, and none of it final.",
+  "Proverbs 22:6": "Train up a child in the way he should go is written as a proverb, in a book full of them — how things generally run, not a contract with no exceptions. The way he should go can be read as God's way, or as the bent God gave that particular child. Either way, the training is the parent's part and the outcome is God's.",
+  "1 Corinthians 13:4-8": "The same paragraph about love, carried one verse further, to charity never faileth. Paul is holding it up against the gifts the Corinthians prized most — prophecy, tongues, knowledge — and saying every one of those stops. Love doesn't. That's the argument the whole chapter is building toward.",
+  "Psalm 62:4": "David is describing men who bless with their mouth, but they curse inwardly. It's a verse about two-faced dealing, and it's honest that this happens to people who are trying to do right. It sits inside a psalm that keeps circling back to God alone as the rock, which is the answer to it.",
+  "Proverbs 1:30": "This is wisdom speaking about people who would none of my counsel, and despised all my reproof. The refusal is the whole point — it isn't that they never heard, it's that they decided. The verses around it name the cost: they eat the fruit of their own way.",
+  "Deuteronomy 11:26-28": "Moses sets a blessing and a curse in front of the entire nation on the same day, and ties each one to obedience or to turning aside. It's plain language, and no third option is offered. The choice belonged to them, and he made sure they knew where each road came out.",
+  "Psalm 23:4": "The valley of the shadow of death is a place you walk through, not a place you settle. Watch the psalm switch here from talking about God to talking to him — thou art with me. The rod and the staff are a shepherd's tools: one drives off what attacks, one pulls a wandering sheep back.",
+  "John 1:1": "John opens where Genesis opens — in the beginning — and the Word is already there. Three claims stacked in one sentence: the Word was in the beginning, was with God, and was God. Verse fourteen tells you plainly who he has been talking about.",
+  "Matthew 5:16": "Let your light so shine before men is not an instruction to get noticed. Watch where the sentence lands: that they may see your good works, and glorify your Father which is in heaven. The light is aimed past you on purpose.",
+  "1 John 4:19": "We love him, because he first loved us. The order is the entire verse — his love starts it, ours answers it. John's argument through the chapter is that love isn't something we generate and hand up to God. It's something we received and pass along.",
+  "Jeremiah 1:5": "God tells Jeremiah he knew him before he formed him in the belly and ordained him before he came out of the womb. This is said to a man who has just objected that he's too young for the work. The point isn't Jeremiah's qualifications — the call was there before he existed to have any.",
 };

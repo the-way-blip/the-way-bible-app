@@ -203,7 +203,9 @@ const CSS = `
 body{margin:0;background:var(--cream);color:var(--brown);font:16px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--gold-dark);text-decoration:none}a:hover{text-decoration:underline}
 .wrap{max-width:760px;margin:0 auto;padding:0 20px}
-header.top{border-bottom:1px solid var(--line);background:var(--paper)}
+html{scroll-padding-top:76px}
+header.top{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--line);background:var(--paper);background:color-mix(in srgb,var(--paper) 92%,transparent);-webkit-backdrop-filter:saturate(1.4) blur(8px);backdrop-filter:saturate(1.4) blur(8px)}
+@supports not (backdrop-filter:blur(8px)){header.top{background:var(--paper)}}
 header.top .wrap{display:flex;align-items:center;justify-content:space-between;min-height:56px;gap:12px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
 form.search{display:flex;flex:1;min-width:180px;max-width:360px;margin:0 auto}
 form.search input{flex:1;min-width:0;border:1px solid var(--line);border-right:0;border-radius:9px 0 0 9px;padding:8px 12px;font:16px Inter,system-ui,sans-serif;color:var(--brown);background:var(--cream);-webkit-appearance:none;appearance:none}
@@ -211,8 +213,8 @@ form.search input:focus{outline:none;border-color:var(--gold)}
 form.search button{border:1px solid var(--gold);background:var(--gold);color:#fff;border-radius:0 9px 9px 0;padding:0 14px;min-width:44px;font-size:18px;cursor:pointer}
 form.search.big{max-width:none;margin:0 0 22px}form.search.big input{font-size:16px;padding:12px 14px}form.search.big button{padding:0 18px;font:600 15px Inter,system-ui,sans-serif}
 mark{background:#fff3b0;color:inherit;padding:0 2px;border-radius:3px}
-@media(max-width:640px){form.search{order:3;flex-basis:100%;max-width:none}header.top .wrap{padding-top:6px;padding-bottom:8px;gap:6px 12px}.brand{font-size:15px}.brand img{width:24px;height:24px}
-.appbar .wrap{gap:10px;padding-top:7px;padding-bottom:7px}.appbar img{display:none}.appbar .t b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.appbar .cta{padding:8px 12px;font-size:13px}
+@media(max-width:640px){html{scroll-padding-top:108px}form.search{order:3;flex-basis:100%;max-width:none}header.top .wrap{padding-top:6px;padding-bottom:8px;gap:6px 12px}.brand{font-size:15px}.brand img{width:24px;height:24px}
+.appbar .wrap{gap:10px;padding-top:7px;padding-bottom:7px}.appbar .t b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.appbar .cta{padding:8px 12px;font-size:13px}
 main{padding:18px 0 40px}.crumbs{margin:0 0 10px;white-space:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch}.sub{font-size:14px;margin:0 0 16px}
 .actions .btn{flex:1 1 auto;text-align:center;padding:12px 14px}.actions .btn.primary{flex-basis:100%}
 .topicv blockquote{font-size:17px}.commentary p{font-size:15px}h2{margin:28px 0 10px}}
@@ -223,7 +225,6 @@ nav.main .cta{background:var(--gold);color:#fff;padding:7px 12px;border-radius:8
 nav.main .cta:hover{text-decoration:none;background:var(--gold-dark)}
 .appbar{background:var(--brown);color:#fff}
 .appbar .wrap{display:flex;align-items:center;gap:12px;padding-top:10px;padding-bottom:10px;font-size:14px}
-.appbar img{width:36px;height:36px;border-radius:9px;flex:none}
 .appbar .t{flex:1;min-width:0;line-height:1.3}.appbar .t b{display:block;font-size:14px}.appbar .t span{opacity:.8;font-size:13px}
 .appbar .cta{flex:none;background:var(--gold);color:#fff;padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;white-space:nowrap}
 .appbar .cta:hover{text-decoration:none;background:var(--gold-dark)}
@@ -324,7 +325,7 @@ ${ga}
 ${hideSearch ? "" : `<form class="search" action="/bible/search" role="search"><input type="search" name="q" placeholder="Search verse, topic, or word" aria-label="Search the Bible" enterkeyhint="search" autocapitalize="none" autocorrect="off"><button type="submit" aria-label="Search">⌕</button></form>`}
 <nav class="main"><a href="/bible">Read</a><a href="/verses-about">Topics</a><a href="/verse-of-the-day" class="hide">Verse of the day</a></nav>
 </div></header>
-<div class="appbar"><div class="wrap"><img src="/icon-192.png" alt="" width="36" height="36"><div class="t"><b>TheWay Bible for iPhone</b><span>Study, memorize, journal, and pray — free.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the app</a></div></div>
+<div class="appbar"><div class="wrap"><div class="t"><b>Free on iPhone</b><span>Study, memorize, journal, and pray.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the app</a></div></div>
 <main><div class="wrap">
 ${h}
 </div></main>

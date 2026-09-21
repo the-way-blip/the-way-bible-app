@@ -259,6 +259,11 @@ export default function Settings() {
         <DataManagement t={t} />
       </SettingsSection>
 
+      {/* Switch from YouVersion */}
+      <SettingsSection title="Switching from YouVersion">
+        <YouVersionMigration />
+      </SettingsSection>
+
       {/* Help & Feedback */}
       <SettingsSection title={t("settings.helpFeedback")}>
         <div className="space-y-2">
@@ -613,6 +618,74 @@ function ShowAppTourButton() {
         <p className="text-xs text-green-600 text-center mt-2 animate-slide-up">
           {t("settings.tourScheduled")}
         </p>
+      )}
+    </div>
+  );
+}
+
+function YouVersionMigration() {
+  const [open, setOpen] = useState(false);
+  const steps = [
+    {
+      label: "Export your highlights",
+      detail: "Open YouVersion on the web (bible.com) → sign in → go to Highlights. You can view them there, but YouVersion doesn't offer a direct export file. Screenshot or copy the highlights you want to keep.",
+    },
+    {
+      label: "Copy your notes",
+      detail: "In YouVersion, go to Notes. Open each note and copy the text. You can paste it into TheWay's journal (linked to any verse) — open the verse, tap the note icon, and paste.",
+    },
+    {
+      label: "Find your bookmarks",
+      detail: "In YouVersion, go to Bookmarks. Note the references. In TheWay, open each chapter and tap the bookmark icon to re-save them.",
+    },
+    {
+      label: "Your memory verses",
+      detail: "In YouVersion, go to Verse of the Day or your saved verses. In TheWay, open each verse, tap the star icon, and it will appear in your Memory Verses for flashcard practice.",
+    },
+    {
+      label: "Reading plan progress",
+      detail: "Reading plan progress can't be transferred — YouVersion's plans differ from TheWay's. Start fresh in TheWay's Reading Plans and pick up wherever you'd like.",
+    },
+    {
+      label: "Back up TheWay going forward",
+      detail: "Use the Export Data button below to save a backup file. You can import it anytime to restore all your highlights, notes, memory verses, and journal entries.",
+    },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-white rounded-xl border border-cream-dark hover:border-gold/30 transition-colors"
+      >
+        <span className="text-sm text-warm-brown">How to move your data from YouVersion</span>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`w-4 h-4 text-warm-brown-light transition-transform ${open ? "rotate-180" : ""}`}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="bg-cream/50 rounded-xl border border-cream-dark p-4 space-y-4">
+          <p className="text-xs text-warm-brown-light leading-relaxed">
+            YouVersion doesn't export data in a file format, so migration is manual. Here's what you can move and how:
+          </p>
+          <ol className="space-y-3">
+            {steps.map((s, i) => (
+              <li key={i} className="flex gap-3">
+                <span className="w-5 h-5 rounded-full bg-gold text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  {i + 1}
+                </span>
+                <div>
+                  <p className="text-xs font-semibold text-warm-brown mb-0.5">{s.label}</p>
+                  <p className="text-[11px] text-warm-brown-light leading-relaxed">{s.detail}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <p className="text-[10px] text-warm-brown-light/60 leading-relaxed pt-1 border-t border-cream-dark">
+            TheWay stores everything locally on your device and syncs to your account. Nothing is shared or made public.
+          </p>
+        </div>
       )}
     </div>
   );

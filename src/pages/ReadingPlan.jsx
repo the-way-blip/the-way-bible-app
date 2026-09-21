@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
 import PLANS, { getPlan, getCurrentDay } from "../data/readingPlans";
 import useReadingPlanProgress from "../hooks/useReadingPlanProgress";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -131,6 +132,24 @@ function PlanCard({ plan, completedCount, onStart }) {
   );
 }
 
+function maybeRequestReview() {
+  try {
+    const COOLDOWN_DAYS = 90;
+    const MIN_DAYS_COMPLETED = 3;
+    const totalKey  = "rpTotalDaysCompleted";
+    const lastKey   = "rpLastReviewPrompt";
+    const total     = parseInt(localStorage.getItem(totalKey) || "0", 10) + 1;
+    localStorage.setItem(totalKey, String(total));
+    if (total < MIN_DAYS_COMPLETED) return;
+    const last = parseInt(localStorage.getItem(lastKey) || "0", 10);
+    if (Date.now() - last < COOLDOWN_DAYS * 86400_000) return;
+    localStorage.setItem(lastKey, String(Date.now()));
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios") {
+      window.open("itms-apps://itunes.apple.com/app/id6762105782?action=write-review");
+    }
+  } catch {}
+}
+
 /* ─────────────────────────── Active Plan View ─────────────────────────── */
 function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToast }) {
   const t = useT();
@@ -203,8 +222,12 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
 
         <button
           onClick={() => {
+            const wasAlreadyDone = isCompleted;
             onMarkComplete(viewingDay);
-            if (!isCompleted) showToast("Day complete!", { icon: "✅" });
+            if (!wasAlreadyDone) {
+              showToast("Day complete!", { icon: "✅" });
+              maybeRequestReview();
+            }
           }}
           className={`w-full mt-4 py-3 rounded-full text-sm font-semibold transition-colors ${
             isCompleted

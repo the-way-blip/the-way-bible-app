@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { isSupabaseConfigured, getSupabase } from "../services/supabase";
 import { syncAll } from "../services/supabaseSync";
 import { gaEvent } from "../services/ga";
@@ -23,18 +23,29 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [syncing, setSyncing] = useState(false);
 
+  const lastSyncRef = useRef(0);
+  const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+  const runSync = useCallback(async (userId) => {
+    if (!userId) return;
+    if (Date.now() - lastSyncRef.current < SYNC_COOLDOWN_MS) return;
+    lastSyncRef.current = Date.now();
+    setSyncing(true);
+    try {
+      await syncAll(userId);
+    } finally {
+      setSyncing(false);
+    }
+  }, []);
+
   const handleUserLogin = useCallback(async (authUser) => {
     setUser(authUser);
     if (authUser) {
       loadProfile(authUser.id);
-      setSyncing(true);
-      try {
-        await syncAll(authUser.id);
-      } finally {
-        setSyncing(false);
-      }
+      lastSyncRef.current = 0; // reset so login always syncs
+      await runSync(authUser.id);
     }
-  }, []);
+  }, [runSync]);
 
   useEffect(() => {
     if (!isSupabaseConfigured()) {
@@ -100,11 +111,30 @@ export function AuthProvider({ children }) {
       }).then((handle) => { urlListener = handle; });
     }
 
+    // Re-sync when the user returns to the app (picks up changes from other devices)
+    let appStateHandle;
+    if (Capacitor.isNativePlatform()) {
+      CapApp.addListener("appStateChange", ({ isActive }) => {
+        if (isActive) setUser((u) => { if (u) runSync(u.id); return u; });
+      }).then((h) => { appStateHandle = h; });
+    } else {
+      const onVisible = () => {
+        if (!document.hidden) setUser((u) => { if (u) runSync(u.id); return u; });
+      };
+      document.addEventListener("visibilitychange", onVisible);
+      return () => {
+        subscription?.unsubscribe();
+        urlListener?.remove?.();
+        document.removeEventListener("visibilitychange", onVisible);
+      };
+    }
+
     return () => {
       subscription?.unsubscribe();
       urlListener?.remove?.();
+      appStateHandle?.remove?.();
     };
-  }, [handleUserLogin]);
+  }, [handleUserLogin, runSync]);
 
   async function loadProfile(userId) {
     const sb = await getSupabase();

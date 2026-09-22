@@ -86,16 +86,22 @@ function Hero() {
             >
               Get Started Free
             </a>
-            {/* App Store-style badge — dark in both modes, looks like a real button */}
-            <span className="inline-flex items-center gap-2.5 bg-black text-white px-5 py-3 rounded-xl select-none">
+            {/* App Store badge — live link */}
+            <a
+              href="https://apps.apple.com/app/id6762105782"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => track("cta_clicked", { location: "hero_appstore" })}
+              className="inline-flex items-center gap-2.5 bg-black text-white px-5 py-3 rounded-xl hover:bg-black/80 transition-colors"
+            >
               <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="w-7 h-7 shrink-0">
                 <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
               </svg>
               <span className="flex flex-col leading-tight text-left">
-                <span className="text-[10px] uppercase tracking-wider opacity-80">Coming soon to the</span>
+                <span className="text-[10px] uppercase tracking-wider opacity-80">Download on the</span>
                 <span className="text-lg font-semibold -mt-0.5">App Store</span>
               </span>
-            </span>
+            </a>
           </div>
           <p className="text-xs text-warm-brown-light/60 mt-4">Free forever · No credit card required</p>
         </div>
@@ -281,8 +287,8 @@ function Explanatory() {
           <FAQ q="How much does it cost?">
             Free forever for the core reading, study, memory, journal, and prayer tools. If we ever charge for advanced features, it'll be optional — and clearly explained.
           </FAQ>
-          <FAQ q="Will there be an iOS app?">
-            Yes — coming soon to the App Store. The web app works on every device today, and an iOS app is in active development.
+          <FAQ q="Is there an iOS app?">
+            Yes — <a href="https://apps.apple.com/app/id6762105782" target="_blank" rel="noopener noreferrer" className="text-gold underline">download it free on the App Store</a>. The web app also works on every device, and both stay in sync automatically.
           </FAQ>
           <FAQ q="What's coming next?">
             Group studies, shared journals, audio reading, expanded commentary library, and tools for pastors and small group leaders. We build alongside our users — your feedback shapes the roadmap.

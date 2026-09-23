@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect, lazy, Suspense } from "react";
 import { getTranslation } from "../data/translations";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import useT from "../hooks/useT";
 import useBible from "../hooks/useBible";
 import useHighlights from "../hooks/useHighlights";
@@ -31,6 +31,7 @@ import { submitReadingMilestone } from "../services/ghlService";
 export default function Reader() {
   const t = useT();
   const { book, chapter } = useParams();
+  const location = useLocation();
   const chapterNum = parseInt(chapter);
   const navigate = useNavigate();
 
@@ -200,6 +201,21 @@ export default function Reader() {
     });
     navigatedDirectly.current = false;
   }, [data, book, chapterNum]);
+
+  // Deep link to a verse (?v=16 from search results): scroll to it and flash it
+  useEffect(() => {
+    if (!data) return;
+    const v = parseInt(new URLSearchParams(location.search).get("v"), 10);
+    if (!v) return;
+    const timer = setTimeout(() => {
+      const el = scrollContainerRef.current?.querySelector(`[data-verse="${v}"]`);
+      if (!el) return;
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("verse-flash");
+      setTimeout(() => el.classList.remove("verse-flash"), 2600);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [data, location.search]);
 
   const selectedVerseData = selectedVerse
     ? (data?.verses?.find((v) => v.verse === selectedVerse) ?? null)

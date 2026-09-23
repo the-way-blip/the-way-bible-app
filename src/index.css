@@ -480,3 +480,11 @@ html.dark .drop-cap::first-letter {
     line-height: 2;
   }
 }
+
+/* Verse deep-link flash (search results → reader) */
+@keyframes verse-flash {
+  0%   { background-color: rgba(201, 162, 39, 0.35); }
+  100% { background-color: transparent; }
+}
+.verse-flash > span:first-of-type,
+.verse-flash { animation: verse-flash 2.4s ease-out; border-radius: 4px; }

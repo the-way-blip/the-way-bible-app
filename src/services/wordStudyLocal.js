@@ -47,11 +47,11 @@ function parseTaggedText(taggedText) {
 
   while ((match = regex.exec(remaining)) !== null) {
     if (match[1] !== undefined) {
-      // <em>word</em> — translator added
-      words.push({
-        word: match[1],
-        added: true,
-      });
+      // <em>word(s)</em> — translator added; one object per word so the
+      // phrase can align token-by-token against the plain text
+      for (const part of match[1].trim().split(/\s+/)) {
+        if (part) words.push({ word: part.replace(/[.,;:!?]/g, ""), added: true });
+      }
     } else if (match[2] !== undefined) {
       // word[H####] — original language word with Strong's tag(s) after
       const strongsNums = [match[4], match[5], match[6]].filter(Boolean);
@@ -72,19 +72,69 @@ function parseTaggedText(taggedText) {
         punctuation: match[9].match(/[.,;:!?]$/)?.[0] || "",
       });
     } else if (match[10] !== undefined) {
-      // Plain word with no tag — likely added or punctuation
-      // Also clean any stray [Hxxxx] tags that weren't caught
+      // Plain word with no tag. Only <em> words are translator additions —
+      // the source simply leaves many function words untagged.
       const cleaned = match[10].replace(/\[[HG]\d+\]/g, "").replace(/[.,;:!?]/g, "");
       if (cleaned) {
         words.push({
           word: cleaned,
-          added: true,
+          added: false,
+          strongs: null,
         });
       }
     }
   }
 
   return words;
+}
+
+const normToken = (s) => (s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+
+// The tagged source drops punctuation and, for ~20% of verses, the tail of the
+// verse after its last Strong's tag. The plain KJV text is authoritative for
+// what to display: walk its tokens and attach Strong's data where the tagged
+// words line up. `word` stays clean for lookups; `display` carries punctuation.
+export function alignWordsToText(words, text) {
+  if (!text || !words?.length) return words;
+  const tokens = text.trim().split(/\s+/);
+  const out = [];
+  let j = 0;
+
+  for (let i = 0; i < tokens.length; i++) {
+    const tok = tokens[i];
+    const n = normToken(tok);
+    if (!n) { out.push({ word: tok, display: tok, added: false, strongs: null }); continue; }
+
+    while (j < words.length && !normToken(words[j].word)) j++;
+
+    let matched = null;
+    if (j < words.length) {
+      const tj = normToken(words[j].word);
+      const tNext = j + 1 < words.length ? normToken(words[j + 1].word) : null;
+      const pNext = i + 1 < tokens.length ? normToken(tokens[i + 1]) : null;
+      if (tj === n) {
+        matched = words[j++];
+      } else if (tNext === n) {
+        // tagged side has one stray token (e.g. a typo in either source)
+        matched = words[j + 1]; j += 2;
+      } else if (pNext === tj) {
+        // plain side has one extra token — emit it untagged, don't advance
+      } else {
+        // tagged side has a run of extra tokens (e.g. a psalm superscription)
+        const limit = Math.min(words.length, j + 14);
+        for (let k = j + 1; k < limit; k++) {
+          if (normToken(words[k].word) === n) { matched = words[k]; j = k + 1; break; }
+        }
+      }
+    }
+
+    out.push(
+      matched
+        ? { ...matched, word: tok.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, "") || matched.word, display: tok }
+        : { word: tok.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, "") || tok, display: tok, added: false, strongs: null }
+    );
+  }
+  return out;
 }
 
 // Enrich word objects with lexicon data

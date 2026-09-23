@@ -61,6 +61,7 @@ export default function Reader() {
   const [pendingWord, setPendingWord] = useState(null);
   const [shareData, setShareData] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(true);
+  const [showTools, setShowTools] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   // Biblical atlas: { place, book, chapter, places } for the open map panel
   const [atlas, setAtlas] = useState(null);
@@ -100,6 +101,7 @@ export default function Reader() {
         case "Escape":
           setSelectedVerse(null);
           setShowNav(false);
+          setShowTools(false);
           setActiveWordInfo(null);
           setShareData(null);
           break;
@@ -372,6 +374,18 @@ export default function Reader() {
     }
   }, [book, chapterNum, getWordStudy, wordData, wordStudyVerse]);
 
+  const chapterBookmarked = isBookmarked(displayedChapter.book, displayedChapter.chapter);
+  const toggleChapterBookmark = () => {
+    const b = displayedChapter.book, c = displayedChapter.chapter;
+    if (chapterBookmarked) {
+      removeBookmark(b, c);
+      showToast(t("reader.bookmarkRemoved"), { icon: "🔖" });
+    } else {
+      addBookmark({ book: b, chapter: c });
+      showToast(`${b} ${c} ${t("reader.bookmarkAdded")}`, { icon: "🔖" });
+    }
+  };
+
   const showWordPanel = activeWordInfo != null;
   const showLoadingPanel = !showWordPanel && pendingWord != null;
 
@@ -381,27 +395,20 @@ export default function Reader() {
       <div ref={scrollContainerRef} className="flex-1 min-w-0 overflow-y-auto">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
-          <header className="sticky top-0 bg-cream/95 backdrop-blur-sm z-30 px-4 py-3 flex items-center justify-between">
+          <header className="sticky top-0 bg-cream/95 backdrop-blur-sm z-30 px-4 py-2 flex items-center justify-between gap-2">
             {/* Left: chapter nav */}
             <div className="flex items-center gap-2 min-w-0">
               <button
                 onClick={() => setShowNav(true)}
-                className="flex items-center gap-2 min-h-[44px] min-w-0 text-left"
+                className="flex items-center gap-1 min-h-[44px] min-w-0 text-left"
                 aria-label={`Navigate — ${displayedChapter.book} chapter ${displayedChapter.chapter}`}
               >
-                <div className="min-w-0">
-                  <p className="text-[11px] font-medium text-warm-brown-light leading-none truncate max-w-[160px]">
-                    {displayedChapter.book}
-                  </p>
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <span className="text-xl font-bold text-warm-brown leading-none">
-                      {displayedChapter.chapter}
-                    </span>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 text-warm-brown-light shrink-0">
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </div>
-                </div>
+                <span className="text-base sm:text-xl font-bold text-warm-brown leading-tight truncate">
+                  {displayedChapter.book} {displayedChapter.chapter}
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 text-warm-brown-light shrink-0">
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
               </button>
               {/* Translation badge — read-only indicator, tap goes to Settings */}
               <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-cream-dark text-warm-brown-light select-none">
@@ -409,82 +416,13 @@ export default function Reader() {
               </span>
             </div>
 
-            <div className="flex items-center gap-1">
-              {/* Biblical atlas — 3D terrain map of the places in this chapter */}
-              {chapterPlaces.length > 0 && (
-                <button
-                  onClick={() => openAtlas(chapterPlaces[0])}
-                  className="flex items-center gap-1.5 pl-2 pr-2.5 min-h-[44px] rounded-full text-warm-brown-light hover:text-gold transition-colors"
-                  title={t("atlas.openTitle", "Explore the geography of this chapter")}
-                  aria-label={`${t("atlas.title", "Biblical Atlas")} — ${chapterPlaces.length} ${t("atlas.places", "places")}`}
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                    <circle cx="12" cy="10" r="3" />
-                  </svg>
-                  <span className="text-[10px] font-bold bg-gold/10 text-gold rounded-full px-1.5 py-0.5 leading-none">
-                    {chapterPlaces.length}
-                  </span>
-                </button>
-              )}
-
-              {/* Chapter bookmark toggle */}
-              <button
-                onClick={() => {
-                  const b = displayedChapter.book, c = displayedChapter.chapter;
-                  if (isBookmarked(b, c)) {
-                    removeBookmark(b, c);
-                    showToast(t("reader.bookmarkRemoved"), { icon: "🔖" });
-                  } else {
-                    addBookmark({ book: b, chapter: c });
-                    showToast(`${b} ${c} ${t("reader.bookmarkAdded")}`, { icon: "🔖" });
-                  }
-                }}
-                className={`w-[44px] h-[44px] flex items-center justify-center rounded-full transition-colors ${
-                  isBookmarked(displayedChapter.book, displayedChapter.chapter)
-                    ? "bg-gold/10 text-gold"
-                    : "text-warm-brown-light hover:text-warm-brown"
-                }`}
-                aria-label={isBookmarked(displayedChapter.book, displayedChapter.chapter) ? t("reader.removeBookmark") : t("reader.bookmarkChapter")}
-                title="Bookmark chapter"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                  fill={isBookmarked(displayedChapter.book, displayedChapter.chapter) ? "currentColor" : "none"}
-                  stroke="currentColor" strokeWidth="2" className="w-5 h-5">
-                  <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-                </svg>
-              </button>
-
-              {/* Font size quick-adjust */}
-              <div className="flex items-center bg-cream-dark rounded-full">
-                <button
-                  onClick={() => setFontSize(Math.max(14, fontSize - 2))}
-                  className="w-[44px] h-[44px] flex items-center justify-center text-xs text-warm-brown-light hover:text-warm-brown"
-                  aria-label={t("reader.decreaseFontSize")}
-                >A</button>
-                <button
-                  onClick={() => setFontSize(Math.min(28, fontSize + 2))}
-                  className="w-[44px] h-[44px] flex items-center justify-center text-sm font-medium text-warm-brown-light hover:text-warm-brown"
-                  aria-label={t("reader.increaseFontSize")}
-                >A</button>
-              </div>
-
-              {/* Verse numbers toggle */}
-              <button
-                onClick={toggleVerseNumbers}
-                className={`w-[44px] h-[44px] flex items-center justify-center rounded-full text-xs font-medium transition-colors ${
-                  showVerseNumbers ? "bg-cream-dark text-warm-brown-light" : "bg-gold/10 text-gold"
-                }`}
-                title={showVerseNumbers ? t("reader.hideVerseNumbers") : t("reader.showVerseNumbers")}
-                aria-label={showVerseNumbers ? t("reader.hideVerseNumbers") : t("reader.showVerseNumbers")}
-              >
-                <span className="text-[10px] font-bold leading-none">1:</span>
-              </button>
-
+            {/* Right: Read/Study + atlas always visible; bookmark, text size and
+                verse numbers live in the Aa options menu so the title keeps its room */}
+            <div className="flex items-center gap-1 shrink-0">
               {/* Read / Study mode toggle — preserves scroll position */}
               <button
                 onClick={() => toggleStudyMode()}
-                className={`flex items-center gap-1 px-3 min-h-[44px] rounded-full text-xs font-medium transition-colors ${
+                className={`flex items-center gap-1 px-2.5 sm:px-3 min-h-[44px] rounded-full text-xs font-medium transition-colors ${
                   studyMode
                     ? "bg-gold/10 text-gold"
                     : "bg-cream-dark text-warm-brown-light"
@@ -509,6 +447,36 @@ export default function Reader() {
                 )}
               </button>
 
+              {/* Biblical atlas — 3D terrain map of the places in this chapter */}
+              {chapterPlaces.length > 0 && (
+                <button
+                  onClick={() => openAtlas(chapterPlaces[0])}
+                  className="flex items-center gap-1.5 px-2 sm:pr-2.5 min-h-[44px] rounded-full text-warm-brown-light hover:text-gold transition-colors"
+                  title={t("atlas.openTitle", "Explore the geography of this chapter")}
+                  aria-label={`${t("atlas.title", "Biblical Atlas")} — ${chapterPlaces.length} ${t("atlas.places", "places")}`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span className="hidden sm:inline text-[10px] font-bold bg-gold/10 text-gold rounded-full px-1.5 py-0.5 leading-none">
+                    {chapterPlaces.length}
+                  </span>
+                </button>
+              )}
+
+              {/* Options menu: bookmark, text size, verse numbers */}
+              <button
+                onClick={() => setShowTools((s) => !s)}
+                className={`w-[44px] h-[44px] flex items-center justify-center rounded-full transition-colors ${
+                  showTools ? "bg-gold/10 text-gold" : "text-warm-brown-light hover:text-warm-brown"
+                }`}
+                aria-label={t("reader.displayOptions", "Display options")}
+                aria-expanded={showTools}
+              >
+                <span className="text-sm font-serif font-bold leading-none">Aa</span>
+              </button>
+
               {/* Toggle side panel (desktop only) */}
               <button
                 onClick={() => setSidePanelOpen(!sidePanelOpen)}
@@ -521,6 +489,52 @@ export default function Reader() {
                 </svg>
               </button>
             </div>
+
+            {showTools && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setShowTools(false)} aria-hidden="true" />
+                <div className="absolute right-4 top-full mt-1 w-60 bg-white rounded-2xl border border-cream-dark shadow-xl shadow-warm-brown/10 p-2 z-40 animate-slide-up">
+                  <button
+                    onClick={() => { toggleChapterBookmark(); setShowTools(false); }}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50"
+                  >
+                    <span>{chapterBookmarked ? t("reader.removeBookmark") : t("reader.bookmarkChapter")}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                      fill={chapterBookmarked ? "currentColor" : "none"}
+                      stroke="currentColor" strokeWidth="2" className={`w-4 h-4 ${chapterBookmarked ? "text-gold" : "text-warm-brown-light"}`}>
+                      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </button>
+                  <div className="flex items-center justify-between px-3 py-2 text-sm text-warm-brown">
+                    <span>{t("reader.textSize", "Text size")}</span>
+                    <div className="flex items-center bg-cream-dark rounded-full">
+                      <button
+                        onClick={() => setFontSize(Math.max(14, fontSize - 2))}
+                        className="w-10 h-9 flex items-center justify-center text-xs text-warm-brown-light hover:text-warm-brown"
+                        aria-label={t("reader.decreaseFontSize")}
+                      >A</button>
+                      <span className="text-[11px] text-warm-brown-light w-6 text-center">{fontSize}</span>
+                      <button
+                        onClick={() => setFontSize(Math.min(28, fontSize + 2))}
+                        className="w-10 h-9 flex items-center justify-center text-sm font-medium text-warm-brown-light hover:text-warm-brown"
+                        aria-label={t("reader.increaseFontSize")}
+                      >A</button>
+                    </div>
+                  </div>
+                  <button
+                    onClick={toggleVerseNumbers}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50"
+                    role="switch"
+                    aria-checked={showVerseNumbers}
+                  >
+                    <span>{t("reader.verseNumbers", "Verse numbers")}</span>
+                    <span className={`w-9 h-5 rounded-full relative transition-colors ${showVerseNumbers ? "bg-gold" : "bg-cream-dark"}`}>
+                      <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${showVerseNumbers ? "left-[18px]" : "left-0.5"}`} />
+                    </span>
+                  </button>
+                </div>
+              </>
+            )}
             {/* Reading progress bar */}
             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-cream-dark">
               <div

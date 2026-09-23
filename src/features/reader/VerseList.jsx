@@ -249,7 +249,7 @@ function EnrichedText({ words, onWordTap, places, onPlaceTap }) {
     const mark = placeMarks?.get(i);
 
     if (mark) {
-      const phrase = words.slice(i, i + mark.length).map((w) => w.word).join(" ");
+      const phrase = words.slice(i, i + mark.length).map((w) => w.display ?? w.word).join(" ");
       // Trailing punctuation and the word gap stay outside the span, so the
       // pin marker sits tight against the name instead of after a comma.
       const [, name, tail] = phrase.match(/^(.*?[A-Za-z])([^A-Za-z]*)$/) || [null, phrase, ""];
@@ -266,12 +266,18 @@ function EnrichedText({ words, onWordTap, places, onPlaceTap }) {
     }
 
     const w = words[i];
+    const text = w.display ?? w.word;
     if (w.added) {
       rendered.push(
         <span key={i} className="italic text-warm-brown-light/80">
-          {w.word}{" "}
+          {text}{" "}
         </span>
       );
+      continue;
+    }
+
+    if (!w.strongs) {
+      rendered.push(<span key={i}>{text}{" "}</span>);
       continue;
     }
 
@@ -285,7 +291,7 @@ function EnrichedText({ words, onWordTap, places, onPlaceTap }) {
           onWordTap(w);
         }}
       >
-        {w.word}{" "}
+        {text}{" "}
       </span>
     );
   }

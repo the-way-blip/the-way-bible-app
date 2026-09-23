@@ -17,7 +17,7 @@ export default function useWordStudy() {
 
     try {
       // Check IndexedDB cache first
-      const cached = await dbGet("cachedChapters", `ws-${key}`);
+      const cached = await dbGet("cachedChapters", `ws2-${key}`);
       if (cached) {
         setWordData(cached.words);
         setCurrentKey(key);
@@ -30,7 +30,7 @@ export default function useWordStudy() {
 
       if (result && result.words && result.words.length > 0) {
         await dbPut("cachedChapters", {
-          key: `ws-${key}`,
+          key: `ws2-${key}`,
           words: result.words,
           fetchedAt: Date.now(),
         });

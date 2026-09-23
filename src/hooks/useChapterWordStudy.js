@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { dbGet, dbPut } from "./useDB";
-import { getLocalWordStudy } from "../services/wordStudyLocal";
+import { getLocalWordStudy, alignWordsToText } from "../services/wordStudyLocal";
 
 // Loads word study data for ALL verses in a chapter at once
 // Returns a map: { verseNumber: [wordObjects] }
@@ -22,20 +22,20 @@ export default function useChapterWordStudy(book, chapter, verses) {
         const key = `${book}-${chapter}-${v.verse}`;
 
         try {
-          // Check cache
-          const cached = await dbGet("cachedChapters", `ws-${key}`);
+          // Check cache (ws2: parser changed how untagged words are flagged)
+          const cached = await dbGet("cachedChapters", `ws2-${key}`);
           if (cached) {
-            result[v.verse] = cached.words;
+            result[v.verse] = alignWordsToText(cached.words, v.text);
             continue;
           }
 
           // Load from bundled data
           const data = await getLocalWordStudy(book, chapter, v.verse);
           if (data?.words?.length > 0) {
-            result[v.verse] = data.words;
+            result[v.verse] = alignWordsToText(data.words, v.text);
             // Cache it
             await dbPut("cachedChapters", {
-              key: `ws-${key}`,
+              key: `ws2-${key}`,
               words: data.words,
               fetchedAt: Date.now(),
             });

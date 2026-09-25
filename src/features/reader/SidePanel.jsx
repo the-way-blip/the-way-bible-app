@@ -4,6 +4,7 @@ import { getChapterCrossReferences } from "../../services/crossReferences";
 import { getCommentariesForBook, loadCommentary } from "../../services/commentaryService";
 import { linkifyRefs } from "../../components/RefText";
 import DictionaryPeek from "../../components/DictionaryPeek";
+import LexiconExtra from "../../components/LexiconExtra";
 import { getVerseTextCached } from "../../services/bibleApi";
 import useJournal from "../../hooks/useJournal";
 import { tokenizeRefs } from "../../utils/scriptureRef";
@@ -580,6 +581,8 @@ function WordStudyTab({ wordInfo }) {
           <p>{clean(wordInfo.strongs_def)}</p>
         </StudySection>
       )}
+
+      <LexiconExtra strongs={wordInfo.strongs} />
 
       {wordInfo.kjv_def && !wordInfo.occurrence_map && (
         <StudySection title={t("panel.kjvTranslations")}>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import DictionaryPeek from "../../components/DictionaryPeek";
+import LexiconExtra from "../../components/LexiconExtra";
 import { lookupConcordance, lookupWebsters } from "../../services/concordanceService";
 import useT from "../../hooks/useT";
 
@@ -96,7 +97,7 @@ export default function WordStudyPanel({ wordInfo, onClose }) {
               </p>
             ) : (
               <>
-                {activeTab === "definition" && <><DictionaryPeek word={wordInfo.word} className="mb-4" /><DefinitionTab word={wordInfo} /></>}
+                {activeTab === "definition" && <><DictionaryPeek word={wordInfo.word} className="mb-4" /><DefinitionTab word={wordInfo} /><LexiconExtra strongs={wordInfo.strongs} className="mt-4" /></>}
                 {activeTab === "dictionaries" && <><DictionaryPeek word={wordInfo.word} className="mb-4" /><DictionariesTab word={wordInfo} /></>}
                 {activeTab === "etymology" && <EtymologyTab word={wordInfo} />}
                 {activeTab === "usage" && <UsageTab word={wordInfo} />}

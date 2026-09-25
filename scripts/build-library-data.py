@@ -191,3 +191,32 @@ for bid, mod, enc in BOOKS:
     if buf: dump(os.path.join(d, f"{n}.json"), buf)
     dump(os.path.join(d, "index.json"), {"sections": toc})
     print(f"book {bid}: {len(toc)} sections in {n + 1} files")
+
+# ── Deeper original-language lexicons (keyed by Strong's number) ────────────
+import unicodedata
+def lex_clean(t):
+    t = re.sub(r'<sense[^>]*\bn="([^"]*)"[^>]*>', lambda m: " \u00a7\u00a7" + m.group(1).strip() + " ", t)   # placeholder survives clean()
+    t = re.sub(r'<ref[^>]*osisRef="([^"]+)"[^>]*>.*?</ref>', lambda m: osis_to_text(m.group(1)) or m.group(0), t, flags=re.S)
+    t = clean(t).replace("\n\n", "\n")
+    t = re.sub(r"\s*\u00a7\u00a7", "\n", t)
+    return re.sub(r"(?m)^(\w{1,4}) \.", r"\1.", t).strip()
+
+def strip_accents(s):
+    return "".join(c for c in unicodedata.normalize("NFD", s) if unicodedata.category(c) != "Mn").upper()
+
+LEX = {}
+base_as = dict((strip_accents(k), v) for k, v in read_zld(os.path.join(SRC, "lexdict/zld/abbottsmith/dict"), "utf-8"))
+for k, v in read_zld(os.path.join(SRC, "lexdict/zld/abbottsmithstrongs/dict"), "utf-8"):
+    m = re.match(r"^0*(\d+)$", k)
+    if not m or not v.strip().startswith("@LINK"): continue
+    entry = base_as.get(strip_accents(v.strip()[5:].strip()))
+    if entry: LEX[f"G{int(m.group(1))}"] = ("abbott-smith", lex_clean(entry))
+for k, v in read_zld(os.path.join(SRC, "lexdict/zld/bdbglosses_strongs/bdbglosses_strongs"), "utf-8"):
+    m = re.match(r"^H0*(\d+)$", k)
+    if m: LEX[f"H{int(m.group(1))}"] = ("bdb", lex_clean(re.sub(r"<title>.*?</title>", "", v)))
+d = os.path.join(OUT, "lexicon-extra"); reset(d)
+buckets = {}
+for sid, (src, text) in LEX.items():
+    if text: buckets.setdefault(f"{sid[0]}{int(sid[1:]) // 500}", {})[sid] = [src, text]
+for b, data in buckets.items(): dump(os.path.join(d, f"{b}.json"), data)
+print(f"lexicon-extra: {sum(1 for s in LEX if s[0] == 'G')} Greek (Abbott-Smith), {sum(1 for s in LEX if s[0] == 'H')} Hebrew (BDB) in {len(buckets)} files")

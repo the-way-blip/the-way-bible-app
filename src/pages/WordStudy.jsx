@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import LexiconExtra from "../components/LexiconExtra";
 import { useParams, Link } from "react-router-dom";
 import { lookupConcordance, lookupWebsters } from "../services/concordanceService";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -214,6 +215,7 @@ export default function WordStudy() {
             <p className="text-sm text-warm-brown leading-relaxed">{entry.strongs_def}</p>
           </div>
         )}
+        <LexiconExtra strongs={strongsId} className="mt-4 pt-4 border-t border-cream-dark" />
       </div>
 
       {/* Tab navigation */}

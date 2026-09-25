@@ -15,13 +15,15 @@ const getJSON = (url) => {
   return cache.get(url);
 };
 
-/** { url, start, end, verses: [startSec…] } for a chapter, or null if not narrated yet. */
+/** { url, start, end, verses: [startSec…], reader } for a chapter, or null if not narrated. */
 export async function getChapterAudio(book, chapter) {
   const usfm = USFM_BOOK_IDS[book];
   if (!usfm) return null;
-  const [timings, sections] = await Promise.all([getJSON(`/data/audio/kjv/${usfm}.json`), getJSON("/data/audio/kjv/sections.json")]);
+  const [timings, sections, readers] = await Promise.all([
+    getJSON(`/data/audio/kjv/${usfm}.json`), getJSON("/data/audio/kjv/sections.json"), getJSON("/data/audio/kjv/readers.json"),
+  ]);
   const t = timings?.[String(chapter)];
   if (!t || !sections) return null;
   const [si, start, end, verses] = t;
-  return { url: sections[si], start, end, verses };
+  return { url: sections[si], start, end, verses, reader: readers?.[si] || NARRATION.reader };
 }

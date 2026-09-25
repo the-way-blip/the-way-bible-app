@@ -39,7 +39,7 @@ export default function NarratedAudio({ book, chapter, startVerse, playToken, on
       if (sameFile && a.readyState >= 1) go();
       else { a.src = data.url; a.addEventListener("loadedmetadata", go, { once: true }); }
       if ("mediaSession" in navigator && window.MediaMetadata) {
-        navigator.mediaSession.metadata = new window.MediaMetadata({ title: `${book} ${chapter}`, artist: `${NARRATION.reader} · King James Version`, album: "TheWay Bible" });
+        navigator.mediaSession.metadata = new window.MediaMetadata({ title: `${book} ${chapter}`, artist: `${data.reader} · King James Version`, album: "TheWay Bible" });
       }
     });
     return () => { cancelled = true; };
@@ -112,7 +112,7 @@ export default function NarratedAudio({ book, chapter, startVerse, playToken, on
           <p className="text-xs font-semibold text-warm-brown truncate">
             {missing ? "Narration coming soon for this book" : `${book} ${chapter}${verse ? `:${verse}` : ""}`}
           </p>
-          <p className="text-[10px] text-warm-brown-light truncate">KJV read by {NARRATION.reader} · LibriVox</p>
+          <p className="text-[10px] text-warm-brown-light truncate">KJV read by {info?.reader || NARRATION.reader} · LibriVox</p>
         </div>
         <button type="button" onClick={() => setFollow((f) => !f)} aria-pressed={follow} title="Follow along"
           className={`text-[10px] font-semibold px-1.5 py-1 rounded-md ${follow ? "text-gold bg-gold/10" : "text-warm-brown-light"}`}>Follow</button>

@@ -266,7 +266,11 @@ const COMPARE_TRANSLATIONS = [
   { id: "NLT", name: "New Living Translation", short: "NLT" },
   { id: "AMP", name: "Amplified Bible",        short: "AMP" },
   { id: "ASV", name: "American Standard",      short: "ASV" },
+  { id: "BIS", name: "Bishops' Bible (1568)",  short: "BIS" },
   { id: "GNV", name: "Geneva Bible (1599)",    short: "GNV" },
+  { id: "GRT", name: "Great Bible (1539)",     short: "GRT" },
+  { id: "MTB", name: "Matthew's Bible (1537)", short: "MTB" },
+  { id: "COV", name: "Coverdale (1535)",       short: "COV" },
   { id: "TYN", name: "Tyndale (1526)",         short: "TYN" },
   { id: "WYC", name: "Wycliffe (c. 1395)",     short: "WYC" },
 ];

@@ -3,7 +3,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "app.theway.bible",
   appName: "The Way",
-  webDir: "dist",
+  webDir: "ios-web", // dist minus /data (the app loads the live site; see scripts/build-ios-web.sh)
   server: {
     url: "https://thewaybible.app",
     cleartext: false,

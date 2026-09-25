@@ -128,3 +128,14 @@ export async function getBookSection(id, n) {
   const [title, text] = file?.[entry[2]] || [];
   return title ? { title, text, total: idx.sections.length } : null;
 }
+
+// ── People & timeline (Theographic Bible Metadata, CC BY-SA 4.0) ─────────────
+/** [[slug, label, verseCount, genderInitial]] sorted by prominence */
+export const getPeopleIndex = () => getJSON("/data/people/index.json");
+export async function getPerson(slug) {
+  const file = await getJSON(`/data/people/${(slug.match(/[a-z]/)?.[0] || "_").toUpperCase()}.json`);
+  return file?.[slug] || null;
+}
+export const getTimeline = () => getJSON("/data/timeline.json");
+/** -1085 → "1085 BC", 30 → "AD 30" */
+export const formatYear = (y) => (y == null ? "" : y <= 0 ? `${Math.abs(y - 1)} BC` : `AD ${y}`);

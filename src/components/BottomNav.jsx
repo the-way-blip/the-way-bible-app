@@ -44,6 +44,8 @@ const moreLinkDefs = [
     icon: <Icon d={<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /><path d="M9 7h7M9 11h5" /></>} className="w-4.5 h-4.5" /> },
   { to: "/devotional", labelKey: "nav.devotional",
     icon: <Icon d={<><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" /></>} className="w-4.5 h-4.5" /> },
+  { to: "/people", labelKey: "nav.people",
+    icon: <Icon d={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></>} className="w-4.5 h-4.5" /> },
   { to: "/library", labelKey: "nav.library",
     icon: <Icon d={<><path d="M4 4h4v16H4zM10 4h4v16h-4z" /><path d="M16 5l4 1-3 14-4-1z" /></>} className="w-4.5 h-4.5" /> },
   { to: "/settings", labelKey: "nav.settings",

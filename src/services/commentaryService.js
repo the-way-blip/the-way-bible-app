@@ -174,22 +174,3 @@ async function fetchOne(commentaryId, bookId, chapter) {
     return null;
   }
 }
-
-// ── Legacy summary list (CommentaryPanel) ─────────────────────────────────────
-const SUMMARY_IDS = ["matthew-henry", "jamieson-fausset-brown", "john-gill"];
-
-export async function fetchCommentaries(book, chapter) {
-  const available = new Set(getCommentariesForBook(book).map((c) => c.id));
-  const ids = SUMMARY_IDS.filter((id) => available.has(id));
-  const loaded = await Promise.all(ids.map((id) => loadCommentary(id, book, chapter).catch(() => null)));
-  return loaded.flatMap((data, i) => {
-    if (!data) return [];
-    const meta = COMMENTARIES.find((c) => c.id === ids[i]);
-    const text = [data.intro, ...data.sections.map((x) => x.text)].filter(Boolean).join("\n\n");
-    if (!text) return [];
-    return [{
-      author: meta.name, date: meta.date, style: meta.style, commentaryId: meta.id, source: "bible.helloao.org",
-      quote: text.length > 2000 ? text.substring(0, 2000) + "…" : text,
-    }];
-  });
-}

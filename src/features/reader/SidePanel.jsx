@@ -2,7 +2,8 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { getChapterCrossReferences } from "../../services/crossReferences";
 import { getCommentariesForBook, loadCommentary } from "../../services/commentaryService";
-import { parseReference } from "../../services/bibleSearch";
+import { linkifyRefs } from "../../components/RefText";
+import DictionaryPeek from "../../components/DictionaryPeek";
 import { getVerseTextCached } from "../../services/bibleApi";
 import useJournal from "../../hooks/useJournal";
 import { tokenizeRefs } from "../../utils/scriptureRef";
@@ -216,26 +217,6 @@ function CommentarySource({ meta, book, chapter, verse, isOpen, onToggle }) {
 }
 
 const CLAMP = 1400;
-// "Ro 5:8", "Joh 3:16", "1 Cor. 13:4-7", "Ge 22:12" → tappable links when they parse
-const REF_IN_TEXT = /\b((?:[1-3]\s?)?[A-Z][a-z]{1,13}\.?)\s(\d{1,3}):(\d{1,3})(?:[-–](\d{1,3}))?/g;
-
-function linkifyRefs(text) {
-  const out = [];
-  let last = 0;
-  for (const m of text.matchAll(REF_IN_TEXT)) {
-    const ref = parseReference(`${m[1].replace(/\.$/, "")} ${m[2]}:${m[3]}`);
-    if (!ref?.chapter) continue;
-    if (m.index > last) out.push(text.slice(last, m.index));
-    out.push(
-      <Link key={m.index} to={`/read/${encodeURIComponent(ref.book)}/${ref.chapter}?v=${ref.verse}`}
-        className="text-gold underline decoration-gold/30 underline-offset-2 hover:decoration-gold">{m[0]}</Link>
-    );
-    last = m.index + m[0].length;
-  }
-  if (last < text.length) out.push(text.slice(last));
-  return out;
-}
-
 function CommentaryText({ label, text, kind }) {
   const t = useT();
   const [expanded, setExpanded] = useState(false);
@@ -591,6 +572,8 @@ function WordStudyTab({ wordInfo }) {
           <p className="text-[10px] text-warm-brown-light/60 mt-1">{wordInfo.part_of_speech}</p>
         )}
       </div>
+
+      <DictionaryPeek word={wordInfo.word} />
 
       {wordInfo.strongs_def && (
         <StudySection title={t("panel.strongsDef")}>

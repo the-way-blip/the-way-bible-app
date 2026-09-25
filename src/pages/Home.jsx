@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { getDevotional } from "../services/libraryService";
 import { Link, useNavigate } from "react-router-dom";
 import useMemoryVerses from "../hooks/useMemoryVerses";
 import { useAuth } from "../stores/AuthContext";
@@ -219,6 +220,8 @@ export default function Home() {
         </Link>
       )}
 
+      <DevotionalCard />
+
       {/* Recently Read */}
       {recentlyRead.length > 1 && (
         <div className="mb-4">
@@ -429,5 +432,22 @@ function AccountMenu({ user, onSignOut }) {
         </div>
       )}
     </div>
+  );
+}
+
+function DevotionalCard() {
+  const [today, setToday] = useState(null);
+  const evening = new Date().getHours() >= 16;
+  useEffect(() => { getDevotional("morning-evening").then(setToday); }, []);
+  const text = today?.[evening ? "evening" : "morning"] || "";
+  const verse = text.split("\n").find((l) => l.trim()) || "";
+  return (
+    <Link to="/devotional" className="block bg-white rounded-2xl p-4 mb-4 border border-cream-dark hover:border-gold/30 transition-colors">
+      <p className="text-xs font-medium text-warm-brown-light uppercase tracking-wider">
+        {evening ? "Tonight's devotional" : "This morning's devotional"}
+      </p>
+      <p className="font-scripture text-warm-brown mt-1.5 leading-relaxed line-clamp-3">{verse || "Spurgeon's Morning and Evening"}</p>
+      <p className="text-[11px] text-gold mt-2">C. H. Spurgeon · Morning and Evening →</p>
+    </Link>
   );
 }

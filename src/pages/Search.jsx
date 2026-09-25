@@ -9,6 +9,7 @@ import {
   matchTopic, matchBook, parseStrongs, getLexicon, getConcordance, lookupOriginalWord, lexiconSummary, stem,
 } from "../services/bibleSearch";
 import { parseRef } from "../utils/scriptureRef";
+import DictionaryPeek from "../components/DictionaryPeek";
 
 const TOPIC_CHIPS = ["Faith", "Love", "Prayer", "Salvation", "Grace", "Peace", "Hope", "Forgiveness", "Wisdom", "Strength", "Joy", "Anxiety"];
 const EXAMPLES = ["John 3:16", "Psalm 23", "faith hope love", "what does the Bible say about anxiety", "\"be still\"", "H430"];
@@ -355,6 +356,11 @@ export default function Search() {
                   </Link>
                 ))}
               </ResultSection>
+            )}
+
+            {/* Bible dictionary (people, places, topics) */}
+            {!state.reference && !state.strongs && (
+              <DictionaryPeek key={state.query} word={state.verses?.terms?.length ? state.verses.terms.join(" ") : state.query} />
             )}
 
             {/* Topic */}

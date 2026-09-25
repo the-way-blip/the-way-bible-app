@@ -15,6 +15,9 @@ const sidebarLinks = [
   { to: "/bookmarks", label: "Bookmarks", icon: "M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" },
   { to: "/prayers", label: "Prayer List", icon: "M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" },
   { to: "/topics", label: "Topics", icon: null, tagIcon: true },
+  { to: "/dictionary", label: "Dictionary", matchPrefix: "/dictionary", icon: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2zM9 7h7M9 11h5" },
+  { to: "/devotional", label: "Devotional", icon: "M12 3v2M12 19v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M3 12h2M19 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0z" },
+  { to: "/library", label: "Library", matchPrefix: "/library", icon: "M4 4h4v16H4zM10 4h4v16h-4zM16 5l4 1-3 14-4-1z" },
   { to: "/settings", label: "Settings", icon: null, gearIcon: true },
 ];
 

@@ -28,7 +28,9 @@ const Search = lazy(() => import("./pages/Search"));
 const ReadingPlan = lazy(() => import("./pages/ReadingPlan"));
 const PrayerList = lazy(() => import("./pages/PrayerList"));
 const Topics = lazy(() => import("./pages/Topics"));
-const CommentaryLibrary = lazy(() => import("./pages/CommentaryLibrary"));
+const Dictionary = lazy(() => import("./pages/Dictionary"));
+const Devotional = lazy(() => import("./pages/Devotional"));
+const Library = lazy(() => import("./pages/Library"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Groups = lazy(() => import("./pages/Groups"));
 const GroupDetail = lazy(() => import("./pages/GroupDetail"));
@@ -95,7 +97,13 @@ export default function App() {
                   <Route path="/search" element={<Search />} />
                   <Route path="/plans" element={<ReadingPlan />} />
                   <Route path="/prayers" element={<PrayerList />} />
-                  <Route path="/commentaries" element={<CommentaryLibrary />} />
+                  <Route path="/commentaries" element={<Navigate to="/library" replace />} />
+                  <Route path="/dictionary" element={<Dictionary />} />
+                  <Route path="/dictionary/:term" element={<Dictionary />} />
+                  <Route path="/devotional" element={<Devotional />} />
+                  <Route path="/library" element={<Library />} />
+                  <Route path="/library/:bookId" element={<Library />} />
+                  <Route path="/library/:bookId/:section" element={<Library />} />
                   <Route path="/settings" element={<Settings />} />
                   <Route path="/groups" element={<Groups />} />
                   <Route path="/groups/:id" element={<GroupDetail />} />

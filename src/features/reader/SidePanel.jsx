@@ -112,7 +112,7 @@ function TabPane({ id, labelledBy, visible, children }) {
 /* ─── Commentary Tab ─── */
 const OPEN_KEY = "commentaryOpen";
 function readOpen() {
-  try { return new Set(JSON.parse(localStorage.getItem(OPEN_KEY) || '["matthew-henry"]')); } catch { return new Set(["matthew-henry"]); }
+  try { return new Set(JSON.parse(localStorage.getItem(OPEN_KEY) || '["the-god-who-leads","matthew-henry"]')); } catch { return new Set(["the-god-who-leads", "matthew-henry"]); }
 }
 
 export function CommentaryTab({ book, chapter, selectedVerse }) {

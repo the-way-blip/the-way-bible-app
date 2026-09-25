@@ -17,6 +17,13 @@ function Shelf() {
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
       <h1 className="text-xl font-bold text-warm-brown mb-1">Library</h1>
       <p className="text-xs text-warm-brown-light mb-5">Confessions, Christian classics and history — complete and free.</p>
+      <Link to="/how-to-study-the-bible" className="flex items-center justify-between bg-white border border-cream-dark rounded-2xl px-4 py-3 mb-3 hover:border-gold/30">
+        <div>
+          <p className="text-[10px] font-medium text-gold uppercase tracking-wider">Start here</p>
+          <p className="text-sm font-semibold text-warm-brown">How to Study the Bible</p>
+        </div>
+        <span className="text-gold">›</span>
+      </Link>
       <Link to="/devotional" className="flex items-center justify-between bg-gold/10 border border-gold/20 rounded-2xl px-4 py-3 mb-6">
         <div>
           <p className="text-[10px] font-medium text-gold uppercase tracking-wider">Daily devotionals</p>

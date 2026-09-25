@@ -92,6 +92,9 @@ export async function getDevotional(id, key = dayKey()) {
 
 // ── Library ──────────────────────────────────────────────────────────────────
 export const LIBRARY = [
+  { group: "From TheWay", books: [
+    { id: "the-god-who-leads", title: "The God Who Leads", author: "Drew Rogers", blurb: "Strength for the journey from the life of Joshua — for personal devotion, Bible study groups and teaching." },
+  ]},
   { group: "Confessions of Faith", books: [
     { id: "baptist-confession-1689", title: "Second London Baptist Confession", author: "1689", blurb: "The historic confession of Particular Baptists, still the standard for many Baptist churches." },
     { id: "baptist-confession-1646", title: "First London Baptist Confession", author: "1646 edition", blurb: "The first confession of the English Particular Baptists." },

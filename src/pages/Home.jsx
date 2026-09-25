@@ -221,6 +221,10 @@ export default function Home() {
       )}
 
       <DevotionalCard />
+      <Link to="/how-to-study-the-bible" className="flex items-center justify-between bg-white rounded-2xl px-4 py-3 mb-4 border border-cream-dark hover:border-gold/30 transition-colors">
+        <span className="text-sm font-medium text-warm-brown">How to study the Bible</span>
+        <span className="text-xs text-gold">Guide →</span>
+      </Link>
 
       {/* Recently Read */}
       {recentlyRead.length > 1 && (

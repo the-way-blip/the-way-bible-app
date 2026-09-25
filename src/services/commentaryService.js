@@ -14,6 +14,7 @@ import VERSE_COUNTS from "../data/verseCounts.json";
 // source "local"   = static JSON built from CrossWire SWORD modules by
 //                    scripts/build-sword-data.py → public/data/commentary/<id>/<USFM>.json
 export const COMMENTARIES = [
+  { id: "the-god-who-leads",               name: "The God Who Leads — Drew Rogers", short: "TGWL", date: "2025",     style: "Devotional study of Joshua's life",      source: "local" },
   { id: "matthew-henry",                   name: "Matthew Henry",                  short: "MH",   date: "1706–1721", style: "Devotional, practical, warm",            source: "helloao" },
   { id: "jamieson-fausset-brown",          name: "Jamieson-Fausset-Brown",         short: "JFB",  date: "1871",      style: "Concise and scholarly",                  source: "helloao" },
   { id: "john-gill",                       name: "John Gill",                      short: "Gill", date: "1746–1763", style: "Verse by verse, Hebrew & Jewish background", source: "helloao" },

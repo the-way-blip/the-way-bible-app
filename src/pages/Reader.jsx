@@ -15,6 +15,7 @@ import VerseList from "../features/reader/VerseList";
 import VerseActions from "../features/reader/VerseActions";
 import WordStudyPanel from "../features/reader/WordStudyPanel";
 import SkeletonVerses from "../components/SkeletonVerses";
+import { useAudio } from "../stores/AudioContext";
 
 // Lazy loaded (below fold / modals / panels)
 const ChapterNav = lazy(() => import("../features/reader/ChapterNav"));
@@ -48,6 +49,8 @@ export default function Reader() {
   const { user, profile } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const showToast = useToast();
+  const audioPlayer = useAudio();
+  const audio = audioPlayer?.player;
 
   const [selectedVerse, setSelectedVerse] = useState(null);
   const [activeChapterCtx, setActiveChapterCtx] = useState({ book, chapter: chapterNum });
@@ -205,6 +208,9 @@ export default function Reader() {
     });
     navigatedDirectly.current = false;
   }, [data, book, chapterNum]);
+
+  // The narrated player follows the chapter on screen
+  useEffect(() => { audioPlayer?.follow(bookInfo?.name || book, chapterNum); }, [book, chapterNum]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Deep link to a verse (?v=16 from search results): scroll to it and flash it
   useEffect(() => {
@@ -439,6 +445,18 @@ export default function Reader() {
             {/* Right: Read/Study + atlas always visible; bookmark, text size and
                 verse numbers live in the Aa options menu so the title keeps its room */}
             <div className="flex items-center gap-1 shrink-0">
+              {/* Narrated KJV audio */}
+              <button
+                onClick={() => (audio ? audioPlayer.close() : audioPlayer.open(bookInfo?.name || book, chapterNum))}
+                className={`w-[44px] h-[44px] flex items-center justify-center rounded-full transition-colors ${audio ? "bg-gold/10 text-gold" : "text-warm-brown-light hover:text-warm-brown"}`}
+                aria-label={audio ? "Close audio" : "Listen to this chapter"}
+                title="Listen (KJV, human-narrated)"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                  <path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+                </svg>
+              </button>
+
               {/* Read / Study mode toggle — preserves scroll position */}
               <button
                 onClick={() => toggleStudyMode()}
@@ -732,6 +750,10 @@ export default function Reader() {
           }}
           onShare={() => {
             setShareData({ content: selectedVerseData.text, reference: `${activeChapterCtx.book} ${activeChapterCtx.chapter}:${selectedVerse}` });
+            setSelectedVerse(null);
+          }}
+          onPlayFromHere={() => {
+            audioPlayer.open(activeChapterCtx.book, activeChapterCtx.chapter, selectedVerse);
             setSelectedVerse(null);
           }}
           onCommentary={() => {

@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import BottomNav from "./BottomNav";
 import PageTransition from "./PageTransition";
+import { AudioProvider } from "../stores/AudioContext";
 import WelcomeTour from "./WelcomeTour";
 import InstallPrompt from "./InstallPrompt";
 import Logo from "./Logo";
@@ -134,9 +135,11 @@ export default function Layout() {
         {/* Desktop sidebar — hidden on mobile */}
         <DesktopSidebar />
         <main id="main-content" className="flex-1 pb-16 md:pb-4 min-w-0">
-          <PageTransition>
-            <Outlet />
-          </PageTransition>
+          <AudioProvider>
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
+          </AudioProvider>
           <footer className="text-center text-[10px] text-warm-brown-light/40 pt-4 px-4 pb-4">
             <p>TheWay Bible App &middot; <a href="/settings" className="hover:text-warm-brown-light inline-flex items-center min-h-[44px]">Settings</a></p>
           </footer>

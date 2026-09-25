@@ -27,6 +27,7 @@ export default function VerseActions({
   onAddToJournal,
   onShare,
   onCommentary,
+  onPlayFromHere,
   onClose,
 }) {
   const showToast = useToast();
@@ -230,6 +231,20 @@ export default function VerseActions({
                 </svg>
                 <span className="text-[9px] leading-none">{t("verse.copy")}</span>
               </button>
+
+              {/* Listen from this verse */}
+              {onPlayFromHere && (
+                <button
+                  onClick={onPlayFromHere}
+                  className="flex flex-col items-center gap-0.5 p-1.5 rounded-lg hover:bg-cream-dark text-warm-brown-light hover:text-warm-brown transition-colors"
+                  title="Listen from here"
+                >
+                  <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
+                    <circle cx="12" cy="12" r="10" /><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
+                  </svg>
+                  <span className="text-[9px] leading-none">Listen</span>
+                </button>
+              )}
 
               {/* Commentary (phones — tablets/desktop have the study panel) */}
               {onCommentary && (

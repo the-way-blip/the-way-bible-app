@@ -16,46 +16,61 @@ const TABLE_MAP = {
   readingPlanProgress: "reading_plan_progress",
 };
 
-// camelCase → snake_case field mapping
-function toSnakeCase(obj) {
-  const map = {
-    verseNumber: "verse_number",
-    createdAt: "created_at",
-    updatedAt: "updated_at",
-    easeFactor: "ease_factor",
-    nextReview: "next_review",
-    practiceCount: "practice_count",
-    startedAt: "started_at",
-    completedDays: "completed_days",
-    isActive: "is_active",
-  };
-  const result = {};
-  for (const [key, value] of Object.entries(obj)) {
-    result[map[key] || key] = value;
+// camelCase ↔ snake_case, generic so new fields map automatically
+const snake = (k) => k.replace(/[A-Z]/g, (m) => "_" + m.toLowerCase());
+const camel = (k) => k.replace(/_([a-z])/g, (_, c) => c.toUpperCase());
+
+// Older live tables name the verse column "verse" (notes, highlights); send both,
+// and let upsertResilient drop whichever the table doesn't have.
+const VERSE_ALIAS_TABLES = new Set(["notes", "highlights"]);
+
+function toRow(record, table, userId) {
+  const row = { user_id: userId };
+  for (const [key, value] of Object.entries(record)) {
+    if (value === undefined) continue;
+    row[snake(key)] = value;
   }
-  return result;
+  if (VERSE_ALIAS_TABLES.has(table) && row.verse_number != null && row.verse == null) row.verse = row.verse_number;
+  return row;
 }
 
-// snake_case → camelCase field mapping
-function toCamelCase(obj) {
-  const map = {
-    verse_number: "verseNumber",
-    created_at: "createdAt",
-    updated_at: "updatedAt",
-    ease_factor: "easeFactor",
-    next_review: "nextReview",
-    practice_count: "practiceCount",
-    started_at: "startedAt",
-    completed_days: "completedDays",
-    is_active: "isActive",
-    user_id: null, // strip user_id from local objects
-  };
-  const result = {};
-  for (const [key, value] of Object.entries(obj)) {
-    if (map[key] === null) continue; // skip
-    result[map[key] || key] = value;
+function fromRow(row) {
+  const out = {};
+  for (const [key, value] of Object.entries(row)) {
+    if (key === "user_id" || value === null) continue;
+    out[camel(key)] = value;
   }
-  return result;
+  if (out.verseNumber == null && typeof out.verse === "number" && !("label" in out)) out.verseNumber = out.verse;
+  return out;
+}
+
+// PostgREST names the missing column in the error message
+const missingColumn = (err) =>
+  (err?.code === "PGRST204" || err?.code === "42703") && (err.message.match(/'([^']+)' column|column [\w.]*?\.?"?([a-z_]+)"? does not exist/) || []).slice(1).find(Boolean);
+
+/**
+ * Upsert that survives schema drift: if the live table lacks a column, drop that
+ * field and retry, so one missing column never blocks the whole record.
+ */
+async function upsertResilient(sb, table, rows) {
+  let batch = rows;
+  const dropped = [];
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const { error } = await sb.from(table).upsert(batch, { onConflict: "id,user_id" });
+    if (!error) {
+      if (dropped.length) console.warn(`[sync] ${table}: live table has no column(s) ${dropped.join(", ")} — run supabase-migration-sync-fix.sql`);
+      return true;
+    }
+    const col = missingColumn(error);
+    if (!col) { console.warn(`[sync] ${table} upsert failed:`, error.message); return false; }
+    dropped.push(col);
+    batch = batch.map(({ [col]: _omit, ...rest }) => rest);
+  }
+  return false;
+}
+
+export function notifySynced() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("theway:synced"));
 }
 
 /**
@@ -69,10 +84,9 @@ export async function syncPush(storeName, record, userId) {
   try {
     const sb = await getSupabase();
     if (!sb) return;
-    const row = toSnakeCase({ ...record, user_id: userId });
-    await sb.from(table).upsert(row, { onConflict: "id,user_id" });
-  } catch {
-    // Silent fail — local data is the source of truth
+    await upsertResilient(sb, table, [toRow(record, table, userId)]);
+  } catch (e) {
+    console.warn(`[sync] push ${table} failed:`, e?.message); // local data stays the source of truth
   }
 }
 
@@ -111,7 +125,7 @@ export async function syncPull(storeName, userId) {
       .select("*")
       .eq("user_id", userId);
 
-    if (error || !data) return [];
+    if (error || !data) { if (error) console.warn(`[sync] pull ${table} failed:`, error.message); return []; }
 
     // Import dbPut dynamically to avoid circular deps
     const { dbPut, dbGetAll } = await import("../hooks/useDB");
@@ -122,7 +136,7 @@ export async function syncPull(storeName, userId) {
 
     // Merge: remote wins if newer, otherwise keep local
     for (const remoteRow of data) {
-      const local = toCamelCase(remoteRow);
+      const local = fromRow(remoteRow);
       const existing = localMap.get(local.id);
 
       // Use updatedAt or createdAt for comparison
@@ -130,7 +144,8 @@ export async function syncPull(storeName, userId) {
       const localTime = existing?.updatedAt || existing?.createdAt || 0;
 
       if (!existing || remoteTime >= localTime) {
-        await dbPut(storeName, local);
+        // Merge rather than replace: a table missing a column must not erase that field locally
+        await dbPut(storeName, existing ? { ...existing, ...local } : local);
       }
     }
 
@@ -156,14 +171,12 @@ export async function syncPushAll(storeName, userId) {
 
     const sb = await getSupabase();
     if (!sb) return;
-    const rows = items.map((item) => toSnakeCase({ ...item, user_id: userId }));
-    // Upsert in batches of 50
+    const rows = items.map((item) => toRow(item, table, userId));
     for (let i = 0; i < rows.length; i += 50) {
-      const batch = rows.slice(i, i + 50);
-      await sb.from(table).upsert(batch, { onConflict: "id,user_id" });
+      await upsertResilient(sb, table, rows.slice(i, i + 50));
     }
-  } catch {
-    // Silent fail
+  } catch (e) {
+    console.warn(`[sync] push-all ${table} failed:`, e?.message);
   }
 }
 
@@ -184,6 +197,7 @@ export async function syncAll(userId) {
 
   // Sync reading progress
   await syncReadingProgress(userId);
+  notifySynced();
 }
 
 /**

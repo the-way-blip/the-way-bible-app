@@ -24,7 +24,7 @@ export function AuthProvider({ children }) {
   const [syncing, setSyncing] = useState(false);
 
   const lastSyncRef = useRef(0);
-  const SYNC_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+  const SYNC_COOLDOWN_MS = 30 * 1000; // re-sync at most every 30s when the app regains focus
 
   const runSync = useCallback(async (userId) => {
     if (!userId) return;

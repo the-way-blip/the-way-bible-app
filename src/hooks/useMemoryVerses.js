@@ -13,6 +13,12 @@ export default function useMemoryVerses() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  // Reload when a background sync brings in changes from another device
+  useEffect(() => {
+    const reload = () => { load().catch?.(() => {}); };
+    window.addEventListener("theway:synced", reload);
+    return () => window.removeEventListener("theway:synced", reload);
+  }, [load]);
 
   const addVerse = useCallback(async (book, chapter, verseNumber, text) => {
     const id = `${book}-${chapter}-${verseNumber}`;

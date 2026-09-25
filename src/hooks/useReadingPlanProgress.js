@@ -31,6 +31,12 @@ export default function useReadingPlanProgress() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  // Reload when a background sync brings in changes from another device
+  useEffect(() => {
+    const reload = () => { load().catch?.(() => {}); };
+    window.addEventListener("theway:synced", reload);
+    return () => window.removeEventListener("theway:synced", reload);
+  }, [load]);
 
   const activeRecord = records.find((r) => r.isActive) || null;
 

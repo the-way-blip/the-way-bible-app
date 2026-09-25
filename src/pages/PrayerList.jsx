@@ -53,6 +53,13 @@ export default function PrayerList() {
     if (Capacitor.isNativePlatform()) requestNotificationPermission();
   }, []);
 
+  // Reload when a background sync brings in prayers from another device
+  useEffect(() => {
+    const reload = () => loadPrayers();
+    window.addEventListener("theway:synced", reload);
+    return () => window.removeEventListener("theway:synced", reload);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   async function requestNotificationPermission() {
     const { display } = await LocalNotifications.checkPermissions();
     if (display === "prompt") await LocalNotifications.requestPermissions();

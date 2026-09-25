@@ -15,6 +15,12 @@ export default function useJournal() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+  // Reload when a background sync brings in changes from another device
+  useEffect(() => {
+    const reload = () => { load().catch?.(() => {}); };
+    window.addEventListener("theway:synced", reload);
+    return () => window.removeEventListener("theway:synced", reload);
+  }, [load]);
 
   const saveEntry = async (entry) => {
     const id = entry.id || `journal-${Date.now()}`;

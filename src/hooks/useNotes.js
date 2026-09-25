@@ -14,6 +14,12 @@ export default function useNotes(book, chapter) {
   }, [book, chapter]);
 
   useEffect(() => { load().catch(() => {}); }, [load]);
+  // Reload when a background sync brings in changes from another device
+  useEffect(() => {
+    const reload = () => { load().catch?.(() => {}); };
+    window.addEventListener("theway:synced", reload);
+    return () => window.removeEventListener("theway:synced", reload);
+  }, [load]);
 
   const saveNote = async (verseNumber, text, tags = []) => {
     const id = `${book}-${chapter}-${verseNumber}`;

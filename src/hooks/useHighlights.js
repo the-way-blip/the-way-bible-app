@@ -14,6 +14,12 @@ export default function useHighlights(book, chapter) {
   }, [book, chapter]);
 
   useEffect(() => { load(); }, [load]);
+  // Reload when a background sync brings in changes from another device
+  useEffect(() => {
+    const reload = () => { load().catch?.(() => {}); };
+    window.addEventListener("theway:synced", reload);
+    return () => window.removeEventListener("theway:synced", reload);
+  }, [load]);
 
   const addHighlight = async (verseNumber, color) => {
     const id = `${book}-${chapter}-${verseNumber}`;

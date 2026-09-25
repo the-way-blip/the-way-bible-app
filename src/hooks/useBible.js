@@ -6,6 +6,7 @@ export default function useBible(bookName, chapter, translationId = "KJV") {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [notIncluded, setNotIncluded] = useState(false);
 
   useEffect(() => {
     if (!bookName || !chapter) return;
@@ -13,6 +14,7 @@ export default function useBible(bookName, chapter, translationId = "KJV") {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setNotIncluded(false);
     setData(null);
 
     // Cache key includes translation so different translations are stored separately
@@ -39,6 +41,7 @@ export default function useBible(bookName, chapter, translationId = "KJV") {
       } catch (err) {
         if (!cancelled) {
           setError(err.message);
+          setNotIncluded(!!err.notIncluded);
           setLoading(false);
         }
       }
@@ -47,5 +50,5 @@ export default function useBible(bookName, chapter, translationId = "KJV") {
     return () => { cancelled = true; };
   }, [bookName, chapter, translationId]);
 
-  return { data, loading, error };
+  return { data, loading, error, notIncluded };
 }

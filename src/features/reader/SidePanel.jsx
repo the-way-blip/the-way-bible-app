@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { getChapterCrossReferences } from "../../services/crossReferences";
-import { fetchCommentaries } from "../../services/commentaryService";
+import { getCommentariesForBook, loadCommentary } from "../../services/commentaryService";
+import { parseReference } from "../../services/bibleSearch";
 import { getVerseTextCached } from "../../services/bibleApi";
 import useJournal from "../../hooks/useJournal";
 import { tokenizeRefs } from "../../utils/scriptureRef";
@@ -73,7 +74,7 @@ export default function SidePanel({
           <CrossRefsTab book={book} chapter={chapter} />
         </TabPane>
         <TabPane id="panel-commentary" labelledBy="tab-commentary" visible={activeTab === "commentary"}>
-          <CommentaryTab book={book} chapter={chapter} />
+          <CommentaryTab book={book} chapter={chapter} selectedVerse={selectedVerse} />
         </TabPane>
         <TabPane id="panel-compare" labelledBy="tab-compare" visible={activeTab === "compare"}>
           <CompareTab
@@ -107,90 +108,150 @@ function TabPane({ id, labelledBy, visible, children }) {
 }
 
 /* ─── Commentary Tab ─── */
-function CommentaryTab({ book, chapter }) {
+const OPEN_KEY = "commentaryOpen";
+function readOpen() {
+  try { return new Set(JSON.parse(localStorage.getItem(OPEN_KEY) || '["matthew-henry"]')); } catch { return new Set(["matthew-henry"]); }
+}
+
+export function CommentaryTab({ book, chapter, selectedVerse }) {
   const t = useT();
-  const [commentaries, setCommentaries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(null);
+  const available = useMemo(() => getCommentariesForBook(book), [book]);
+  const [open, setOpen] = useState(readOpen);
+  const [wholeChapter, setWholeChapter] = useState(false);
 
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setCommentaries([]);
-    setExpanded(null);
-    fetchCommentaries(book, chapter)
-      .then((data) => { if (!cancelled) { setCommentaries(data); setLoading(false); } })
-      .catch(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, [book, chapter]);
+  useEffect(() => { setWholeChapter(false); }, [selectedVerse, book, chapter]);
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12 gap-2">
-        <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs text-warm-brown-light">{t("panel.loadingCommentaries")}</span>
-      </div>
-    );
+  const toggle = (id) => {
+    setOpen((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      try { localStorage.setItem(OPEN_KEY, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
+
+  if (available.length === 0) {
+    return <p className="p-8 text-center text-sm text-warm-brown-light">{t("panel.noCommentary")}</p>;
   }
 
-  if (commentaries.length === 0) {
-    return (
-      <div className="p-8 text-center">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto text-cream-dark mb-3">
-          <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
-        </svg>
-        <p className="text-sm text-warm-brown-light">{t("panel.noCommentary")}</p>
-      </div>
-    );
-  }
+  const verse = wholeChapter ? null : selectedVerse;
 
   return (
     <div>
-      <div className="px-4 py-2 bg-cream/50 border-b border-cream-dark">
+      <div className="px-4 py-2 bg-cream/50 border-b border-cream-dark flex items-center justify-between gap-2">
         <p className="text-[10px] text-warm-brown-light">
-          {book} {chapter} — {t("panel.classicalCommentaries")}
+          {book} {chapter}{verse ? `:${verse}` : ""} — {available.length} {t("panel.commentaries", "commentaries")}
         </p>
+        {selectedVerse && (
+          <button type="button" onClick={() => setWholeChapter((w) => !w)} className="text-[10px] font-medium text-gold shrink-0">
+            {wholeChapter ? `${t("panel.onlyVerse", "Only verse")} ${selectedVerse}` : t("panel.wholeChapter", "Whole chapter")}
+          </button>
+        )}
       </div>
+      {!selectedVerse && (
+        <p className="px-4 pt-3 text-[10px] text-warm-brown-light/80">{t("panel.tapVerseForCommentary", "Tap a verse number to focus every commentary on that verse.")}</p>
+      )}
       <div className="divide-y divide-cream-dark">
-        {commentaries.map((c, i) => {
-          const isOpen = expanded === i;
-          return (
-            <div key={i}>
-              <button
-                type="button"
-                onClick={() => setExpanded(isOpen ? null : i)}
-                className="w-full px-4 py-3 flex items-start justify-between text-left hover:bg-cream/40 transition-colors gap-3"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-warm-brown">{c.author}</p>
-                  <p className="text-[10px] text-warm-brown-light mt-0.5">
-                    {c.date && <span>{c.date}</span>}
-                    {c.style && <span className="ml-1 opacity-70">· {c.style}</span>}
-                  </p>
-                </div>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  className={`w-4 h-4 text-warm-brown-light/50 shrink-0 mt-0.5 transition-transform ${isOpen ? "rotate-180" : ""}`}
-                >
-                  <polyline points="6 9 12 15 18 9" />
-                </svg>
-              </button>
-              {isOpen && (
-                <div className="px-4 pb-4 pt-1">
-                  <p className="text-xs text-warm-brown leading-relaxed whitespace-pre-wrap">
-                    {c.quote}
-                  </p>
-                  <p className="text-[9px] text-warm-brown-light/40 mt-2">{t("panel.source")} {c.source}</p>
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {available.map((c) => (
+          <CommentarySource key={c.id} meta={c} book={book} chapter={chapter} verse={verse}
+            isOpen={open.has(c.id)} onToggle={() => toggle(c.id)} />
+        ))}
       </div>
+      <p className="px-4 py-3 text-[9px] text-warm-brown-light/50">
+        {t("panel.commentarySources", "Public-domain texts via CrossWire SWORD and bible.helloao.org. Tyndale Study Notes © Tyndale House, CC BY-SA 4.0.")}
+      </p>
+    </div>
+  );
+}
+
+function CommentarySource({ meta, book, chapter, verse, isOpen, onToggle }) {
+  const t = useT();
+  const [state, setState] = useState({ loading: false, data: null });
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let cancelled = false;
+    setState({ loading: true, data: null });
+    loadCommentary(meta.id, book, chapter)
+      .then((data) => { if (!cancelled) setState({ loading: false, data }); })
+      .catch(() => { if (!cancelled) setState({ loading: false, data: null }); });
+    return () => { cancelled = true; };
+  }, [isOpen, meta.id, book, chapter]);
+
+  const data = state.data;
+  const sections = data ? (verse ? data.sections.filter((s) => s.start <= verse && verse <= s.end) : data.sections) : [];
+  const showIntro = data?.intro && !verse;
+
+  return (
+    <div>
+      <button type="button" onClick={onToggle} aria-expanded={isOpen}
+        className="w-full px-4 py-3 flex items-start justify-between text-left hover:bg-cream/40 transition-colors gap-3">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-semibold text-warm-brown">{meta.name}</p>
+          <p className="text-[10px] text-warm-brown-light mt-0.5">
+            <span>{meta.date}</span><span className="ml-1 opacity-70">· {meta.style}</span>
+          </p>
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+          className={`w-4 h-4 text-warm-brown-light/50 shrink-0 mt-0.5 transition-transform ${isOpen ? "rotate-180" : ""}`}>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+      {isOpen && (
+        <div className="px-4 pb-4 pt-1 space-y-3">
+          {state.loading && <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin" />}
+          {!state.loading && !showIntro && sections.length === 0 && (
+            <p className="text-[11px] text-warm-brown-light italic">
+              {verse ? `${t("panel.noCommentOnVerse", "No comment on verse")} ${verse}.` : t("panel.noCommentary")}
+            </p>
+          )}
+          {showIntro && <CommentaryText label={t("panel.introduction", "Introduction")} text={data.intro} kind={meta.kind} />}
+          {sections.map((s) => (
+            <CommentaryText key={`${s.start}-${s.end}`} label={`${s.start === s.end ? "v." : "vv."} ${s.label}`} text={s.text} kind={meta.kind} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const CLAMP = 1400;
+// "Ro 5:8", "Joh 3:16", "1 Cor. 13:4-7", "Ge 22:12" → tappable links when they parse
+const REF_IN_TEXT = /\b((?:[1-3]\s?)?[A-Z][a-z]{1,13}\.?)\s(\d{1,3}):(\d{1,3})(?:[-–](\d{1,3}))?/g;
+
+function linkifyRefs(text) {
+  const out = [];
+  let last = 0;
+  for (const m of text.matchAll(REF_IN_TEXT)) {
+    const ref = parseReference(`${m[1].replace(/\.$/, "")} ${m[2]}:${m[3]}`);
+    if (!ref?.chapter) continue;
+    if (m.index > last) out.push(text.slice(last, m.index));
+    out.push(
+      <Link key={m.index} to={`/read/${encodeURIComponent(ref.book)}/${ref.chapter}?v=${ref.verse}`}
+        className="text-gold underline decoration-gold/30 underline-offset-2 hover:decoration-gold">{m[0]}</Link>
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
+function CommentaryText({ label, text, kind }) {
+  const t = useT();
+  const [expanded, setExpanded] = useState(false);
+  const long = text.length > CLAMP && kind !== "crossrefs";
+  const shown = long && !expanded ? text.slice(0, text.lastIndexOf(" ", CLAMP)) + "…" : text;
+  return (
+    <div>
+      <p className="text-[10px] font-semibold text-gold uppercase tracking-wider mb-1">{label}</p>
+      <p className={`text-xs text-warm-brown leading-relaxed whitespace-pre-wrap ${kind === "crossrefs" ? "font-mono text-[11px]" : ""}`}>
+        {linkifyRefs(shown)}
+      </p>
+      {long && (
+        <button type="button" onClick={() => setExpanded((e) => !e)} className="text-[10px] font-medium text-gold mt-1">
+          {expanded ? t("search.showLess", "Show less") : t("panel.readMore", "Read more")}
+        </button>
+      )}
     </div>
   );
 }
@@ -205,6 +266,9 @@ const COMPARE_TRANSLATIONS = [
   { id: "NLT", name: "New Living Translation", short: "NLT" },
   { id: "AMP", name: "Amplified Bible",        short: "AMP" },
   { id: "ASV", name: "American Standard",      short: "ASV" },
+  { id: "GNV", name: "Geneva Bible (1599)",    short: "GNV" },
+  { id: "TYN", name: "Tyndale (1526)",         short: "TYN" },
+  { id: "WYC", name: "Wycliffe (c. 1395)",     short: "WYC" },
 ];
 
 function fetchVerseText(translation, book, chapter, verse) {

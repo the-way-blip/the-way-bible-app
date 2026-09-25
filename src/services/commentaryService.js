@@ -6,17 +6,131 @@
 
 import { dbGet, dbPut } from "../hooks/useDB";
 import { USFM_BOOK_IDS } from "../data/translations";
+import COVERAGE from "../data/commentaryCoverage.json";
+import VERSE_COUNTS from "../data/verseCounts.json";
 
 // ── Available commentaries ────────────────────────────────────────────────────
+// source "helloao" = fetched per chapter from bible.helloao.org (CORS-enabled, no key)
+// source "local"   = static JSON built from CrossWire SWORD modules by
+//                    scripts/build-sword-data.py → public/data/commentary/<id>/<USFM>.json
 export const COMMENTARIES = [
-  { id: "matthew-henry",            name: "Matthew Henry",          short: "MH",  date: "1714", style: "Devotional, practical, warm" },
-  { id: "jamieson-fausset-brown",   name: "Jamieson-Fausset-Brown", short: "JFB", date: "1871", style: "Concise and scholarly" },
-  { id: "adam-clarke",              name: "Adam Clarke",            short: "AC",  date: "1832", style: "Detailed, word-level" },
-  { id: "tyndale",                   name: "Tyndale Study Notes",    short: "TSN", date: "2023", style: "Modern, openly licensed" },
+  { id: "matthew-henry",                   name: "Matthew Henry",                  short: "MH",   date: "1706–1721", style: "Devotional, practical, warm",            source: "helloao" },
+  { id: "jamieson-fausset-brown",          name: "Jamieson-Fausset-Brown",         short: "JFB",  date: "1871",      style: "Concise and scholarly",                  source: "helloao" },
+  { id: "john-gill",                       name: "John Gill",                      short: "Gill", date: "1746–1763", style: "Verse by verse, Hebrew & Jewish background", source: "helloao" },
+  { id: "spurgeon-treasury-of-david",      name: "Spurgeon — Treasury of David",   short: "TOD",  date: "1869–1885", style: "The classic devotional work on the Psalms", source: "local" },
+  { id: "keil-delitzsch",                  name: "Keil & Delitzsch",               short: "K&D",  date: "1861–1875", style: "Scholarly Old Testament, Hebrew text",   source: "helloao" },
+  { id: "barnes",                          name: "Barnes' Notes",                  short: "Barnes", date: "1832–1853", style: "Clear explanatory notes for lay readers", source: "local" },
+  { id: "john-calvin",                     name: "John Calvin",                    short: "Calvin", date: "1540–1564", style: "Reformation exposition",               source: "helloao" },
+  { id: "matthew-henry-concise",           name: "Matthew Henry (Concise)",        short: "MHC",  date: "1706",      style: "Short devotional summaries",             source: "local", passages: true },
+  { id: "wesley",                          name: "John Wesley's Notes",            short: "Wesley", date: "1755–1765", style: "Brief, pastoral",                      source: "local" },
+  { id: "adam-clarke",                     name: "Adam Clarke",                    short: "AC",   date: "1810–1826", style: "Detailed, word-level",                   source: "helloao" },
+  { id: "peoples-new-testament",           name: "People's New Testament",         short: "PNT",  date: "1891",      style: "Plain explanatory notes (B. W. Johnson)", source: "local" },
+  { id: "scofield",                        name: "Scofield Reference Notes",       short: "Scofield", date: "1917",  style: "Dispensational study notes",             source: "local" },
+  { id: "geneva-notes",                    name: "Geneva Bible Notes",             short: "GBN",  date: "1599",      style: "The Reformers' margin notes",            source: "local" },
+  { id: "burkitt",                         name: "Burkitt's Expository Notes",     short: "Burkitt", date: "1700–1703", style: "Practical observations on the NT",    source: "local" },
+  { id: "family-bible-notes",              name: "Family Bible Notes",             short: "FBN",  date: "c. 1850",   style: "Short notes for family reading",         source: "local" },
+  { id: "fourfold-gospel",                 name: "The Fourfold Gospel",            short: "TFG",  date: "1914",      style: "Harmony of the Gospels (McGarvey & Pendleton)", source: "local" },
+  { id: "catena-aurea",                    name: "Catena Aurea (Aquinas)",         short: "Catena", date: "c. 1264", style: "Church Fathers on the Gospels",          source: "local" },
+  { id: "lightfoot",                       name: "John Lightfoot",                 short: "Lightfoot", date: "1658–1674", style: "Talmud & Hebrew background (Gospels)", source: "local" },
+  { id: "tyndale",                         name: "Tyndale Study Notes",            short: "TSN",  date: "2023",      style: "Modern, openly licensed (CC BY-SA)",     source: "helloao" },
+  { id: "treasury-of-scripture-knowledge", name: "Treasury of Scripture Knowledge", short: "TSK", date: "c. 1880",   style: "Cross-references for every verse",       source: "local", kind: "crossrefs" },
 ];
 
-// Default commentaries fetched on each chapter load
-const DEFAULT_FETCH = ["matthew-henry", "jamieson-fausset-brown", "tyndale"];
+export function getCommentariesForBook(book) {
+  const usfm = USFM_BOOK_IDS[book];
+  return COMMENTARIES.filter((c) => COVERAGE.commentaries[c.id]?.includes(usfm));
+}
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+// Normalized chapter shape: { intro: string, sections: [{ start, end, label, text }] }
+const bookFiles = new Map(); // file path → Promise<json>
+
+// Books over ~1 MB are split into one file per chapter (see scripts/build-sword-data.py)
+function loadLocalChapter(id, usfm, chapter) {
+  const chunked = COVERAGE.chunked?.[id]?.includes(usfm);
+  const key = chunked ? `${id}/${usfm}/${chapter}` : `${id}/${usfm}`;
+  if (!bookFiles.has(key)) {
+    bookFiles.set(key, fetch(`/data/commentary/${key}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => {
+      bookFiles.delete(key);
+      return null;
+    }));
+  }
+  return bookFiles.get(key).then((data) => (chunked ? data : data?.[String(chapter)]));
+}
+
+const rangeLabel = (a, b) => (b && b !== a ? `${a}–${b}` : `${a}`);
+
+// passages: the commentary writes one essay per passage, so a section runs
+// until the next one starts (its stored range can be narrower than its text).
+function normalizeLocal(entries, { passages = false, lastVerse = 0 } = {}) {
+  let intro = "";
+  const sections = [];
+  for (const [key, raw] of entries || []) {
+    let text = raw.replace(/\r/g, "");
+    if (key === "intro") { intro = text; continue; }
+    const [a, b] = key.split("-").map(Number);
+    if (passages && sections.length === 0) {
+      const head = text.search(/^Verses? \d/m);
+      if (head > 0) { intro = text.slice(0, head).trim(); text = text.slice(head); }
+    }
+    sections.push({ start: a, end: b || a, text });
+  }
+  if (passages) {
+    sections.forEach((s, i) => {
+      const next = sections[i + 1]?.start ?? lastVerse + 1;
+      if (next - 1 > s.end) s.end = next - 1;
+    });
+  }
+  sections.forEach((s) => { s.label = rangeLabel(s.start, s.end); });
+  return { intro, sections };
+}
+
+function normalizeHelloAO(data, lastVerse) {
+  const ch = data?.chapter;
+  if (!ch) return null;
+  const items = (ch.content || []).filter((x) => x.type === "verse" && x.number);
+  const sections = items.map((item, i) => {
+    const text = (Array.isArray(item.content) ? item.content : [item.content])
+      .map((s) => (typeof s === "string" ? s : s?.text || ""))
+      .join("\n\n")
+      .replace(/&c(?![a-z;.])/g, "&c.")
+      .trim();
+    // HelloAO keys a section by its first verse; it runs until the next section
+    // (the last one runs to the end of the chapter)
+    const next = items[i + 1]?.number ?? (lastVerse || item.number) + 1;
+    const end = next - 1 > item.number ? next - 1 : item.number;
+    return { start: item.number, end, label: rangeLabel(item.number, end), text };
+  }).filter((s) => s.text);
+  return { intro: (ch.introduction || "").trim(), sections };
+}
+
+/**
+ * One commentary for one chapter, normalized. Cached in IndexedDB (HelloAO) or
+ * in memory per book (local files are already static and HTTP-cached).
+ */
+export async function loadCommentary(id, book, chapter) {
+  const meta = COMMENTARIES.find((c) => c.id === id);
+  const usfm = USFM_BOOK_IDS[book];
+  if (!meta || !usfm) return null;
+  const lastVerse = VERSE_COUNTS[usfm]?.[chapter - 1] || 0;
+
+  if (meta.source === "local") {
+    const entries = await loadLocalChapter(id, usfm, chapter).catch(() => null);
+    return entries ? normalizeLocal(entries, { passages: meta.passages, lastVerse }) : null;
+  }
+
+  const cacheKey = `cmt3-${id}-${usfm}-${chapter}`;
+  try {
+    const cached = await dbGet("cachedChapters", cacheKey);
+    if (cached?.data) return cached.data;
+  } catch {}
+  const raw = await fetchOne(id, usfm, chapter);
+  const data = normalizeHelloAO(raw, lastVerse);
+  if (data && (data.sections.length || data.intro)) {
+    dbPut("cachedChapters", { key: cacheKey, data, fetchedAt: Date.now() }).catch(() => {});
+  }
+  return data;
+}
 
 // ── BibleHub fallback link ────────────────────────────────────────────────────
 const BIBLEHUB_SLUGS = {
@@ -52,9 +166,8 @@ export function getBibleHubUrl(book, chapter, verse) {
 // ── Fetch one commentary from the proxy ──────────────────────────────────────
 async function fetchOne(commentaryId, bookId, chapter) {
   try {
-    // Flat route with query param — Vercel's [...path] catch-all in subdirectories
-    // only matches one path segment; using ?p= avoids that limitation.
-    const res = await fetch(`/api/commentary?p=${commentaryId}/${bookId}/${chapter}`);
+    // bible.helloao.org sends Access-Control-Allow-Origin: *, so no proxy is needed
+    const res = await fetch(`https://bible.helloao.org/api/c/${commentaryId}/${bookId}/${chapter}.json`);
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -62,88 +175,21 @@ async function fetchOne(commentaryId, bookId, chapter) {
   }
 }
 
-/**
- * Extract readable text from HelloAO chapter response.
- * API shape: { chapter: { introduction?: string, content: [{ type, number, content: string[] }] } }
- */
-function extractText(data) {
-  if (!data) return null;
+// ── Legacy summary list (CommentaryPanel) ─────────────────────────────────────
+const SUMMARY_IDS = ["matthew-henry", "jamieson-fausset-brown", "john-gill"];
 
-  // All usable content lives inside data.chapter
-  const chapter = data.chapter;
-  if (!chapter) return null;
-
-  const intro = chapter.introduction || chapter.intro || "";
-
-  const contentItems = chapter.content;
-  if (!Array.isArray(contentItems) || contentItems.length === 0) {
-    return intro || null;
-  }
-
-  // Each item: { type: "verse", number: N, content: string[] }
-  const verseTexts = contentItems
-    .slice(0, 12)
-    .map((item) => {
-      const lines = Array.isArray(item.content)
-        ? item.content.map((s) => (typeof s === "string" ? s : "")).join(" ")
-        : typeof item.content === "string"
-        ? item.content
-        : "";
-      return lines.trim();
-    })
-    .filter(Boolean)
-    .join("\n\n");
-
-  return [intro, verseTexts].filter(Boolean).join("\n\n") || null;
-}
-
-// ── Main export ───────────────────────────────────────────────────────────────
 export async function fetchCommentaries(book, chapter) {
-  const cacheKey = `helloao-${book}-${chapter}`;
-
-  // Return cache if fresh (7 days)
-  try {
-    const cached = await dbGet("cachedChapters", cacheKey);
-    if (cached && Date.now() - cached.fetchedAt < 7 * 24 * 60 * 60 * 1000) {
-      return cached.commentaries;
-    }
-  } catch {}
-
-  const bookId = USFM_BOOK_IDS[book];
-  if (!bookId) return [];
-
-  // Fetch in parallel
-  const settled = await Promise.allSettled(
-    DEFAULT_FETCH.map((id) => fetchOne(id, bookId, chapter))
-  );
-
-  const commentaries = [];
-  for (let i = 0; i < DEFAULT_FETCH.length; i++) {
-    const result = settled[i];
-    if (result.status !== "fulfilled" || !result.value) continue;
-
-    const meta = COMMENTARIES.find((c) => c.id === DEFAULT_FETCH[i]);
-    const text = extractText(result.value);
-    if (!text) continue;
-
-    commentaries.push({
-      author: meta?.name ?? DEFAULT_FETCH[i],
-      date: meta?.date ?? null,
-      style: meta?.style ?? null,
+  const available = new Set(getCommentariesForBook(book).map((c) => c.id));
+  const ids = SUMMARY_IDS.filter((id) => available.has(id));
+  const loaded = await Promise.all(ids.map((id) => loadCommentary(id, book, chapter).catch(() => null)));
+  return loaded.flatMap((data, i) => {
+    if (!data) return [];
+    const meta = COMMENTARIES.find((c) => c.id === ids[i]);
+    const text = [data.intro, ...data.sections.map((x) => x.text)].filter(Boolean).join("\n\n");
+    if (!text) return [];
+    return [{
+      author: meta.name, date: meta.date, style: meta.style, commentaryId: meta.id, source: "bible.helloao.org",
       quote: text.length > 2000 ? text.substring(0, 2000) + "…" : text,
-      source: "bible.helloao.org",
-      commentaryId: DEFAULT_FETCH[i],
-    });
-  }
-
-  // Cache
-  try {
-    await dbPut("cachedChapters", {
-      key: cacheKey,
-      commentaries,
-      fetchedAt: Date.now(),
-    });
-  } catch {}
-
-  return commentaries;
+    }];
+  });
 }

@@ -1,5 +1,6 @@
 import { getTranslation, USFM_BOOK_IDS } from "../data/translations";
 import { dbGet, dbPut } from "../hooks/useDB";
+import COVERAGE from "../data/commentaryCoverage.json";
 
 const BASE_URL = "https://bible-api.com";
 
@@ -114,6 +115,50 @@ async function fetchChapterFromApiBible(bookName, chapter, translation) {
 }
 
 /**
+ * Historic translations: Geneva from bible.helloao.org (CORS-enabled, no key),
+ * Tyndale/Wycliffe from static JSON built by scripts/build-sword-data.py.
+ */
+async function fetchHistoric(bookName, chapter, translation) {
+  const usfm = USFM_BOOK_IDS[bookName];
+  if (!usfm) throw new Error(`Unknown book: ${bookName}`);
+  const notIncluded = () => Object.assign(new Error(
+    `${translation.name} doesn't include ${bookName}.` + (translation.coverage ? ` It covers the ${translation.coverage}.` : "")
+  ), { notIncluded: true });
+
+  // The SPA fallback serves index.html for missing files, so check coverage up front
+  if (translation.source === "local" && !COVERAGE.bibles[translation.localId]?.includes(usfm)) throw notIncluded();
+
+  let verseTexts;
+  if (translation.source === "local") {
+    let res;
+    try { res = await fetch(`/data/bibles/${translation.localId}/${usfm}.json`); }
+    catch { throw new Error(navigator.onLine ? "Failed to load this translation." : "You're offline. Previously read chapters are available offline."); }
+    if (res.status === 404) throw notIncluded();
+    if (!res.ok) throw new Error(`Failed to load ${bookName} ${chapter}: ${res.status}`);
+    verseTexts = (await res.json())[String(chapter)];
+    if (!verseTexts) throw notIncluded();
+  } else {
+    let res;
+    try { res = await fetch(`https://bible.helloao.org/api/${translation.helloaoId}/${usfm}/${chapter}.json`); }
+    catch { throw new Error(navigator.onLine ? "Failed to reach the Bible text server." : "You're offline. Previously read chapters are available offline."); }
+    if (res.status === 404) throw notIncluded();
+    if (!res.ok) throw new Error(`Failed to fetch ${bookName} ${chapter}: ${res.status}`);
+    const data = await res.json();
+    verseTexts = [];
+    for (const item of data.chapter?.content || []) {
+      if (item.type !== "verse") continue;
+      verseTexts[item.number - 1] = (item.content || [])
+        .map((c) => (typeof c === "string" ? c : c?.text || ""))
+        .join(" ").replace(/\s+/g, " ").trim();
+    }
+  }
+
+  const verses = [];
+  verseTexts.forEach((text, i) => { if (text) verses.push({ book: bookName, chapter, verse: i + 1, text }); });
+  return { reference: `${bookName} ${chapter}`, book: bookName, chapter, verses };
+}
+
+/**
  * Unified fetch — routes to the right source based on translation.
  * @param {string} bookName        — e.g. "John"
  * @param {number} chapter         — e.g. 3
@@ -123,6 +168,9 @@ export async function fetchChapterByTranslation(bookName, chapter, translationId
   const translation = getTranslation(translationId);
   if (translation.source === "bible-api") {
     return fetchChapter(bookName, chapter, translation.apiCode || "kjv");
+  }
+  if (translation.source === "helloao" || translation.source === "local") {
+    return fetchHistoric(bookName, chapter, translation);
   }
   return fetchChapterFromApiBible(bookName, chapter, translation);
 }

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect, lazy, Suspense } from "react";
 import { getTranslation } from "../data/translations";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { createPortal } from "react-dom";
 import useT from "../hooks/useT";
 import useBible from "../hooks/useBible";
 import useHighlights from "../hooks/useHighlights";
@@ -21,6 +22,7 @@ const SidePanel = lazy(() => import("../features/reader/SidePanel"));
 const ChapterTools = lazy(() => import("../features/reader/ChapterTools"));
 const ShareSheet = lazy(() => import("../components/ShareSheet"));
 const PlaceExplorer = lazy(() => import("../features/reader/PlaceExplorer"));
+const CommentaryTab = lazy(() => import("../features/reader/SidePanel").then((m) => ({ default: m.CommentaryTab })));
 import { useApp } from "../stores/AppContext";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
@@ -35,8 +37,8 @@ export default function Reader() {
   const chapterNum = parseInt(chapter);
   const navigate = useNavigate();
 
-  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers, translation } = useApp();
-  const { data, loading, error } = useBible(book, chapterNum, translation);
+  const { studyMode, toggleStudyMode, fontSize, setFontSize, showVerseNumbers, toggleVerseNumbers, translation, setTranslation } = useApp();
+  const { data, loading, error, notIncluded } = useBible(book, chapterNum, translation);
   const { getHighlight, addHighlight } = useHighlights(book, chapterNum);
   const { notes, getNote, saveNote, deleteNote } = useNotes(book, chapterNum);
   const { addVerse, isMemoryVerse } = useMemoryVerses();
@@ -63,6 +65,7 @@ export default function Reader() {
   const [shareData, setShareData] = useState(null);
   const [sidePanelOpen, setSidePanelOpen] = useState(true);
   const [showTools, setShowTools] = useState(false);
+  const [commentarySheet, setCommentarySheet] = useState(null); // { book, chapter, verse }
   const [scrollProgress, setScrollProgress] = useState(0);
   // Biblical atlas: { place, book, chapter, places } for the open map panel
   const [atlas, setAtlas] = useState(null);
@@ -103,6 +106,7 @@ export default function Reader() {
           setSelectedVerse(null);
           setShowNav(false);
           setShowTools(false);
+          setCommentarySheet(null);
           setActiveWordInfo(null);
           setShareData(null);
           break;
@@ -563,7 +567,20 @@ export default function Reader() {
           {/* Content */}
           {loading && <SkeletonVerses />}
 
-          {error && (
+          {error && notIncluded && (
+            <div className="mx-4 mt-8 p-6 bg-cream rounded-2xl border border-cream-dark text-center">
+              <p className="text-sm font-medium text-warm-brown mb-1">{t("reader.notInTranslation", "Not in this translation")}</p>
+              <p className="text-xs text-warm-brown-light mb-4">{error}</p>
+              <button
+                onClick={() => setTranslation("KJV")}
+                className="px-5 py-2 bg-gold text-white text-sm font-medium rounded-lg hover:bg-gold/90 transition-colors"
+              >
+                {t("reader.readInKjv", "Read in the KJV")}
+              </button>
+            </div>
+          )}
+
+          {error && !notIncluded && (
             <div className="mx-4 mt-8 p-6 bg-cream rounded-2xl border border-cream-dark text-center">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-10 h-10 mx-auto mb-3 text-warm-brown-light/50">
                 {navigator.onLine ? (
@@ -717,8 +734,36 @@ export default function Reader() {
             setShareData({ content: selectedVerseData.text, reference: `${activeChapterCtx.book} ${activeChapterCtx.chapter}:${selectedVerse}` });
             setSelectedVerse(null);
           }}
+          onCommentary={() => {
+            setCommentarySheet({ book: activeChapterCtx.book, chapter: activeChapterCtx.chapter, verse: selectedVerse });
+            setSelectedVerse(null);
+          }}
           onClose={() => setSelectedVerse(null)}
         />
+      )}
+
+      {/* Commentary sheet (phones) */}
+      {commentarySheet && createPortal(
+        <>
+          <div className="fixed inset-0 bg-black/40 z-[60] md:hidden" onClick={() => setCommentarySheet(null)} aria-hidden="true" />
+          <div role="dialog" aria-modal="true" aria-label={`${t("verse.commentary", "Commentary")} — ${commentarySheet.book} ${commentarySheet.chapter}:${commentarySheet.verse}`}
+            className="fixed inset-x-0 bottom-0 z-[60] md:hidden bg-white rounded-t-2xl shadow-2xl flex flex-col animate-slide-up"
+            style={{ height: "85svh", paddingBottom: "env(safe-area-inset-bottom)" }}>
+            <div className="flex items-center justify-between px-4 py-3 border-b border-cream-dark shrink-0">
+              <p className="text-sm font-semibold text-warm-brown">{t("verse.commentary", "Commentary")}</p>
+              <button type="button" onClick={() => setCommentarySheet(null)} aria-label={t("general.close")}
+                className="w-9 h-9 -mr-2 flex items-center justify-center rounded-full text-warm-brown-light hover:bg-cream-dark/50">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain">
+              <Suspense fallback={null}>
+                <CommentaryTab book={commentarySheet.book} chapter={commentarySheet.chapter} selectedVerse={commentarySheet.verse} />
+              </Suspense>
+            </div>
+          </div>
+        </>,
+        document.body
       )}
 
       {/* Word study panel (centered modal — all screen sizes) */}

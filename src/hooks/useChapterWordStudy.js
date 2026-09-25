@@ -22,8 +22,8 @@ export default function useChapterWordStudy(book, chapter, verses) {
         const key = `${book}-${chapter}-${v.verse}`;
 
         try {
-          // Check cache (ws2: parser changed how untagged words are flagged)
-          const cached = await dbGet("cachedChapters", `ws2-${key}`);
+          // Check cache (ws3: bump when parser or lexicon cleaning changes)
+          const cached = await dbGet("cachedChapters", `ws3-${key}`);
           if (cached) {
             result[v.verse] = alignWordsToText(cached.words, v.text);
             continue;
@@ -35,7 +35,7 @@ export default function useChapterWordStudy(book, chapter, verses) {
             result[v.verse] = alignWordsToText(data.words, v.text);
             // Cache it
             await dbPut("cachedChapters", {
-              key: `ws2-${key}`,
+              key: `ws3-${key}`,
               words: data.words,
               fetchedAt: Date.now(),
             });

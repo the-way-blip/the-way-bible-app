@@ -127,14 +127,20 @@ export default function Settings() {
       {/* Bible Translation */}
       <SettingsSection title={t("settings.bibleTranslation")}>
         <div className="space-y-2">
-          {TRANSLATIONS.map((trans) => (
-            <TranslationCard
-              key={trans.id}
-              trans={trans}
-              selected={translation === trans.id}
-              onSelect={() => setTranslation(trans.id)}
-              t={t}
-            />
+          {TRANSLATIONS.map((trans, i) => (
+            <div key={trans.id}>
+              {trans.group === "historic" && TRANSLATIONS[i - 1]?.group !== "historic" && (
+                <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider pt-3 pb-1">
+                  {t("settings.historicBibles", "Historic English Bibles — before the KJV")}
+                </p>
+              )}
+              <TranslationCard
+                trans={trans}
+                selected={translation === trans.id}
+                onSelect={() => setTranslation(trans.id)}
+                t={t}
+              />
+            </div>
           ))}
         </div>
         <p className="text-[10px] text-warm-brown-light/60 mt-2">

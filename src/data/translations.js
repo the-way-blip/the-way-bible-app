@@ -136,6 +136,64 @@ const TRANSLATIONS = [
       readingLevel: "Español clásico — similar al KJV en elegancia y antigüedad.",
     },
   },
+  {
+    id: "GNV",
+    name: "Geneva Bible (1599)",
+    short: "GNV",
+    language: "English",
+    group: "historic",
+    description: "The Reformers' Bible — the one Shakespeare and the Pilgrims read.",
+    source: "helloao",
+    helloaoId: "eng_gnv",
+    copyright: "Public domain. Text via eBible.org / bible.helloao.org.",
+    details: {
+      year: "1560 (this edition 1599)",
+      type: "Formal equivalence, original spelling",
+      philosophy:
+        "Translated in Geneva by English Protestant exiles fleeing Queen Mary, led by William Whittingham, the Geneva Bible was the first English Bible with verse numbers and the first mass-produced for ordinary households. Its marginal notes were so strongly Reformed that King James commissioned the KJV partly to replace it. It was the Bible of Shakespeare, John Bunyan and the Mayflower Pilgrims.",
+      textBase: "Old Testament: Hebrew Masoretic Text. New Testament: Greek (Beza / Stephanus).",
+      readingLevel: "Advanced — Early Modern spelling (loued, giuen, Iesus).",
+    },
+  },
+  {
+    id: "TYN",
+    name: "Tyndale Bible (1526/1530)",
+    short: "TYN",
+    language: "English",
+    group: "historic",
+    description: "The first English New Testament translated from Greek.",
+    source: "local",
+    localId: "tyndale",
+    coverage: "New Testament, the Pentateuch (Genesis–Deuteronomy) and Jonah",
+    copyright: "Public domain. Text via CrossWire Bible Society.",
+    details: {
+      year: "1526 (NT), 1530 (Pentateuch), 1531 (Jonah)",
+      type: "Formal equivalence, original spelling",
+      philosophy:
+        "William Tyndale translated the New Testament from Erasmus's Greek text and printed it in secret; possessing it was a crime in England. He was strangled and burned at the stake in 1536 before he could finish the Old Testament. Roughly 80% of the KJV New Testament keeps Tyndale's wording — phrases like \"let there be light\" and \"the powers that be\" are his.",
+      textBase: "New Testament: Erasmus's Greek text. Old Testament: Hebrew.",
+      readingLevel: "Advanced — Early Modern spelling.",
+    },
+  },
+  {
+    id: "WYC",
+    name: "Wycliffe Bible (c. 1395)",
+    short: "WYC",
+    language: "English",
+    group: "historic",
+    description: "The first complete Bible in English, translated from the Latin.",
+    source: "local",
+    localId: "wycliffe",
+    copyright: "Wycliffe Bible text © CrossWire Bible Society, CC BY-SA 4.0. Psalm numbering converted from the Vulgate.",
+    details: {
+      year: "c. 1382–1395",
+      type: "Literal translation from Latin, Middle English",
+      philosophy:
+        "Produced by John Wycliffe's followers (the Lollards) so that ordinary people could read Scripture in their own tongue, and banned by the Church in 1409. It was copied by hand — printing had not been invented — and is translated from the Latin Vulgate rather than Hebrew and Greek. Psalm and some verse numbers follow the Vulgate; TheWay converts them to KJV numbering.",
+      textBase: "Latin Vulgate.",
+      readingLevel: "Very advanced — Middle English (louede, yaf, bileueth).",
+    },
+  },
 ];
 
 export default TRANSLATIONS;

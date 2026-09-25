@@ -1,4 +1,4 @@
-const CACHE_NAME = "itm-v1";
+const CACHE_NAME = "itm-v2"; // bump when files under /data change (lexicon, search index)
 const STATIC_ASSETS = [
   "/",
   "/manifest.json",

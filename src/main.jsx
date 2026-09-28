@@ -83,9 +83,6 @@ if (shouldRender) {
 
 // Native platform setup
 if (Capacitor.isNativePlatform()) {
-  import("@capacitor/status-bar").then(({ StatusBar, Style }) => {
-    StatusBar.setStyle({ style: Style.Dark });
-  }).catch(() => {});
   import("@capacitor/splash-screen").then(({ SplashScreen }) => {
     SplashScreen.hide();
   }).catch(() => {});

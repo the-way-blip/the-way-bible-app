@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { Capacitor } from "@capacitor/core";
 import TRANSLATIONS from "../data/translations";
 
 const AppContext = createContext();
@@ -93,6 +94,12 @@ export function AppProvider({ children }) {
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
     localStorage.setItem("darkMode", darkMode);
+    // iOS status bar text must contrast with the page: light text on dark, dark text on light
+    if (Capacitor.isNativePlatform()) {
+      import("@capacitor/status-bar")
+        .then(({ StatusBar, Style }) => StatusBar.setStyle({ style: darkMode ? Style.Dark : Style.Light }))
+        .catch(() => {});
+    }
   }, [darkMode]);
 
   const updateFontSize = (size) => {

@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { getChapterCached } from "../services/bibleApi";
 import { Link } from "react-router-dom";
 import topics from "../data/topicIndex";
 import ShareSheet from "../components/ShareSheet";
@@ -82,12 +83,12 @@ export default function Topics() {
     });
     if (alreadyLoaded) return;
     try {
-      const res = await fetch(
-        `https://bible-api.com/${encodeURIComponent(ref)}?translation=kjv`
-      );
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      setVerseTexts((prev) => ({ ...prev, [ref]: { text: data.text?.trim() } }));
+      const book = parsed.book === "Psalm" ? "Psalms" : parsed.book;
+      const data = await getChapterCached(book, parsed.chapter, "KJV");
+      const from = parsed.verse || 1, to = parsed.endVerse || parsed.verse || data.verses.length;
+      const text = data.verses.filter((v) => v.verse >= from && v.verse <= to).map((v) => v.text).join(" ");
+      if (!text) throw new Error();
+      setVerseTexts((prev) => ({ ...prev, [ref]: { text } }));
     } catch {
       setVerseTexts((prev) => ({ ...prev, [ref]: { text: null } }));
     }

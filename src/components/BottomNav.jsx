@@ -64,12 +64,14 @@ export default function BottomNav() {
 
   // Get last read position for the Read tab
   const readPath = useMemo(() => {
+    // In the reader, the address bar *is* the latest chapter (the reader saves it after this renders)
+    if (location.pathname.startsWith("/read/")) return location.pathname;
     try {
       const p = JSON.parse(localStorage.getItem("readingProgress") || "{}");
       if (p.lastRead) return `/read/${encodeURIComponent(p.lastRead.book)}/${p.lastRead.chapter}`;
     } catch {}
     return "/read/Genesis/1";
-  }, []);
+  }, [location.pathname]); // recompute after each navigation so Read returns to the latest chapter
 
   return (
     <>

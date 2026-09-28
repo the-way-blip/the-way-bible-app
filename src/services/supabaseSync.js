@@ -209,72 +209,50 @@ async function syncReadingProgress(userId) {
   try {
     const sb = await getSupabase();
     if (!sb) return;
-    const localProgress = JSON.parse(localStorage.getItem("readingProgress") || "{}");
+    const local = JSON.parse(localStorage.getItem("readingProgress") || "{}");
 
-    // Push local progress
-    if (Object.keys(localProgress).length > 0) {
-      await sb.from("reading_progress").upsert({
-        user_id: userId,
-        completed_chapters: localProgress.completedChapters || {},
-        streak: localProgress.streak || 0,
-        last_read_date: localProgress.lastReadDate || null,
-        last_read_book: localProgress.lastRead?.book || null,
-        last_read_chapter: localProgress.lastRead?.chapter || null,
-        updated_at: new Date().toISOString(),
-      });
+    // Read first, merge, then write — so an older position from another device
+    // (or a failed earlier push) can never overwrite a newer one.
+    const { data: remote, error } = await sb.from("reading_progress").select("*").eq("user_id", userId).maybeSingle();
+    if (error) console.warn("[sync] pull reading_progress failed:", error.message);
+
+    const remoteAt = remote?.updated_at ? Date.parse(remote.updated_at) : 0;
+    const localAt = local.lastReadAt || 0;
+    const remoteLast = remote?.last_read_book && remote?.last_read_chapter ? { book: remote.last_read_book, chapter: remote.last_read_chapter } : null;
+    const useRemoteLast = remoteLast && (!local.lastRead || remoteAt > localAt);
+
+    const completedChapters = { ...(local.completedChapters || {}) };
+    for (const [book, chs] of Object.entries(remote?.completed_chapters || {})) {
+      completedChapters[book] = [...new Set([...(completedChapters[book] || []), ...chs])];
     }
+    const merged = {
+      ...local,
+      completedChapters,
+      streak: Math.max(remote?.streak || 0, local.streak || 0),
+      lastReadDate: [remote?.last_read_date, local.lastReadDate].filter(Boolean).sort().pop() || null,
+      lastRead: useRemoteLast ? remoteLast : (local.lastRead || null),
+      lastReadAt: Math.max(remoteAt, localAt) || Date.now(),
+    };
+    localStorage.setItem("readingProgress", JSON.stringify(merged));
 
-    // Pull remote progress
-    const { data } = await sb
-      .from("reading_progress")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
-
-    if (data) {
-      const merged = {
-        completedChapters: (() => {
-          const remote = data.completed_chapters || {};
-          const local = localProgress.completedChapters || {};
-          const merged = { ...local };
-          for (const [book, chs] of Object.entries(remote)) {
-            merged[book] = [...new Set([...(merged[book] || []), ...chs])];
-          }
-          return merged;
-        })(),
-        streak: Math.max(data.streak || 0, localProgress.streak || 0),
-        lastReadDate: data.last_read_date || localProgress.lastReadDate,
-        lastRead: (data.last_read_book && data.last_read_chapter)
-          ? { book: data.last_read_book, chapter: data.last_read_chapter }
-          : (localProgress.lastRead || null),
-      };
-      localStorage.setItem("readingProgress", JSON.stringify(merged));
-    }
-  } catch {
-    // Silent fail
+    const { error: pushError } = await sb.from("reading_progress").upsert({
+      user_id: userId,
+      completed_chapters: merged.completedChapters,
+      streak: merged.streak,
+      last_read_date: merged.lastReadDate,
+      last_read_book: merged.lastRead?.book || null,
+      last_read_chapter: merged.lastRead?.chapter || null,
+      updated_at: new Date(merged.lastReadAt).toISOString(),
+    });
+    if (pushError) console.warn("[sync] push reading_progress failed:", pushError.message);
+  } catch (e) {
+    console.warn("[sync] reading_progress failed:", e?.message);
   }
 }
 
 /**
- * Push reading progress update to Supabase.
+ * Push reading progress after a chapter is read (same merge as the full sync).
  */
 export async function syncReadingProgressUpdate(userId) {
-  if (!isSupabaseConfigured() || !userId) return;
-
-  try {
-    const sb = await getSupabase();
-    if (!sb) return;
-    const progress = JSON.parse(localStorage.getItem("readingProgress") || "{}");
-    await sb.from("reading_progress").upsert({
-      user_id: userId,
-      completed_chapters: progress.completedChapters || {},
-      streak: progress.streak || 0,
-      last_read_date: progress.lastReadDate || null,
-      last_read_book: progress.lastRead?.book || null,
-      last_read_chapter: progress.lastRead?.chapter || null,
-      updated_at: new Date().toISOString(),
-    });
-  } catch {
-    // Silent fail
-  }
+  return syncReadingProgress(userId);
 }

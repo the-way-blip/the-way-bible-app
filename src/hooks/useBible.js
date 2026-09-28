@@ -18,7 +18,7 @@ export default function useBible(bookName, chapter, translationId = "KJV") {
     setData(null);
 
     // Cache key includes translation so different translations are stored separately
-    const key = `${bookName}-${chapter}-${translationId}`;
+    const key = `${bookName}-${chapter}-${translationId}@2`; // @2: KJV moved to the clean self-hosted text
 
     (async () => {
       try {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Outlet, useLocation, Link } from "react-router-dom";
 import BottomNav from "./BottomNav";
 import PageTransition from "./PageTransition";
@@ -81,12 +81,14 @@ function DesktopSidebar() {
   const location = useLocation();
 
   const readPath = useMemo(() => {
+    // In the reader, the address bar *is* the latest chapter (the reader saves it after this renders)
+    if (location.pathname.startsWith("/read/")) return location.pathname;
     try {
       const p = JSON.parse(localStorage.getItem("readingProgress") || "{}");
       if (p.lastRead) return `/read/${encodeURIComponent(p.lastRead.book)}/${p.lastRead.chapter}`;
     } catch {}
     return "/read/Genesis/1";
-  }, []);
+  }, [location.pathname]); // recompute after each navigation so Read returns to the latest chapter
 
   return (
     <aside className="hidden md:flex flex-col w-56 shrink-0 border-r border-cream-dark bg-white/50 py-6 px-3">
@@ -127,6 +129,12 @@ export default function Layout() {
   const [showTour, setShowTour] = useState(
     () => !localStorage.getItem("hasSeenTour")
   );
+  useEffect(() => {
+    if (location.pathname.startsWith("/read/")) {
+      try { localStorage.setItem("lastReaderPath", location.pathname); } catch {}
+    }
+  }, [location.pathname]);
+
   const showTourOnRoute = ["/", "/onboarding", "/home"].includes(location.pathname) || location.pathname.startsWith("/read/");
 
   return (

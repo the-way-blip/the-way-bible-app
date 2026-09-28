@@ -15,8 +15,8 @@ const TRANSLATIONS = [
     short: "KJV",
     language: "English",
     description: "The classic 1611 translation. Public domain.",
-    source: "bible-api",
-    apiCode: "kjv",
+    source: "local",          // self-hosted clean 1769 text (bible-api.com has typos and rate limits)
+    localId: "kjv",
     copyright: "Public domain.",
     isDefault: true,
     details: {

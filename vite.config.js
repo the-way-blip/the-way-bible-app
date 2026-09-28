@@ -3,12 +3,24 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Identifies this deploy; the iOS shell compares it with /version.json on resume
+// and reloads when a newer build is live (the app otherwise keeps old JS for days).
+const BUILD_ID = (process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 12) || Date.now().toString(36)
+const versionJson = {
+  name: 'version-json',
+  generateBundle() {
+    this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ build: BUILD_ID }) })
+  },
+}
+
 export default defineConfig({
+  define: { __BUILD_ID__: JSON.stringify(BUILD_ID) },
   // NEXT_PUBLIC_ is accepted alongside Vite's own prefix so the Mapbox token
   // can use the conventional NEXT_PUBLIC_MAPBOX_TOKEN name. Anything with
   // either prefix is inlined into the client bundle — public values only.
   envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   plugins: [
+    versionJson,
     react(),
     tailwindcss(),
     VitePWA({

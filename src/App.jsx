@@ -65,7 +65,11 @@ function PageLoader() {
 function RootRoute() {
   const { isLoggedIn, loading } = useAuth();
   if (loading) return <PageLoader />;
-  if (isLoggedIn) return <Navigate to="/home" replace />;
+  if (isLoggedIn) {
+    // In the iOS app a relaunch opens at "/": go back to the chapter being read
+    const last = Capacitor.isNativePlatform() ? localStorage.getItem("lastReaderPath") : null;
+    return <Navigate to={last && last.startsWith("/read/") ? last : "/home"} replace />;
+  }
   if (Capacitor.isNativePlatform()) return <Navigate to="/login" replace />;
   return <Welcome />;
 }

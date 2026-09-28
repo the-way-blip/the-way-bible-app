@@ -189,7 +189,7 @@ export async function fetchChapterByTranslation(bookName, chapter, translationId
 const inflight = new Map();
 
 export async function getChapterCached(bookName, chapter, translationId = "KJV") {
-  const key = `${bookName}-${chapter}-${translationId}`;
+  const key = `${bookName}-${chapter}-${translationId}@2`; // @2: KJV moved to the clean self-hosted text
 
   const cached = await dbGet("cachedChapters", key).catch(() => null);
   if (cached?.verses?.length) return cached;

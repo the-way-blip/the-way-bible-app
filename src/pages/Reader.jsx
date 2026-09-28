@@ -143,6 +143,7 @@ export default function Reader() {
     try {
       const progress = JSON.parse(localStorage.getItem("readingProgress") || "{}");
       progress.lastRead = { book, chapter: chapterNum };
+      progress.lastReadAt = Date.now();
       localStorage.setItem("readingProgress", JSON.stringify(progress));
     } catch {}
   }, [book, chapterNum]);
@@ -252,6 +253,7 @@ export default function Reader() {
       }
       progress.lastReadDate = today;
       progress.lastRead = { book, chapter: chapterNum };
+      progress.lastReadAt = Date.now();
       localStorage.setItem("readingProgress", JSON.stringify(progress));
       syncReadingProgressUpdate(user?.id);
 

@@ -89,6 +89,9 @@ if (Capacitor.isNativePlatform()) {
   import("@capacitor/splash-screen").then(({ SplashScreen }) => {
     SplashScreen.hide();
   }).catch(() => {});
+  Promise.all([import("@capacitor/app"), import("./services/appUpdate")]).then(([{ App: CapApp }, { reloadIfOutdated }]) => {
+    CapApp.addListener("appStateChange", ({ isActive }) => { if (isActive) reloadIfOutdated(); });
+  }).catch(() => {});
 }
 
 // PWA service worker is auto-registered by vite-plugin-pwa (web only)

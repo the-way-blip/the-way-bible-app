@@ -6,6 +6,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { NAME_FIXES, PLACE_FIXES, EVENT_FIXES } from "./theographic-fixes.mjs";
 
 const SRC = process.argv[2];
 const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "public", "data");
@@ -14,9 +15,26 @@ const [people, events, verses, places, groups] = ["people", "events", "verses", 
 
 const OSIS = Object.fromEntries("Gen Genesis|Exod Exodus|Lev Leviticus|Num Numbers|Deut Deuteronomy|Josh Joshua|Judg Judges|Ruth Ruth|1Sam 1 Samuel|2Sam 2 Samuel|1Kgs 1 Kings|2Kgs 2 Kings|1Chr 1 Chronicles|2Chr 2 Chronicles|Ezra Ezra|Neh Nehemiah|Esth Esther|Job Job|Ps Psalms|Prov Proverbs|Eccl Ecclesiastes|Song Song of Solomon|Isa Isaiah|Jer Jeremiah|Lam Lamentations|Ezek Ezekiel|Dan Daniel|Hos Hosea|Joel Joel|Amos Amos|Obad Obadiah|Jonah Jonah|Mic Micah|Nah Nahum|Hab Habakkuk|Zeph Zephaniah|Hag Haggai|Zech Zechariah|Mal Malachi|Matt Matthew|Mark Mark|Luke Luke|John John|Acts Acts|Rom Romans|1Cor 1 Corinthians|2Cor 2 Corinthians|Gal Galatians|Eph Ephesians|Phil Philippians|Col Colossians|1Thess 1 Thessalonians|2Thess 2 Thessalonians|1Tim 1 Timothy|2Tim 2 Timothy|Titus Titus|Phlm Philemon|Heb Hebrews|Jas James|1Pet 1 Peter|2Pet 2 Peter|1John 1 John|2John 2 John|3John 3 John|Jude Jude|Rev Revelation".split("|").map((s) => { const i = s.indexOf(" "); return [s.slice(0, i), s.slice(i + 1)]; }));
 const verseById = new Map(verses.map((v) => [v.id, v.fields.osisRef]));
+
+// Corrections to Theographic, checked against the KJV text.
+// Acts 25:21, 25 "Augustus" is the title of the reigning emperor (Nero), not Caesar Augustus of Luke 2:1.
+const DROP_VERSES = { augustus_366: ["Acts.25.21", "Acts.25.25"] };
+for (const { fields: f } of people) {
+  const drop = DROP_VERSES[f.slug];
+  if (!drop) continue;
+  f.verses = (f.verses || []).filter((id) => !drop.includes(verseById.get(id)));
+  f.minYear = f.maxYear = undefined;
+  const pid = people.find((p) => p.fields === f).id;
+  for (const { fields: e } of events) {
+    const refs = (e.verses || []).map((id) => verseById.get(id));
+    if (refs.some((r) => drop.includes(r))) e.participants = (e.participants || []).filter((id) => id !== pid);
+  }
+}
+for (const { fields: f } of people) if (NAME_FIXES[f.slug]) Object.assign(f, NAME_FIXES[f.slug]);
 const readable = (osis) => { const [b, c, v] = osis.split("."); return `${OSIS[b]} ${c}:${v}`; };
 const personById = new Map(people.map((p) => [p.id, p.fields]));
-const placeById = new Map(places.map((p) => [p.id, p.fields.displayTitle || p.fields.kjvName]));
+const placeName = (f) => { const n = f.displayTitle || f.kjvName; return PLACE_FIXES[n] || n; };
+const placeById = new Map(places.map((p) => [p.id, placeName(p.fields)]));
 const groupById = new Map(groups.map((g) => [g.id, g.fields.groupName || g.fields.name]));
 
 // Label: the curated displayTitle ("Jesus Christ", "Joseph (of Arimathea)"); when two people
@@ -47,7 +65,12 @@ const timeline = evSorted.map((e) => {
     people: who, places: (e.locations || []).map((id) => placeById.get(id)).filter(Boolean).slice(0, 4),
   };
 });
-fs.writeFileSync(path.join(OUT, "timeline.json"), JSON.stringify(timeline));
+const fixedTimeline = timeline.filter((e) => !EVENT_FIXES[e.id]?.remove).map((e) => {
+  const fx = EVENT_FIXES[e.id];
+  if (!fx) return e;
+  return { ...e, ...(fx.title && { title: fx.title }), ...(fx.ref && { ref: fx.ref }), ...(fx.duration && { duration: fx.duration }), ...(fx.year != null && { year: fx.year < 0 ? fx.year + 1 : fx.year }) };
+}).sort((a, b) => a.year - b.year);
+fs.writeFileSync(path.join(OUT, "timeline.json"), JSON.stringify(fixedTimeline));
 
 // People
 const dir = path.join(OUT, "people");
@@ -71,7 +94,7 @@ for (const { fields: f } of people) {
     siblings: link([...(f.siblings || []), ...(f.halfSiblingsSameFather || []), ...(f.halfSiblingsSameMother || [])]),
     children: link(f.children),
     groups: (f.memberOf || []).map((id) => groupById.get(id)).filter(Boolean),
-    events: eventsByPerson[f.slug] || [],
+    events: (eventsByPerson[f.slug] || []).filter((id) => !EVENT_FIXES[id]?.remove),
   };
   index.push([rec.slug, rec.label, rec.verseCount, rec.gender[0]]);
   const letter = (rec.slug.match(/[a-z]/)?.[0] || "_").toUpperCase();   // app finds a person by slug
@@ -80,4 +103,4 @@ for (const { fields: f } of people) {
 index.sort((a, b) => b[2] - a[2]);
 fs.writeFileSync(path.join(dir, "index.json"), JSON.stringify(index));
 for (const [l, data] of Object.entries(chunks)) fs.writeFileSync(path.join(dir, `${l}.json`), JSON.stringify(data));
-console.log(`people: ${index.length} (${Object.keys(chunks).length} files) · timeline: ${timeline.length} events`);
+console.log(`people: ${index.length} (${Object.keys(chunks).length} files) · timeline: ${fixedTimeline.length} events`);

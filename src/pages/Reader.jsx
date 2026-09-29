@@ -545,6 +545,15 @@ export default function Reader() {
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                     </svg>
                   </button>
+                  <button
+                    onClick={() => { setShowTools(false); navigate(`/timeline?ref=${encodeURIComponent(`${displayedChapter.book} ${displayedChapter.chapter}`)}`); }}
+                    className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50"
+                  >
+                    <span>{t("reader.whenIsThis", "When did this happen?")}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
+                      <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
+                    </svg>
+                  </button>
                   <div className="flex items-center justify-between px-3 py-2 text-sm text-warm-brown">
                     <span>{t("reader.textSize", "Text size")}</span>
                     <div className="flex items-center bg-cream-dark rounded-full">

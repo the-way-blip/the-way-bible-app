@@ -137,5 +137,7 @@ export async function getPerson(slug) {
   return file?.[slug] || null;
 }
 export const getTimeline = () => getJSON("/data/timeline.json");
+/** Bible + World timeline: { eras, books, people, bible, world, chapters } (scripts/build-chrono.mjs) */
+export const getChrono = () => getJSON("/data/chrono.json");
 /** -1085 → "1085 BC", 30 → "AD 30" */
 export const formatYear = (y) => (y == null ? "" : y <= 0 ? `${Math.abs(y - 1)} BC` : `AD ${y}`);

@@ -27,3 +27,15 @@ export async function getChapterAudio(book, chapter) {
   const [si, start, end, verses] = t;
   return { url: sections[si], start, end, verses, reader: readers?.[si] || NARRATION.reader };
 }
+
+// archive.org's storage node can take 20–30 s to answer the first request for
+// a file it hasn't served lately, then answers in well under a second. Touch
+// the chapter's recording (2 bytes) when the chapter opens so it's awake by the
+// time the reader taps Listen.
+const warmed = new Set();
+export async function warmChapterAudio(book, chapter) {
+  const data = await getChapterAudio(book, chapter).catch(() => null);
+  if (!data || warmed.has(data.url)) return;
+  warmed.add(data.url);
+  fetch(data.url, { headers: { Range: "bytes=0-1" }, mode: "cors" }).catch(() => warmed.delete(data.url));
+}

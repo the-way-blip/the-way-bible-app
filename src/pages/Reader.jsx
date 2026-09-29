@@ -16,6 +16,7 @@ import VerseActions from "../features/reader/VerseActions";
 import WordStudyPanel from "../features/reader/WordStudyPanel";
 import SkeletonVerses from "../components/SkeletonVerses";
 import { useAudio } from "../stores/AudioContext";
+import { warmChapterAudio } from "../services/audioService";
 
 // Lazy loaded (below fold / modals / panels)
 const ChapterNav = lazy(() => import("../features/reader/ChapterNav"));
@@ -212,6 +213,11 @@ export default function Reader() {
 
   // The narrated player follows the chapter on screen
   useEffect(() => { audioPlayer?.follow(bookInfo?.name || book, chapterNum); }, [book, chapterNum]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Wake the narration file on archive.org so Listen starts quickly (KJV only)
+  useEffect(() => {
+    const id = setTimeout(() => warmChapterAudio(bookInfo?.name || book, chapterNum), 1500);
+    return () => clearTimeout(id);
+  }, [book, chapterNum]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Deep link to a verse (?v=16 from search results): scroll to it and flash it
   useEffect(() => {

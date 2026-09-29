@@ -9,7 +9,7 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-import { BOOKS, PEOPLE, BIBLE_EXTRA, WORLD, ERAS } from "./chrono-data.mjs";
+import { BOOKS, PEOPLE, BIBLE_EXTRA, WORLD, ERAS, CHAPTER_YEARS } from "./chrono-data.mjs";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SRC = process.argv[2];
@@ -47,7 +47,7 @@ BOOKS.forEach(([name, author, written], i) => {
   const years = [];
   for (let c = 1; c <= n; c++) {
     const a = byChapter[`${osis}.${c}`];
-    years.push(a ? astro(median(a)) : null);
+    years.push(CHAPTER_YEARS[name] ? astro(CHAPTER_YEARS[name][c - 1]) : a ? astro(median(a)) : null);
   }
   // Letters are dated by when they were written; undated narrative chapters
   // carry the previous chapter's year; undated psalms default to David's reign.

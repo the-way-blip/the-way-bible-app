@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-warm-brown mb-6">Privacy Policy</h1>
-      <p className="text-xs text-warm-brown-light mb-6">Last updated: May 4, 2026</p>
+      <p className="text-xs text-warm-brown-light mb-6">Last updated: September 30, 2026</p>
 
       <div className="space-y-6 text-sm text-warm-brown leading-relaxed">
         <Section title="Overview">
@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
         </Section>
 
         <Section title="Data We Collect">
-          <p className="font-medium mb-2">Data stored on your device (local only):</p>
+          <p className="font-medium mb-2">Study data stored on your device (also synced when signed in):</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Reading progress and history</li>
             <li>Highlights, notes, and journal entries</li>
@@ -33,6 +33,7 @@ export default function PrivacyPolicy() {
           <ul className="list-disc pl-5 space-y-1">
             <li>Email address (for authentication)</li>
             <li>Display name (optional)</li>
+            <li>Earlier signup versions also requested phone, city, state, and communication preferences. Contact us to request deletion of previously supplied information.</li>
             <li>Your study data may be synced to our servers for backup and cross-device access</li>
           </ul>
         </Section>
@@ -44,7 +45,7 @@ export default function PrivacyPolicy() {
             <li>To generate word study and chapter analysis using AI services</li>
           </ul>
           <p className="mt-2">
-            We do not sell your personal data. We do not serve ads. We do not track you across other websites.
+            We do not sell your personal data. We do not serve ads. We use the analytics services described below to understand usage.
           </p>
         </Section>
 
@@ -52,19 +53,20 @@ export default function PrivacyPolicy() {
           <ul className="list-disc pl-5 space-y-1">
             <li><strong>Supabase</strong> — authentication and data storage (if you create an account). Your email, name, profile preferences, highlights, notes, journal entries, memory verses, and reading progress are stored on Supabase servers with encryption at rest.</li>
             <li><strong>Resend</strong> — transactional email delivery. Used to send account confirmation and password reset emails to the address you sign up with.</li>
-            <li><strong>GoHighLevel (CRM)</strong> — when you sign up, complete onboarding, submit a prayer request, or hit a reading milestone, we send your email, name, and event tags to our CRM so we can send you relevant devotional emails and updates. We never share this data with other parties for advertising.</li>
-            <li><strong>Bible API</strong> — KJV Bible text retrieval. No personal data is sent.</li>
+            <li><strong>GoHighLevel (CRM)</strong> — if you explicitly select devotional emails, we send your email, optional name, and subscription preference. This version does not send prayer text, onboarding answers, or reading milestones to the CRM. Earlier versions sent signup details and activity information, including prayer request text. Contact us to request removal of previously shared data.</li>
+            <li><strong>Bible API</strong> — KJV Bible text retrieval. Requests include the requested passage and network information such as your IP address.</li>
             <li><strong>Anthropic (Claude)</strong> — AI-powered word study generation. Verse text is sent for analysis; no account information is included in those requests.</li>
             <li><strong>Vercel</strong> — app hosting and serverless functions.</li>
             <li><strong>Vercel Analytics</strong> — aggregate page views and conversion events so we can improve the app. No tracking across other sites.</li>
-            <li><strong>Sentry</strong> — error and crash reporting. When the app encounters an unexpected error, a stack trace plus your IP address and (if signed in) email are sent so we can reproduce and fix the issue. We do not use this data for any purpose other than diagnosing technical problems.</li>
-            <li><strong>Pexels</strong> — stock photo backgrounds for the verse-share image feature. Only the search query you choose (e.g. "mountain") is sent; no personal data.</li>
+            <li><strong>Sentry</strong> — error and crash reporting, including stack traces and sampled performance diagnostics. Automatic inclusion of account identity and IP addresses is disabled in this version. Diagnostic requests still involve network metadata.</li>
+            <li><strong>Google Analytics</strong> — website usage and interaction measurement. Google Analytics may use cookies or browser identifiers and receive page URLs, events, device information, and network metadata. It is loaded on the public website.</li>
+            <li><strong>Pexels and Unsplash</strong> — stock photo backgrounds for the verse-share image feature. Only the search query you choose (e.g. "mountain") is sent; no personal data.</li>
           </ul>
         </Section>
 
         <Section title="Marketing & Email Communications">
           <p>
-            If you sign up for a daily devotional during signup, you will receive periodic
+            If you choose devotional emails during signup, you will receive periodic
             emails from TheWay Bible App. You can unsubscribe at any time using the link at the bottom
             of any email, or by replying to ask us to remove you. Unsubscribing will not
             affect your ability to use the app.
@@ -85,8 +87,8 @@ export default function PrivacyPolicy() {
             <li><strong>Access</strong> all your data via the Export feature in Settings</li>
             <li><strong>Correct</strong> profile information directly in the app</li>
             <li><strong>Delete</strong> all locally stored data via Clear Data in Settings</li>
-            <li><strong>Delete your account</strong> and all associated cloud data — email us at the contact below and we will permanently remove everything within 30 days</li>
-            <li><strong>Use the app without an account</strong> (fully local mode — no data leaves your device)</li>
+            <li><strong>Delete your account</strong> using the account deletion control in Settings. Contact us for deletion requests involving email subscriptions, previously shared CRM data, or other retained records.</li>
+            <li><strong>Use the app without an account</strong> (study records remain on your device; hosting, analytics, diagnostics, and requested content services still receive network requests)</li>
             <li><strong>Unsubscribe from emails</strong> at any time</li>
             <li><strong>Object</strong> to or <strong>restrict</strong> certain processing — contact us with your request</li>
           </ul>
@@ -95,7 +97,7 @@ export default function PrivacyPolicy() {
         <Section title="Children's Privacy">
           <p>
             This app does not knowingly collect personal information from children under 13.
-            The app can be used without an account, in which case no personal data is transmitted.
+            Guest access does not require an account, but still makes network requests to the services described above.
           </p>
         </Section>
 

@@ -41,6 +41,22 @@
       "destination": "/api/bible-page?kind=topic&topic=:topic"
     },
     {
+      "source": "/word/:id",
+      "destination": "/api/app-page?id=:id"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/api/app-page?page=privacy"
+    },
+    {
+      "source": "/terms",
+      "destination": "/api/app-page?page=terms"
+    },
+    {
+      "source": "/login",
+      "destination": "/api/app-page?page=login"
+    },
+    {
       "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|verses-about|verse-of-the-day|sitemap).*)",
       "destination": "/index.html"
     }
@@ -54,11 +70,31 @@
           "value": "application/json"
         }
       ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
+      ]
     }
   ],
   "functions": {
     "api/bible-page.js": {
       "includeFiles": "seo/data/*.json"
+    },
+    "api/app-page.js": {
+      "includeFiles": "{dist/index.html,public/data/lexicon.json,public/data/strongs/*.json}"
     }
   }
 }

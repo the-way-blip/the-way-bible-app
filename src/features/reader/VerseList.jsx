@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { useApp } from "../../stores/AppContext";
 import { detectMentions, detectMentionsInWords } from "../../services/biblePlaces";
 
@@ -239,12 +239,14 @@ function ReadText({ text, places, onPlaceTap }) {
 // Place names win over word study: their Strong's entries are just
 // transliterations, and the map is the more useful thing to surface.
 function EnrichedText({ words, onWordTap, places, onPlaceTap }) {
+  const [activeWord, setActiveWord] = useState(null);
   const placeMarks = useMemo(
     () => (onPlaceTap ? detectMentionsInWords(words, places) : null),
     [words, places, onPlaceTap]
   );
 
   const rendered = [];
+  let firstStudyWord = null;
   for (let i = 0; i < words.length; i++) {
     const mark = placeMarks?.get(i);
 
@@ -281,9 +283,14 @@ function EnrichedText({ words, onWordTap, places, onPlaceTap }) {
       continue;
     }
 
+    if (firstStudyWord === null) firstStudyWord = i;
     rendered.push(
-      <span
-        key={i}
+      <Fragment key={i}>
+      <button
+        type="button"
+        aria-label={`Study ${text}`}
+        tabIndex={i === (activeWord ?? firstStudyWord) ? 0 : -1}
+        onFocus={() => setActiveWord(i)}
         className="word-tappable"
         onClick={(e) => {
           e.stopPropagation();
@@ -291,10 +298,20 @@ function EnrichedText({ words, onWordTap, places, onPlaceTap }) {
           onWordTap(w);
         }}
       >
-        {text}{" "}
-      </span>
+        {text}
+      </button>{" "}
+      </Fragment>
     );
   }
 
-  return <>{rendered}</>;
+  return <span role="group" aria-label="Study words: use Left and Right arrows to move, Enter or Space to study" onKeyDown={(event) => {
+    if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key)) return;
+    const buttons = [...event.currentTarget.querySelectorAll("button.word-tappable")];
+    const current = buttons.indexOf(event.target);
+    if (current < 0) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const next = event.key === "Home" ? 0 : event.key === "End" ? buttons.length - 1 : (current + (event.key === "ArrowRight" ? 1 : -1) + buttons.length) % buttons.length;
+    buttons[next]?.focus();
+  }}>{rendered}</span>;
 }

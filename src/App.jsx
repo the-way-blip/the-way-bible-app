@@ -1,5 +1,5 @@
-import { lazy, Suspense } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { lazy, Suspense, useEffect } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
 import { Analytics } from "@vercel/analytics/react";
 import { AppProvider } from "./stores/AppContext";
@@ -13,7 +13,7 @@ import UpdatePrompt from "./components/UpdatePrompt";
 
 // Eagerly loaded (critical path)
 import Home from "./pages/Home";
-import Reader from "./pages/Reader";
+const Reader = lazy(() => import("./pages/Reader"));
 
 // Lazy loaded (secondary routes)
 const MemoryVerses = lazy(() => import("./pages/MemoryVerses"));
@@ -45,6 +45,29 @@ const Welcome = lazy(() => import("./pages/Welcome"));
 const Terms = lazy(() => import("./pages/Terms"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Bookmarks = lazy(() => import("./pages/Bookmarks"));
+
+// Kept mounted across routes so reader/private pages cannot inherit a previous canonical.
+function RouteMetadata() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const url = `https://thewaybible.app${pathname}`;
+    const definitions = [
+      ['link[rel="canonical"]', 'link', 'rel', 'canonical', 'href', url],
+      ['meta[property="og:url"]', 'meta', 'property', 'og:url', 'content', url],
+      ['meta[name="robots"]', 'meta', 'name', 'robots', 'content', /^\/(login|reset-password|auth|journal|prayers|settings|groups|memory|progress|bookmarks)(\/|$)/.test(pathname) ? 'noindex, follow' : 'index, follow'],
+    ];
+    for (const [selector, tag, key, name, attribute, value] of definitions) {
+      let element = document.querySelector(selector);
+      if (!element) {
+        element = document.createElement(tag);
+        element.setAttribute(key, name);
+        document.head.appendChild(element);
+      }
+      element.setAttribute(attribute, value);
+    }
+  }, [pathname]);
+  return null;
+}
 
 function PageLoader() {
   return (
@@ -79,6 +102,7 @@ export default function App() {
     <AuthProvider>
       <AppProvider>
         <BrowserRouter>
+          <RouteMetadata />
           <ToastProvider>
             <OfflineBanner />
             <InstallPrompt />

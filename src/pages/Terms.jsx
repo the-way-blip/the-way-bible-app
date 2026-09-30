@@ -68,7 +68,7 @@ export default function Terms() {
             The TheWay Bible App brand, logo, design, code, and original content are owned by us and protected by copyright and other intellectual property laws. The biblical text shown in the app is sourced from the public-domain King James Version.
           </p>
           <p className="mt-2">
-            Third-party content (commentaries, dictionaries, photo backgrounds via Unsplash, etc.) belongs to their respective owners and is used under their applicable licenses or terms.
+            Third-party content (commentaries, dictionaries, photo backgrounds via Pexels and Unsplash, etc.) belongs to their respective owners and is used under their applicable licenses or terms.
           </p>
         </Section>
 
@@ -92,7 +92,7 @@ export default function Terms() {
 
         <Section title="Third-Party Services">
           <p>
-            TheWay Bible App relies on third-party services (Supabase, Resend, Vercel, Unsplash, Anthropic, Bible APIs, and others) to function. Your use of the app is also subject to those providers' terms of service. We are not responsible for the practices or content of third-party services.
+            TheWay Bible App relies on third-party services (Supabase, Resend, Vercel, Pexels and Unsplash, Anthropic, Bible APIs, and others) to function. Your use of the app is also subject to those providers' terms of service. We are not responsible for the practices or content of third-party services.
           </p>
         </Section>
 

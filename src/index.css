@@ -492,3 +492,8 @@ html.dark .drop-cap::first-letter {
 /* Narrated audio: the verse being read */
 .verse-playing > span:first-of-type,
 .verse-playing { background-color: rgba(201, 162, 39, 0.16); border-radius: 4px; transition: background-color 0.3s ease; }
+
+/* Inline word buttons retain the reader's typography and expose keyboard focus. */
+button.word-tappable { font: inherit; color: inherit; text-align: inherit; }
+button.word-tappable:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { .verse-flash { animation: none; background-color: #c9a84c33; } }

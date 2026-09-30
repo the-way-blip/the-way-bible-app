@@ -1,3 +1,4 @@
+import { firstMeaningfulText } from "../utils/lexiconText";
 // Local word study service — uses bundled KJV interlinear data + Strong's lexicon
 // No API key needed
 
@@ -222,7 +223,7 @@ async function enrichWithOpenScriptures(words) {
       hebrew: w.hebrew || entry.lemma,
       transliteration: w.transliteration || entry.translit || entry.xlit,
       pronunciation: w.pronunciation || entry.pron,
-      strongs_def: w.strongs_def || cleanDef(entry.strongs_def),
+      strongs_def: firstMeaningfulText(w.strongs_def, cleanDef(entry.strongs_def)),
       kjv_def: w.kjv_def || entry.kjv_def,
       derivation: w.derivation || entry.derivation,
     };

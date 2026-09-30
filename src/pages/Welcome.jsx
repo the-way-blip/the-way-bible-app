@@ -43,7 +43,7 @@ function Header() {
     <header className="sticky top-0 z-40 bg-cream/95 dark:bg-[#1a1a1a]/95 backdrop-blur border-b border-cream-dark">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
         <Link to="/" className="flex items-center gap-2" aria-label="TheWay Bible App home">
-          <Logo className="h-28 sm:h-36" />
+          <Logo className="h-16 sm:h-20" />
         </Link>
         <nav className="flex items-center gap-2 sm:gap-4">
           <a href="/bible" className="hidden sm:inline text-sm text-warm-brown-light hover:text-warm-brown">Read online</a>
@@ -67,10 +67,10 @@ function Header() {
 function Hero() {
   return (
     <section className="relative">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-24 lg:py-32 grid lg:grid-cols-2 gap-12 items-center">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-12 lg:py-16 grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
         <div>
           <p className="text-base font-bold text-gold dark:text-gold-light uppercase tracking-widest mb-4">A new way to study Scripture</p>
-          <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-warm-brown leading-tight">
+          <h1 className="font-serif text-4xl sm:text-5xl lg:text-5xl font-bold text-warm-brown leading-tight">
             Read Scripture.<br />
             <span className="text-gold">Study at any depth.</span><br />
             Walk with Jesus daily.
@@ -80,11 +80,11 @@ function Hero() {
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-3">
             <a
-              href="#signup"
+              href="/read/John/1"
               onClick={() => track("cta_clicked", { location: "hero" })}
               className="bg-gold text-white font-semibold px-6 py-3.5 rounded-full hover:bg-gold/90 transition-colors shadow-lg shadow-gold/20"
             >
-              Get Started Free
+              Start reading free
             </a>
             {/* App Store badge — live link */}
             <a
@@ -103,7 +103,7 @@ function Hero() {
               </span>
             </a>
           </div>
-          <p className="text-xs text-warm-brown-light/60 mt-4">Free forever · No credit card required</p>
+          <p className="text-xs text-warm-brown-light/60 mt-4">No account or credit card required to read</p>
         </div>
 
         {/* Hero visual — iPad mockup of reader */}
@@ -291,7 +291,7 @@ function Explanatory() {
             Yes — <a href="https://apps.apple.com/app/id6762105782" target="_blank" rel="noopener noreferrer" className="text-gold underline">download it free on the App Store</a>. The web app also works on every device, and both stay in sync automatically.
           </FAQ>
           <FAQ q="What's coming next?">
-            Group studies, shared journals, audio reading, expanded commentary library, and tools for pastors and small group leaders. We build alongside our users — your feedback shapes the roadmap.
+            Audio reading and a commentary library are available now. Your feedback helps shape future improvements to study and community tools.
           </FAQ>
         </div>
       </div>
@@ -346,7 +346,7 @@ function FinalCTA() {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const [subscribe, setSubscribe] = useState(true);
+  const [subscribe, setSubscribe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -357,7 +357,7 @@ function FinalCTA() {
     const result = await signUp(email, password, name);
     setLoading(false);
     if (result.error) {
-      track("signup_failed", { source: "landing", reason: result.error.message });
+      track("signup_failed", { source: "landing", reason: "authentication_error" });
       setError(result.error.message);
       return;
     }
@@ -367,7 +367,7 @@ function FinalCTA() {
       navigate("/onboarding");
     } else {
       // mailer_autoconfirm is on, so session should exist — but just in case
-      navigate("/login");
+      navigate("/login?mode=signin&confirmed=pending");
     }
   };
 
@@ -383,7 +383,9 @@ function FinalCTA() {
         </p>
 
         <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-3 text-left">
+          <label htmlFor="signup-text" className="block text-sm">Your name (optional)</label>
           <input
+            id="signup-text"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -391,7 +393,9 @@ function FinalCTA() {
             autoComplete="name"
             className="w-full bg-white dark:bg-[#2a2a2a] border-2 border-cream-dark dark:border-[#4a4a4a] rounded-xl px-4 py-3 text-base text-warm-brown dark:text-[#f5e6c8] placeholder-warm-brown-light/50 dark:placeholder-[#a89578] focus:outline-none focus:border-gold dark:focus:border-gold focus:ring-2 focus:ring-gold/30 transition-colors"
           />
+          <label htmlFor="signup-email" className="block text-sm">Email address</label>
           <input
+            id="signup-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -400,7 +404,9 @@ function FinalCTA() {
             autoComplete="email"
             className="w-full bg-white dark:bg-[#2a2a2a] border-2 border-cream-dark dark:border-[#4a4a4a] rounded-xl px-4 py-3 text-base text-warm-brown dark:text-[#f5e6c8] placeholder-warm-brown-light/50 dark:placeholder-[#a89578] focus:outline-none focus:border-gold dark:focus:border-gold focus:ring-2 focus:ring-gold/30 transition-colors"
           />
+          <label htmlFor="signup-password" className="block text-sm">Password (at least 6 characters)</label>
           <input
+            id="signup-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -417,9 +423,9 @@ function FinalCTA() {
               onChange={(e) => setSubscribe(e.target.checked)}
               className="w-4 h-4 rounded border-2 border-cream-dark dark:border-[#5a5a5a] text-gold focus:ring-gold/30 accent-gold"
             />
-            Send me weekly devotionals
+            Send me devotional emails (optional)
           </label>
-          {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+          {error && <p role="alert" className="text-sm text-red-500 text-center">{error}</p>}
           <button
             type="submit"
             disabled={loading}
@@ -428,8 +434,8 @@ function FinalCTA() {
             {loading ? "Creating your account..." : "Create Free Account"}
           </button>
           <p className="text-xs text-warm-brown-light/70 dark:text-[#c2b094]/90 text-center">
-            By signing up, you agree to our <Link to="/privacy" className="underline">Privacy Policy</Link>.<br />
-            Already have an account? <Link to="/login" className="text-gold underline">Sign in</Link>.
+            By creating an account, you agree to our <Link to="/terms" className="underline">Terms of Service</Link>. Read our <Link to="/privacy" className="underline">Privacy Policy</Link>.<br />
+            Already have an account? <Link to="/login?mode=signin" className="text-gold underline">Sign in</Link>.
           </p>
         </form>
       </div>
@@ -451,7 +457,7 @@ function Footer() {
           <ul className="space-y-2">
             <li><a href="#features" className="hover:text-[#faf7f2]">Features</a></li>
             <li><a href="#plan" className="hover:text-[#faf7f2]">How it works</a></li>
-            <li><Link to="/login" className="hover:text-[#faf7f2]">Sign in</Link></li>
+            <li><Link to="/login?mode=signin" className="hover:text-[#faf7f2]">Sign in</Link></li>
           </ul>
         </div>
         <div>

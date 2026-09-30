@@ -30,7 +30,7 @@ import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
 import useBookmarks from "../hooks/useBookmarks";
 import { syncReadingProgressUpdate } from "../services/supabaseSync";
-import { submitReadingMilestone } from "../services/ghlService";
+import { requestedVerse } from "../utils/verseLink";
 
 export default function Reader() {
   const t = useT();
@@ -47,7 +47,7 @@ export default function Reader() {
   const { wordData, loading: wordLoading, error: wordError, getWordStudy, clear: clearWordStudy } = useWordStudy();
   const { verseWords: chapterWords } = useChapterWordStudy(book, chapterNum, data?.verses);
   const { places: chapterPlaces } = useBiblePlaces(book, chapterNum);
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
   const { addBookmark, removeBookmark, isBookmarked } = useBookmarks();
   const showToast = useToast();
   const audioPlayer = useAudio();
@@ -96,8 +96,7 @@ export default function Reader() {
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      const tag = document.activeElement?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || document.activeElement?.isContentEditable) return;
+      if (document.activeElement?.closest("input, textarea, select, button, a, [contenteditable], [role=dialog]")) return;
 
       switch (e.key) {
         case "ArrowLeft":
@@ -196,7 +195,7 @@ export default function Reader() {
 
   // Restore scroll position after data loads (only for direct navigation)
   useEffect(() => {
-    if (!data || !navigatedDirectly.current) return;
+    if (!data || !navigatedDirectly.current || requestedVerse(location.search, data.verses)) return;
     const saved = sessionStorage.getItem(`scroll-${book}-${chapterNum}`);
     if (!saved) return;
 
@@ -209,7 +208,7 @@ export default function Reader() {
       }
     });
     navigatedDirectly.current = false;
-  }, [data, book, chapterNum]);
+  }, [data, book, chapterNum, location.search]);
 
   // The narrated player follows the chapter on screen
   useEffect(() => { audioPlayer?.follow(bookInfo?.name || book, chapterNum); }, [book, chapterNum]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -219,19 +218,24 @@ export default function Reader() {
     return () => clearTimeout(id);
   }, [book, chapterNum]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Deep link to a verse (?v=16 from search results): scroll to it and flash it
+  // Accept public legacy links and canonical search links without losing the anchor.
   useEffect(() => {
-    if (!data) return;
-    const v = parseInt(new URLSearchParams(location.search).get("v"), 10);
-    if (!v) return;
-    const timer = setTimeout(() => {
-      const el = scrollContainerRef.current?.querySelector(`[data-verse="${v}"]`);
-      if (!el) return;
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("verse-flash");
-      setTimeout(() => el.classList.remove("verse-flash"), 2600);
-    }, 150);
-    return () => clearTimeout(timer);
+    const verse = requestedVerse(location.search, data?.verses);
+    if (!verse) return;
+    let target;
+    let flashTimer;
+    const frame = requestAnimationFrame(() => {
+      target = scrollContainerRef.current?.querySelector(`[data-verse="${verse}"]`);
+      if (!target) return;
+      target.scrollIntoView({ behavior: "instant", block: "center" });
+      target.classList.add("verse-flash");
+      flashTimer = setTimeout(() => target.classList.remove("verse-flash"), 2600);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(flashTimer);
+      target?.classList.remove("verse-flash");
+    };
   }, [data, location.search]);
 
   const selectedVerseData = selectedVerse
@@ -241,8 +245,6 @@ export default function Reader() {
   const saveProgress = () => {
     try {
       const prevProgress = JSON.parse(localStorage.getItem("readingProgress") || "{}");
-      const totalChaptersBefore = Object.values(prevProgress.completedChapters || {})
-        .reduce((sum, arr) => sum + (arr?.length || 0), 0);
 
       const progress = { ...prevProgress };
       if (!progress.completedChapters) progress.completedChapters = {};
@@ -251,8 +253,8 @@ export default function Reader() {
       if (!wasCompleted) {
         progress.completedChapters[book].push(chapterNum);
       }
-      const today = new Date().toISOString().split("T")[0];
       const prevStreak = progress.streak || 0;
+      const today = new Date().toISOString().split("T")[0];
       if (progress.lastReadDate !== today) {
         const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
         progress.streak = progress.lastReadDate === yesterday ? prevStreak + 1 : 1;
@@ -263,40 +265,6 @@ export default function Reader() {
       localStorage.setItem("readingProgress", JSON.stringify(progress));
       syncReadingProgressUpdate(user?.id);
 
-      // ---- Reading milestones → GHL (fire-and-forget, deduped client-side)
-      if (user?.email) {
-        const milestoneArgs = {
-          email: user.email,
-          name: profile?.name || user?.user_metadata?.name || "",
-        };
-        // First chapter ever read on this account/device
-        if (totalChaptersBefore === 0 && !wasCompleted) {
-          submitReadingMilestone({
-            ...milestoneArgs,
-            milestone: "first-chapter",
-            detail: { book, chapter: chapterNum },
-          });
-        }
-        // Whole book complete
-        const bookMeta = getBook(book);
-        if (bookMeta && progress.completedChapters[book].length >= bookMeta.chapters) {
-          submitReadingMilestone({
-            ...milestoneArgs,
-            milestone: `book-complete:${book}`,
-            detail: { book, chapters: bookMeta.chapters },
-          });
-        }
-        // Streak thresholds
-        for (const threshold of [7, 30, 100, 365]) {
-          if (progress.streak === threshold && prevStreak < threshold) {
-            submitReadingMilestone({
-              ...milestoneArgs,
-              milestone: `streak:${threshold}`,
-              detail: { streak: progress.streak },
-            });
-          }
-        }
-      }
     } catch {}
   };
 
@@ -357,8 +325,7 @@ export default function Reader() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key !== "m" || e.metaKey || e.ctrlKey || e.altKey) return;
-      const tag = document.activeElement?.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || document.activeElement?.isContentEditable) return;
+      if (document.activeElement?.closest("input, textarea, select, button, a, [contenteditable], [role=dialog]")) return;
       if (chapterPlaces.length === 0) return;
       e.preventDefault();
       setAtlas((current) => (current ? null : { place: chapterPlaces[0], book, chapter: chapterNum, places: chapterPlaces }));

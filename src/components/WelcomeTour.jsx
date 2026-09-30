@@ -276,6 +276,7 @@ export default function WelcomeTour({ onComplete }) {
           {/* Back arrow */}
           <button
             onClick={prev}
+            aria-label="Previous introduction slide"
             disabled={current === 0}
             className="w-12 h-12 rounded-full flex items-center justify-center transition-colors"
             style={{
@@ -320,6 +321,7 @@ export default function WelcomeTour({ onComplete }) {
           {/* Forward arrow */}
           <button
             onClick={next}
+            aria-label="Next introduction slide"
             disabled={current === slides.length - 1}
             className="w-12 h-12 rounded-full flex items-center justify-center transition-colors"
             style={{

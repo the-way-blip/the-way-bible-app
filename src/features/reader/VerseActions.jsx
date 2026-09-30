@@ -105,12 +105,14 @@ export default function VerseActions({
               {COLORS.map((c) => (
                 <button
                   key={c.name}
+                  aria-label={`Highlight ${c.name}`}
+                  aria-pressed={currentHighlight?.color === c.name}
                   onClick={() => {
                     onHighlight(verse, c.name);
                     hapticTap();
                     showToast(t("verse.highlightApplied"));
                   }}
-                  className={`w-8 h-8 rounded-full ${c.bg} border-2 ${
+                  className={`w-11 h-11 rounded-full ${c.bg} border-2 ${
                     currentHighlight?.color === c.name ? c.border : "border-transparent"
                   } transition-transform hover:scale-110`}
                 />

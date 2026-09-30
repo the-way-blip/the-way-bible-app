@@ -2,69 +2,90 @@
 # Everything except the internal API is open to crawlers, including the
 # assistant crawlers. The AI bots are named explicitly below so the intent
 # is on the record rather than inherited from the wildcard group.
+#
+# /api/og is the Open Graph image for every verse and topic page. It stays
+# open to crawlers on purpose — Search Console showed 33 of them reported as
+# "Blocked by robots.txt", which means Google could not fetch the preview
+# image for those pages. Everything else under /api/ is internal.
 
 User-agent: *
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: Googlebot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: Google-Extended
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: Bingbot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: GPTBot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: OAI-SearchBot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: ChatGPT-User
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: ClaudeBot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: Claude-SearchBot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: Claude-User
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: PerplexityBot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: Perplexity-User
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: Applebot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: Applebot-Extended
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: CCBot
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 User-agent: meta-externalagent
 Allow: /
+Allow: /api/og
 Disallow: /api/
 
 Sitemap: https://thewaybible.app/sitemap.xml

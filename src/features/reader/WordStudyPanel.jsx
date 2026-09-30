@@ -1,3 +1,6 @@
+import { createPortal } from "react-dom";
+import useMobileDialog from "../../hooks/useMobileDialog";
+import { translationList } from "../../utils/lexiconText";
 import { useState, useEffect } from "react";
 import DictionaryPeek from "../../components/DictionaryPeek";
 import LexiconExtra from "../../components/LexiconExtra";
@@ -25,6 +28,8 @@ export default function WordStudyPanel({ wordInfo, onClose }) {
   const t = useT();
   const [activeTab, setActiveTab] = useState("definition");
 
+  const dialogRef = useMobileDialog(!!wordInfo, onClose);
+
   const TABS = [
     { id: "definition", label: t("wordStudy.tabDefinition") },
     { id: "dictionaries", label: t("wordStudy.tabDictionaries") },
@@ -40,11 +45,11 @@ export default function WordStudyPanel({ wordInfo, onClose }) {
 
   // On desktop, don't show the popup — side panel handles it
   // On mobile, show the popup modal
-  return (
+  return createPortal(
     <>
       <div className="fixed inset-0 bg-black/30 z-40 md:hidden" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-end md:hidden pointer-events-none">
-        <div className="bg-white rounded-t-2xl shadow-2xl flex flex-col w-full pointer-events-auto animate-slide-up" style={{ height: "75vh" }}>
+        <div ref={dialogRef} role="dialog" aria-modal="true" aria-label={`Word study: ${wordInfo.word}`} tabIndex={-1} className="bg-white rounded-t-2xl shadow-2xl flex flex-col w-full pointer-events-auto animate-slide-up" style={{ height: "75vh" }}>
 
           {/* Header */}
           <div className="px-5 pt-5 pb-3 border-b border-cream-dark flex-shrink-0">
@@ -58,7 +63,7 @@ export default function WordStudyPanel({ wordInfo, onClose }) {
                   <span className="text-[10px] bg-cream-dark text-warm-brown-light px-2 py-0.5 rounded-full">{wordInfo.part_of_speech}</span>
                 )}
               </div>
-              <button onClick={onClose} className="text-warm-brown-light hover:text-warm-brown p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
+              <button type="button" aria-label="Close word study" onClick={onClose} className="text-warm-brown-light hover:text-warm-brown p-2 -mr-2 min-h-[44px] min-w-[44px] flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-5 h-5">
                   <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
@@ -80,7 +85,7 @@ export default function WordStudyPanel({ wordInfo, onClose }) {
             {!isAdded && (
               <div className="flex gap-1 overflow-x-auto -mx-1 px-1 pb-1 scrollbar-hide">
                 {TABS.map((tab) => (
-                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  <button type="button" aria-pressed={activeTab === tab.id} key={tab.id} onClick={() => setActiveTab(tab.id)}
                     className={`whitespace-nowrap px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${activeTab === tab.id ? "bg-gold text-white" : "bg-cream text-warm-brown-light hover:bg-cream-dark"}`}>
                     {tab.label}
                   </button>
@@ -107,7 +112,7 @@ export default function WordStudyPanel({ wordInfo, onClose }) {
           </div>
         </div>
       </div>
-    </>
+    </>, document.body
   );
 }
 
@@ -153,6 +158,7 @@ function UsageList({ text: rawText }) {
 // ── Definition Tab ──
 function DefinitionTab({ word }) {
   const t = useT();
+  const translations = translationList(word);
   return (
     <div className="space-y-5">
       {word.strongs_def && (
@@ -167,10 +173,10 @@ function DefinitionTab({ word }) {
         </Section>
       )}
 
-      {word.kjv_def && (
+      {translations.length > 0 && (
         <Section title={t("wordStudy.kjvRenderings")}>
           <div className="flex flex-wrap gap-1.5">
-            {(word.kjv_translation_list || word.kjv_def.split(",")).map((item, i) => (
+            {translations.map((item, i) => (
               <span key={i} className="text-xs bg-cream-dark px-2.5 py-1 rounded-full text-warm-brown">
                 {clean((typeof item === "string" ? item : "").trim())}
               </span>

@@ -97,7 +97,7 @@ function DesktopSidebar() {
       </Link>
       <nav className="space-y-1" aria-label="Desktop navigation">
         {sidebarLinks.map((link) => {
-          const to = link.matchPrefix ? readPath : link.to;
+          const to = link.matchPrefix === "/read" ? readPath : link.to;
           const isActive = link.end
             ? location.pathname === link.to
             : link.matchPrefix
@@ -135,7 +135,7 @@ export default function Layout() {
     }
   }, [location.pathname]);
 
-  const showTourOnRoute = ["/", "/onboarding", "/home"].includes(location.pathname) || location.pathname.startsWith("/read/");
+  const showTourOnRoute = ["/", "/onboarding", "/home"].includes(location.pathname);
 
   return (
     <div className="min-h-screen bg-cream flex flex-col">

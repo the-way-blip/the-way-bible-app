@@ -1,3 +1,4 @@
+/* global __BUILD_ID__ */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useApp, COLOR_THEMES } from "../stores/AppContext";
@@ -296,7 +297,7 @@ export default function Settings() {
       </SettingsSection>
 
       <p className="text-[10px] text-warm-brown-light/40 text-center mt-4 mb-8">
-        TheWay Bible App v1.0
+        TheWay Bible App · Build {__BUILD_ID__}
       </p>
     </div>
   );
@@ -484,7 +485,7 @@ function DataManagement({ t }) {
       data.readingProgress = JSON.parse(localStorage.getItem("readingProgress") || "{}");
       data.userProfile = JSON.parse(localStorage.getItem("userProfile") || "null");
       data.exportedAt = new Date().toISOString();
-      data.appVersion = "1.0";
+      data.appVersion = __BUILD_ID__;
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob);

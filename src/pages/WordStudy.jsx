@@ -1,7 +1,9 @@
+import { firstMeaningfulText } from "../utils/lexiconText";
 import { useState, useEffect } from "react";
 import LexiconExtra from "../components/LexiconExtra";
 import { useParams, Link } from "react-router-dom";
 import { lookupConcordance, lookupWebsters } from "../services/concordanceService";
+import usePageMeta from "../hooks/usePageMeta";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import useT from "../hooks/useT";
 
@@ -15,6 +17,7 @@ function clean(text) {
 export default function WordStudy() {
   const { strongsId } = useParams();
   useDocumentTitle(strongsId ? `Word Study: ${strongsId}` : "Word Study");
+  usePageMeta({ ogTitle: `Word Study: ${strongsId} — TheWay Bible App`, description: `Explore Strong’s ${strongsId}: original-language definitions, KJV translations, and Scripture references.` });
   const t = useT();
   const [entry, setEntry] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -67,7 +70,7 @@ export default function WordStudy() {
             : lexEntry?.Heb_word || lexEntry?.lemma || osEntry?.lemma || "",
           transliteration: lexEntry?.transliteration || lexEntry?.translit || osEntry?.translit || osEntry?.xlit || "",
           pronunciation: lexEntry?.pronunciation || lexEntry?.pron || osEntry?.pron || "",
-          strongs_def: clean(lexEntry?.strongs_def || osEntry?.strongs_def || ""),
+          strongs_def: firstMeaningfulText(clean(lexEntry?.strongs_def), clean(osEntry?.strongs_def)),
           kjv_def: lexEntry?.kjv_def || osEntry?.kjv_def || "",
           part_of_speech: lexEntry?.part_of_speech || "",
           derivation: lexEntry?.derivation || lexEntry?.root_word || osEntry?.derivation || "",

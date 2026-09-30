@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { dbGetAll, dbPut, dbDelete } from "../hooks/useDB";
 import { syncPush, syncDelete } from "../services/supabaseSync";
-import { submitPrayerRequest } from "../services/ghlService";
 import { useAuth } from "../stores/AuthContext";
 import { useToast } from "../components/Toast";
 import SkeletonList from "../components/SkeletonList";
@@ -46,7 +45,7 @@ export default function PrayerList() {
   const [showAnswered, setShowAnswered] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const showToast = useToast();
-  const { user, profile } = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     loadPrayers();
@@ -128,14 +127,6 @@ export default function PrayerList() {
     };
     await dbPut("journal", record);
     syncPush("journal", record, user?.id);
-    if (addType === "request" && user?.email) {
-      submitPrayerRequest({
-        email: user.email,
-        name: profile?.name || user?.user_metadata?.name || "",
-        title: record.title,
-        details: record.content,
-      }).catch(() => {});
-    }
     closeForm();
     showToast("Prayer added");
     loadPrayers();

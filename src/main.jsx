@@ -13,9 +13,8 @@ if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     environment: Capacitor.isNativePlatform() ? "ios" : "web",
-    // Attach IP + user email/identity to events — helps reproduce crashes
-    // from real user reports. Disclosed in our privacy policy.
-    sendDefaultPii: true,
+    // Do not attach account identity or IP addresses by default.
+    sendDefaultPii: false,
     // Performance traces: sample 10% of sessions (free tier-friendly).
     tracesSampleRate: 0.1,
     integrations: [Sentry.browserTracingIntegration()],

@@ -1,24 +1,7 @@
+import process from "node:process";
 import { rateLimit, checkOrigin } from "./_rateLimit.js";
 
-// GHL's inbound webhook trigger doesn't auto-map city/state to contact fields,
-// so we also call the Contacts upsert API directly to ensure they land.
-async function upsertCityState(pitToken, locationId, email, city, state) {
-  if (!email || (!city && !state)) return;
-  await fetch("https://services.leadconnectorhq.com/contacts/upsert", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${pitToken}`,
-      Version: "2021-07-28",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      locationId,
-      email,
-      ...(city && { city }),
-      ...(state && { state }),
-    }),
-  });
-}
+import { devotionalPayload } from "./_devotionalConsent.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -36,31 +19,19 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: "Too many requests" });
   }
 
+  const payload = devotionalPayload(req.body);
+  if (!payload) return res.status(400).json({ error: "An explicit devotional subscription is required" });
   const webhookUrl = process.env.GHL_WEBHOOK_URL;
-  if (!webhookUrl) {
-    // Silently succeed — CRM integration is optional
-    return res.status(200).json({ ok: true });
-  }
-
-  const { email, city, state } = req.body;
-
+  if (!webhookUrl) return res.status(200).json({ ok: true });
   try {
-    const pitToken = process.env.GHL_PIT_TOKEN;
-    const locationId = process.env.GHL_LOCATION_ID;
-
-    await Promise.all([
-      fetch(webhookUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ source: "The Way App", ...req.body }),
-      }),
-      pitToken && locationId
-        ? upsertCityState(pitToken, locationId, email, city, state).catch(() => {})
-        : Promise.resolve(),
-    ]);
-
-    res.status(200).json({ ok: true });
+    const response = await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!response.ok) return res.status(502).json({ error: "Subscription unavailable" });
+    return res.status(200).json({ ok: true });
   } catch {
-    res.status(200).json({ ok: true }); // Don't expose CRM errors to client
+    return res.status(502).json({ error: "Subscription unavailable" });
   }
 }

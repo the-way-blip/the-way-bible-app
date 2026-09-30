@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { track } from "@vercel/analytics";
 import { useAuth } from "../stores/AuthContext";
 import { useApp, COLOR_THEMES } from "../stores/AppContext";
-import { submitOnboardingComplete } from "../services/ghlService";
 import FONT_OPTIONS from "../data/fontOptions";
 import useT from "../hooks/useT";
 
@@ -18,7 +17,7 @@ const READING_PLANS = {
 export default function Onboarding() {
   const t = useT();
   const navigate = useNavigate();
-  const { saveProfile, user, profile } = useAuth();
+  const { saveProfile } = useAuth();
   const { toggleStudyMode, studyMode, toggleDarkMode, darkMode, setFontFamily, fontFamily, showVerseNumbers, toggleVerseNumbers, colorTheme, setColorTheme } = useApp();
 
   const SURVEY_STEPS = [
@@ -110,24 +109,9 @@ export default function Onboarding() {
     saveProfile(profileData);
     localStorage.setItem("onboardingComplete", "true");
     track("onboarding_completed", {
-      faith_stage: answers.faithStage,
       goals_count: (answers.goals || []).length,
       topics_count: (answers.topics || []).length,
     });
-
-    // Push the survey results to GHL so we can segment by faith stage,
-    // goals, and topic interest. Fire-and-forget — never blocks the UI.
-    if (user?.email) {
-      submitOnboardingComplete({
-        email: user.email,
-        name: profile?.name || user?.user_metadata?.name || "",
-        faithStage: answers.faithStage,
-        goals: answers.goals || [],
-        topics: answers.topics || [],
-        readingPlan: plan.plan,
-        suggestedBook: plan.book,
-      });
-    }
 
     navigate(`/read/${encodeURIComponent(plan.book)}/1`);
   };

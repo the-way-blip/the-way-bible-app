@@ -27,13 +27,13 @@ export default defineConfig({
       registerType: 'prompt',
       includeAssets: ['favicon.svg', 'icon-192.svg', 'og-image.svg', 'icon-192.png', 'icon-512.png', 'app-icon-1024.png'],
       manifest: {
-        name: 'The Way — Read the Bible. Follow Jesus.',
-        short_name: 'The Way',
+        name: 'TheWay Bible App',
+        short_name: 'TheWay',
         description: 'Study the King James Bible with Strong\'s word study, commentaries, memory verses, and journaling.',
-        start_url: '/',
+        start_url: '/home',
         scope: '/',
         display: 'standalone',
-        orientation: 'portrait',
+        orientation: 'any',
         background_color: '#faf7f2',
         theme_color: '#c9a84c',
         categories: ['education', 'books'],
@@ -46,16 +46,17 @@ export default defineConfig({
         ],
       },
       workbox: {
+        importScripts: ['/clear-private-cache.js'],
         // Pre-cache the app shell
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         // The map engine and the geocoding dataset are excluded from precache.
         // mapbox-gl is loaded as a UMD global from /mapbox-gl.js (public/).
         // Mapbox's terms also don't allow stashing their tiles offline.
-        globIgnores: ['**/mapbox-gl.js', '**/mapbox-gl.css', '**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
+        globIgnores: ['landing/**','**/mapbox-gl.js', '**/mapbox-gl.css', '**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Server-rendered SEO pages (/bible/*, /verses-about/*, sitemaps) must
         // never be answered with the app shell by the service worker.
-        navigateFallbackDenylist: [/^\/bible(\/|$)/, /^\/verses-about(\/|$)/, /^\/sitemap/, /^\/api\//],
+        navigateFallbackDenylist: [/^\/verse-of-the-day(\/|$)/,/^\/bible(\/|$)/, /^\/verses-about(\/|$)/, /^\/sitemap/, /^\/api\//],
         // Runtime caching strategies
         runtimeCaching: [
           {
@@ -97,17 +98,7 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
-          {
-            // Supabase API — network first, fall back to cache
-            urlPattern: /^https:\/\/.*\.supabase\.co\//,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-api',
-              expiration: { maxEntries: 50, maxAgeSeconds: 7 * 24 * 60 * 60 },
-              cacheableResponse: { statuses: [0, 200] },
-              networkTimeoutSeconds: 5,
-            },
-          },
+
         ],
       },
     }),

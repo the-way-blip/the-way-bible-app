@@ -10,7 +10,7 @@ export default function usePageMeta({ title, description, ogTitle, ogDescription
       let el = document.querySelector(selector);
       const prev = el?.getAttribute(attr);
       if (!el) {
-        el = document.createElement("meta");
+        el = document.createElement(selector.startsWith("link") ? "link" : "meta");
         const [, key, prop] = selector.match(/\[([^=]+)="([^"]+)"\]/) || [];
         if (key && prop) el.setAttribute(key, prop);
         document.head.appendChild(el);
@@ -37,6 +37,7 @@ export default function usePageMeta({ title, description, ogTitle, ogDescription
       for (const [sel, attr, val] of restore) {
         const el = document.querySelector(sel);
         if (el && val) el.setAttribute(attr, val);
+        else if (el) el.remove();
       }
     };
   }, [title, description, ogTitle, ogDescription]);

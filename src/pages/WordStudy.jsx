@@ -4,6 +4,7 @@ import LexiconExtra from "../components/LexiconExtra";
 import { useParams, Link } from "react-router-dom";
 import { lookupConcordance, lookupWebsters } from "../services/concordanceService";
 import usePageMeta from "../hooks/usePageMeta";
+import { getLexicon, getStrongs } from "../services/wordStudyLocal";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import useT from "../hooks/useT";
 
@@ -41,18 +42,13 @@ export default function WordStudy() {
         const isGreek = strongsId.startsWith("G");
         const num = strongsId.slice(1);
 
-        // Load main lexicon
-        const lexRes = await fetch("/data/lexicon.json");
-        const lexicon = await lexRes.json();
-        const lexEntry = lexicon[strongsId];
+        // Both loaders are promise-cached in wordStudyLocal, so opening a
+        // second word does not refetch the 5.4MB lexicon or the 2MB Strong's file.
+        const lexicon = await getLexicon();
+        const lexEntry = lexicon?.[strongsId];
 
-        // Load openscriptures data for richer info
-        let osEntry = null;
-        try {
-          const osRes = await fetch(`/data/strongs/${isGreek ? "greek" : "hebrew"}.json`);
-          const osData = await osRes.json();
-          osEntry = osData[strongsId];
-        } catch {}
+        const osData = await getStrongs(isGreek ? "greek" : "hebrew");
+        const osEntry = osData?.[strongsId] || null;
 
         if (cancelled) return;
 

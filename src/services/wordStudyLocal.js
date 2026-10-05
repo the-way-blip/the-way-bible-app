@@ -2,33 +2,65 @@ import { firstMeaningfulText } from "../utils/lexiconText";
 // Local word study service — uses bundled KJV interlinear data + Strong's lexicon
 // No API key needed
 
-let lexiconCache = null;
-let booksMapCache = null;
+// Every loader below caches the PROMISE, not the parsed value, so that two
+// callers racing on the same file share one request instead of both fetching.
+// These files are big — lexicon.json is 5.4MB, strongs/hebrew.json 2.0MB — and
+// before this they were refetched on every word tap. Over 8 days that was
+// ~96GB of egress for the two Strong's files alone.
+let lexiconPromise = null;
+let booksMapPromise = null;
+const bookPromises = new Map();
+const strongsPromises = new Map();
 
-async function getLexicon() {
-  if (lexiconCache) return lexiconCache;
-  const res = await fetch("/data/lexicon.json");
-  lexiconCache = await res.json();
-  return lexiconCache;
-}
-
-async function getBooksMap() {
-  if (booksMapCache) return booksMapCache;
-  const res = await fetch("/data/books.json");
-  const data = await res.json();
-  // Convert [{Genesis: "Gen"}, ...] to {genesis: "Gen", ...}
-  booksMapCache = {};
-  for (const entry of data.books) {
-    const [name, abbrev] = Object.entries(entry)[0];
-    booksMapCache[name.toLowerCase()] = abbrev;
+export function getStrongs(lang) {
+  if (!strongsPromises.has(lang)) {
+    strongsPromises.set(
+      lang,
+      fetch(`/data/strongs/${lang}.json`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => { strongsPromises.delete(lang); return null; }),
+    );
   }
-  return booksMapCache;
+  return strongsPromises.get(lang);
 }
 
-async function getBookData(abbrev) {
-  const res = await fetch(`/data/${abbrev}.json`);
-  if (!res.ok) return null;
-  return res.json();
+export function getLexicon() {
+  if (!lexiconPromise) {
+    lexiconPromise = fetch("/data/lexicon.json")
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => { lexiconPromise = null; return null; });
+  }
+  return lexiconPromise;
+}
+
+function getBooksMap() {
+  if (!booksMapPromise) {
+    booksMapPromise = fetch("/data/books.json")
+      .then((r) => r.json())
+      .then((data) => {
+        // Convert [{Genesis: "Gen"}, ...] to {genesis: "Gen", ...}
+        const map = {};
+        for (const entry of data.books) {
+          const [name, abbrev] = Object.entries(entry)[0];
+          map[name.toLowerCase()] = abbrev;
+        }
+        return map;
+      })
+      .catch(() => { booksMapPromise = null; return {}; });
+  }
+  return booksMapPromise;
+}
+
+function getBookData(abbrev) {
+  if (!bookPromises.has(abbrev)) {
+    bookPromises.set(
+      abbrev,
+      fetch(`/data/${abbrev}.json`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => { bookPromises.delete(abbrev); return null; }),
+    );
+  }
+  return bookPromises.get(abbrev);
 }
 
 // Parse the tagged KJV text: "In the beginning[H7225] God[H430] created[H1254]..."
@@ -194,18 +226,8 @@ async function enrichWithOpenScriptures(words) {
   const needsGreek = words.some((w) => w.strongs?.startsWith("G"));
   const needsHebrew = words.some((w) => w.strongs?.startsWith("H"));
 
-  if (needsGreek) {
-    try {
-      const res = await fetch("/data/strongs/greek.json");
-      greekDict = await res.json();
-    } catch {}
-  }
-  if (needsHebrew) {
-    try {
-      const res = await fetch("/data/strongs/hebrew.json");
-      hebrewDict = await res.json();
-    } catch {}
-  }
+  if (needsGreek) greekDict = await getStrongs("greek");
+  if (needsHebrew) hebrewDict = await getStrongs("hebrew");
 
   return words.map((w) => {
     if (w.added || !w.strongs) return w;

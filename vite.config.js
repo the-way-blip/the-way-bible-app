@@ -54,9 +54,13 @@ export default defineConfig({
         // Mapbox's terms also don't allow stashing their tiles offline.
         globIgnores: ['landing/**','**/mapbox-gl.js', '**/mapbox-gl.css', '**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
-        // Server-rendered SEO pages (/bible/*, /verses-about/*, sitemaps) must
-        // never be answered with the app shell by the service worker.
-        navigateFallbackDenylist: [/^\/verse-of-the-day(\/|$)/,/^\/bible(\/|$)/, /^\/verses-about(\/|$)/, /^\/sitemap/, /^\/api\//],
+        // Server-rendered SEO pages must never be answered with the app shell
+        // by the service worker: it would serve index.html from cache, the SPA
+        // would boot on a route it does not have, and the visitor would get the
+        // app's own 404 even though the server returned the real page.
+        // THIS LIST AND THE SPA CATCH-ALL IN vercel.json HAVE TO AGREE. Adding a
+        // new SEO prefix means adding it in both places.
+        navigateFallbackDenylist: [/^\/verse-of-the-day(\/|$)/,/^\/bible(\/|$)/, /^\/bible-names(\/|$)/, /^\/verses-about(\/|$)/, /^\/sitemap/, /^\/api\//],
         // Runtime caching strategies
         runtimeCaching: [
           {

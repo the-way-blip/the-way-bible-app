@@ -24,6 +24,7 @@ import { votdRef } from "./votd.js";
 import { BOOK_INTROS } from "./books-intro.js";
 import { VERSE_MEANINGS } from "./meanings.js";
 import { TOPIC_INTROS } from "./topic-intros.js";
+import { NAMES } from "./names.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -583,6 +584,120 @@ ${promo()}`;
   return ok(shell({ title: `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: first ? `${SITE}/api/og?ref=${encodeURIComponent(first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
 }
 
+const NAME_BY_SLUG = new Map(NAMES.map((n) => [n.name.toLowerCase(), n]));
+// The spelling to look for in the KJV text, which is not always the modern one.
+const nameKey = (n) => (n.kjv || n.name).toLowerCase();
+const nameUrl = (n) => `/bible-names/${n.name.toLowerCase()}`;
+
+/**
+ * Every verse each name appears in, found by scanning the KJV text once.
+ * Built lazily and cached: one pass over ~31k verses covers all 117 names,
+ * so the first name page pays for it and the rest are free. Matching is on
+ * whole lower-cased words, so "Dan" does not match "Daniel".
+ */
+let _nameHits;
+function nameHits() {
+  if (_nameHits) return _nameHits;
+  _nameHits = new Map();
+  for (const n of NAMES) _nameHits.set(nameKey(n), []);
+  for (const b of books()) {
+    b.chapters.forEach((ch, ci) => ch.forEach((txt, vi) => {
+      const words = plain(txt).toLowerCase().match(/[a-z]+/g);
+      if (!words) return;
+      const seen = new Set();
+      for (const w of words) {
+        if (!_nameHits.has(w) || seen.has(w)) continue;
+        seen.add(w);
+        _nameHits.get(w).push([b, ci + 1, vi + 1]);
+      }
+    }));
+  }
+  return _nameHits;
+}
+
+/** "Hebrew · daw-veed'" — the origin line, pronunciation only where Strong's has one. */
+const nameOrigin = (n) => `${n.lang}${n.pron ? ` · ${n.pron}` : ""}`;
+
+function namePage(n) {
+  const hits = nameHits().get(nameKey(n)) || [];
+  const shown = hits.slice(0, 12);
+  const topic = n.topic ? TOPIC_BY_SLUG.get(n.topic) : null;
+  const first = hits[0];
+  // Names that share a meaning cross-link, except "Uncertain", which is the
+  // absence of a meaning rather than one they have in common.
+  const sameMeaning = /^Uncertain/.test(n.meaning) ? []
+    : NAMES.filter((o) => o !== n && o.meaning === n.meaning).slice(0, 6);
+  const chips = [
+    ["Meaning", n.meaning],
+    ["Origin", n.lang],
+    n.pron ? ["Said", n.pron] : null,
+    ["Strong's", n.strongs],
+    ["In the KJV", hits.length ? `${hits.length} verse${hits.length === 1 ? "" : "s"}` : "not as a name"],
+  ].filter(Boolean);
+
+  const h = `${crumbs([["Home", "/"], ["Bible names", "/bible-names"], [n.name, nameUrl(n)]])}
+<h1>${esc(n.name)} <span class="badge">${esc(n.meaning)}</span></h1>
+<p class="sub">${esc(n.name)} is a ${esc(n.lang)} name meaning ${esc(n.meaning.toLowerCase())}${n.pron ? `, said ${esc(n.pron)}` : ""}. ${esc(n.note)}</p>
+<div class="chips">${chips.map(([k, v]) => `<span><b>${esc(k)}:</b> ${esc(v)}</span>`).join("")}</div>
+<h2>Where the name comes from</h2>
+<div class="meaning"><p>${n.lemma ? `<span style="font-size:22px">${esc(n.lemma)}</span>${n.xlit ? ` <i>${esc(n.xlit)}</i>` : ""} — ` : ""}${esc(n.gloss)}.${n.source ? ` Strong's ${esc(n.strongs)} derives it: ${esc(n.source)}.` : ""}</p></div>
+${hits.length ? `<h2>${esc(n.name)} in the King James Version</h2>
+${n.kjv ? `<p class="sub">The King James Version spells it ${esc(n.kjv)}.</p>` : ""}
+<p class="sub">The name appears in ${hits.length} verse${hits.length === 1 ? "" : "s"}${first ? `, first at <a href="${verseUrl(first[0], first[1], first[2], first[2])}">${esc(refLabel(first[0], first[1], first[2], first[2]))}</a>` : ""}.</p>
+<div>${shown.map(([b, c, v]) => `<div class="topicv"><p class="r"><a href="${verseUrl(b, c, v, v)}">${esc(refLabel(b, c, v, v))}</a> <span style="font-weight:400;color:var(--brown-light)">· ${VERSION}</span></p><blockquote>${verseHtml(b.chapters[c - 1][v - 1])}</blockquote></div>`).join("")}</div>
+${hits.length > shown.length ? `<p style="font-size:14px">and ${hits.length - shown.length} more.</p>` : ""}` : ""}
+${topic ? `<h2>Who bore the name</h2><p>Read the story: <a href="/verses-about/${topic.slug}">${esc(topicPhrase(topic))}</a>.</p>` : ""}
+${sameMeaning.length ? `<h2>Other names meaning ${esc(n.meaning.toLowerCase())}</h2><div class="chips">${sameMeaning.map((o) => `<a href="${nameUrl(o)}">${esc(o.name)}</a>`).join("")}</div>` : ""}
+<p style="font-size:14px;margin-top:20px"><a href="/bible-names/${n.sex === "boy" ? "boys" : "girls"}">All ${n.sex === "boy" ? "boys" : "girls"}' names from the Bible →</a> · <a href="/bible-names">All ${NAMES.length} names</a></p>
+${promo(first ? first[0] : undefined, first ? first[1] : undefined, first ? first[2] : undefined)}`;
+
+  const description = `${n.name} is a ${n.lang} name meaning ${n.meaning.toLowerCase()}${n.pron ? `, said ${n.pron}` : ""}. ${n.gloss}. ${hits.length ? `The name appears in ${hits.length} verse${hits.length === 1 ? "" : "s"} of the King James Version, quoted in full.` : ""}`;
+  const jsonld = webPageLd([
+    { "@type": "WebPage", name: `${n.name} — meaning and verses`, url: SITE + nameUrl(n), description, isPartOf: { "@id": SITE + "/#website" } },
+    { "@type": "FAQPage", mainEntity: [{ "@type": "Question", name: `What does the name ${n.name} mean?`,
+      acceptedAnswer: { "@type": "Answer", text: `${n.name} is a ${n.lang} name meaning ${n.meaning.toLowerCase()}. ${n.gloss}.` } }] },
+    breadcrumbLd([["Home", "/"], ["Bible names", "/bible-names"], [n.name, nameUrl(n)]]),
+  ]);
+  return ok(shell({ title: `${n.name} — Meaning, Origin and Bible Verses (KJV) | ${SITE_NAME}`, description, canonical: nameUrl(n), h, jsonld, pageType: "bible-name", ref: n.name }));
+}
+
+function namesList(sex) {
+  const arr = NAMES.filter((n) => n.sex === sex);
+  const label = sex === "boy" ? "boys" : "girls";
+  const Label = sex === "boy" ? "Boy" : "Girl";
+  const canonical = `/bible-names/${label}`;
+  const h = `${crumbs([["Home", "/"], ["Bible names", "/bible-names"], [`${Label}s' names`, canonical]])}
+<h1>${arr.length} ${Label}s' Names from the Bible <span class="badge">with meanings</span></h1>
+<div class="meaning"><p>Every name here belongs to somebody in the King James Version, and every meaning is traced to the Hebrew or Greek behind it rather than guessed at. Where Strong's calls a derivation uncertain, this says so instead of inventing one.</p></div>
+<div class="books">${arr.map((n) => `<a href="${nameUrl(n)}">${esc(n.name)} <small>· ${esc(n.meaning)}</small></a>`).join("")}</div>
+<p style="font-size:14px;margin-top:20px"><a href="/bible-names/${sex === "boy" ? "girls" : "boys"}">${sex === "boy" ? "Girls" : "Boys"}' names from the Bible →</a> · <a href="/bible-names">All ${NAMES.length} names</a></p>
+${promo()}`;
+  const description = `${arr.length} ${label}' names from the Bible with their meanings and the verses they appear in — ${arr.slice(0, 6).map((n) => `${n.name} (${n.meaning.toLowerCase()})`).join(", ")} and more. Each meaning traced to the Hebrew or Greek.`;
+  const jsonld = webPageLd([
+    { "@type": "CollectionPage", name: `${Label}s' names from the Bible`, url: SITE + canonical, description, isPartOf: { "@id": SITE + "/#website" },
+      mainEntity: { "@type": "ItemList", numberOfItems: arr.length, itemListElement: arr.map((n, i) => ({ "@type": "ListItem", position: i + 1, name: n.name, url: SITE + nameUrl(n) })) } },
+    breadcrumbLd([["Home", "/"], ["Bible names", "/bible-names"], [`${Label}s' names`, canonical]]),
+  ]);
+  return ok(shell({ title: `${arr.length} ${Label}s' Names from the Bible, with Meanings | ${SITE_NAME}`, description, canonical, h, jsonld, pageType: "bible-names-list" }));
+}
+
+function namesIndex() {
+  const letters = [...new Set(NAMES.map((n) => n.name[0]))].sort();
+  const h = `${crumbs([["Home", "/"], ["Bible names", "/bible-names"]])}
+<h1>${NAMES.length} Bible Names and What They Mean <span class="badge">KJV</span></h1>
+<div class="meaning"><p>Names from the Bible with the Hebrew or Greek behind them, what each one means, and every verse the name appears in. The meanings are traced to the original word rather than guessed at — and where the derivation is genuinely uncertain, the page says so instead of inventing something.</p></div>
+<div class="chips"><a href="/bible-names/boys">Boys' names (${NAMES.filter((n) => n.sex === "boy").length})</a><a href="/bible-names/girls">Girls' names (${NAMES.filter((n) => n.sex === "girl").length})</a></div>
+${letters.map((L) => `<h2>${esc(L)}</h2><div class="books">${NAMES.filter((n) => n.name[0] === L).map((n) => `<a href="${nameUrl(n)}">${esc(n.name)} <small>· ${esc(n.meaning)}</small></a>`).join("")}</div>`).join("")}
+${promo()}`;
+  const description = `${NAMES.length} names from the Bible with their meanings, pronunciation and the verses they appear in — David (beloved), Hannah (favoured), Caleb, Asher, Naomi and more. Every meaning traced to the Hebrew or Greek.`;
+  const jsonld = webPageLd([
+    { "@type": "CollectionPage", name: "Bible names and their meanings", url: SITE + "/bible-names", description, isPartOf: { "@id": SITE + "/#website" },
+      mainEntity: { "@type": "ItemList", numberOfItems: NAMES.length, itemListElement: NAMES.map((n, i) => ({ "@type": "ListItem", position: i + 1, name: n.name, url: SITE + nameUrl(n) })) } },
+    breadcrumbLd([["Home", "/"], ["Bible names", "/bible-names"]]),
+  ]);
+  return ok(shell({ title: `${NAMES.length} Bible Names and Their Meanings (KJV) | ${SITE_NAME}`, description, canonical: "/bible-names", h, jsonld, pageType: "bible-names-index" }));
+}
+
 function votdPage() {
   const ref = votdRef();
   const r = parseRef(ref);
@@ -702,6 +817,8 @@ function sitemapFile(name) {
   if (name === "pages") {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
+    urls.push(["/bible-names", "0.9"], ["/bible-names/boys", "0.8"], ["/bible-names/girls", "0.8"]);
+    for (const n of NAMES) urls.push([`/bible-names/${n.name.toLowerCase()}`, "0.7"]);
     for (const b of books()) { urls.push([bookUrl(b), "0.7"]); b.chapters.forEach((_, i) => urls.push([chapterUrl(b, i + 1), "0.6"])); }
     return xml(urlset(urls));
   }
@@ -726,6 +843,14 @@ export function render(q = {}) {
   if (kind === "sitemap") return sitemapFile(String(q.file || "").replace(/\.xml$/, ""));
   if (kind === "topics") return topicsIndex();
   if (kind === "votd") return votdPage();
+  if (kind === "names") return namesIndex();
+  if (kind === "name") {
+    const raw = String(q.name || "").toLowerCase();
+    if (raw === "boys") return namesList("boy");
+    if (raw === "girls") return namesList("girl");
+    const n = NAME_BY_SLUG.get(raw);
+    return n ? namePage(n) : notFound();
+  }
   if (kind === "search") return searchPage(q.q);
   if (kind === "topic") {
     const slug = String(q.topic || "").toLowerCase();

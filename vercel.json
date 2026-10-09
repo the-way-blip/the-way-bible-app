@@ -33,6 +33,14 @@
       "destination": "/api/bible-page?kind=topics"
     },
     {
+      "source": "/bible-names",
+      "destination": "/api/bible-page?kind=names"
+    },
+    {
+      "source": "/bible-names/:name",
+      "destination": "/api/bible-page?kind=name&name=:name"
+    },
+    {
       "source": "/verse-of-the-day",
       "destination": "/api/bible-page?kind=votd"
     },
@@ -57,7 +65,7 @@
       "destination": "/api/app-page?page=login"
     },
     {
-      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|verses-about|verse-of-the-day|sitemap).*)",
+      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|sitemap).*)",
       "destination": "/index.html"
     }
   ],

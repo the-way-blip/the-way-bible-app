@@ -31,19 +31,21 @@ export default function NarratedAudio({ audioRef, book, chapter, startVerse, pla
     let timer = 0;
     const a = audioRef.current;
     setMissing(false);
-    getChapterAudio(book, chapter).then((data) => {
+    getChapterAudio(book, chapter).then((first) => {
       if (cancelled || !a) return;
-      if (!data) { setMissing(true); setInfo(null); infoRef.current = null; setStatus("ready"); a.pause(); return; }
-      setInfo(data); infoRef.current = data;
-      const sameFile = a.currentSrc === data.url || a.src === data.url;
-      const continuing = sameFile && !a.paused && a.currentTime >= data.start - 3 && a.currentTime < data.end;
+      if (!first) { setMissing(true); setInfo(null); infoRef.current = null; setStatus("ready"); a.pause(); return; }
+      let data = first;
       const v = seekVerse.current;
       seekVerse.current = null;
+      const adopt = (d) => { data = d; setInfo(d); infoRef.current = d; };
+      adopt(first);
+      const sameFile = a.currentSrc === data.url || a.src === data.url;
+      const continuing = sameFile && !a.paused && a.currentTime >= data.start - 3 && a.currentTime < data.end;
       if (continuing && !v) return;               // rolled straight on from the previous chapter
-      const from = v ? (data.verses[v - 1] ?? data.start) : data.start;
+      const from = () => (v ? (data.verses[v - 1] ?? data.start) : data.start);
       const go = () => {
         clearTimeout(timer);
-        a.currentTime = from;
+        a.currentTime = from();
         a.playbackRate = speed;
         a.play().catch(() => { setPlaying(false); setStatus("ready"); }); // blocked: the play button still works
       };
@@ -52,15 +54,20 @@ export default function NarratedAudio({ audioRef, book, chapter, startVerse, pla
         setStatus("loading");
         let attempts = 0;
         const load = () => {
-          a.src = data.url;
-          a.addEventListener("loadedmetadata", go, { once: true });
-          a.play().catch(() => {}); // start fetching while still close to the tap; go() seeks once metadata arrives
-          timer = setTimeout(() => {
-            if (cancelled || a.readyState >= 1) return;
+          const failed = () => {
+            clearTimeout(timer);
             a.removeEventListener("loadedmetadata", go);
+            a.removeEventListener("error", failed);
+            if (cancelled || a.readyState >= 1) return;
+            if (data.fallback) { adopt(data.fallback); load(); return; } // our host failed: use archive.org
             if (++attempts < RETRIES) load(); // a stalled first request usually succeeds on the next try
             else setStatus("error");
-          }, STALL_MS);
+          };
+          a.src = data.url;
+          a.addEventListener("loadedmetadata", go, { once: true });
+          a.addEventListener("error", failed, { once: true });
+          a.play().catch(() => {}); // start fetching while still close to the tap; go() seeks once metadata arrives
+          timer = setTimeout(failed, STALL_MS);
         };
         load();
       }
@@ -90,6 +97,16 @@ export default function NarratedAudio({ audioRef, book, chapter, startVerse, pla
   }, [verse, book, chapter, follow]);
   useEffect(() => () => document.querySelectorAll(".verse-playing").forEach((el) => el.classList.remove("verse-playing")), []);
 
+  // Moving on must happen once per chapter, and since self-hosting there are
+  // two triggers for it. An archive.org file holds many chapters, so the end of
+  // one is spotted by watching currentTime; a per-chapter file also raises
+  // `ended` a tenth of a second later. Both firing skipped a chapter.
+  const advance = useCallback(() => {
+    if (!infoRef.current) return;   // already advanced for this chapter
+    infoRef.current = null;
+    onChapterEnd?.();               // reader navigates; the load effect continues playback
+  }, [onChapterEnd]);
+
   const onTime = useCallback(() => {
     const a = audioRef.current, d = infoRef.current;
     if (!a || !d) return;
@@ -97,11 +114,8 @@ export default function NarratedAudio({ audioRef, book, chapter, startVerse, pla
     let v = 1;
     for (let i = 0; i < d.verses.length; i++) if (d.verses[i] <= t + 0.15) v = i + 1;
     setVerse(t >= d.start ? v : null);
-    if (t >= d.end - 0.1 && !a.paused) {
-      infoRef.current = null;
-      onChapterEnd?.();          // reader navigates; the load effect continues playback
-    }
-  }, [onChapterEnd, audioRef]);
+    if (t >= d.end - 0.1 && !a.paused) advance();
+  }, [advance, audioRef]);
 
   // Element events (the <audio> lives in AudioProvider)
   useEffect(() => {
@@ -114,8 +128,10 @@ export default function NarratedAudio({ audioRef, book, chapter, startVerse, pla
       pause: () => setPlaying(false),
       waiting: () => setStatus((s) => (s === "error" ? s : "loading")),
       canplay: () => setStatus((s) => (s === "loading" ? "ready" : s)),
-      error: () => { if (infoRef.current && a.src === infoRef.current.url) setStatus("error"); },
-      ended: () => onChapterEnd?.(),
+      ended: () => advance(),
+      // A failure after the file is already playing — the network dropping
+      // mid-chapter — is not covered by the loader's own error handling.
+      error: () => { if (infoRef.current && a.readyState < 1) setStatus("error"); },
     };
     for (const [k, f] of Object.entries(on)) a.addEventListener(k, f);
     return () => { for (const [k, f] of Object.entries(on)) a.removeEventListener(k, f); };

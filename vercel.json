@@ -57,6 +57,14 @@
       "destination": "/api/bible-page?kind=kjv"
     },
     {
+      "source": "/bible-words",
+      "destination": "/api/bible-page?kind=words"
+    },
+    {
+      "source": "/bible-words/:word",
+      "destination": "/api/bible-page?kind=words&word=:word"
+    },
+    {
       "source": "/strongs",
       "destination": "/api/bible-page?kind=strongs"
     },

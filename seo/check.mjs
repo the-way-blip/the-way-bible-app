@@ -8,7 +8,7 @@ for (const t of TOPICS) for (const ref of t.verses) if (!parseRef(ref)) { consol
 console.log(`topics: ${TOPICS.length}, refs: ${TOPICS.reduce((n, t) => n + t.verses.length, 0)}, unresolved: ${bad}`);
 
 const paths = ["/bible", "/bible/john", "/bible/john/3", "/bible/john/3/16", "/bible/john/3/16-18", "/bible/psalms/23/1", "/bible/psalm/23", "/bible/1-john/4/8", "/bible/1john/4/8",
-  "/bible/genesis/1/1", "/bible/revelation/22/21", "/bible/jude/1/24", "/verses-about", "/verses-about/fear-and-anxiety", "/verses-about/anxiety", "/verses-about/nope", "/bible/john/99", "/bible/john/3/999", "/king-james-bible", "/strongs", "/strongs/g26", "/strongs/h7965", "/strongs/G26", "/strongs/h99999", "/sitemap.xml", "/sitemaps/pages.xml", "/sitemaps/verses-john.xml", "/sitemaps/strongs-greek.xml", "/verse-of-the-day", "/churches", "/churches/rogers-city-baptist-church", "/churches/theway-big-rapids", "/churches/nope"];
+  "/bible/genesis/1/1", "/bible/revelation/22/21", "/bible/jude/1/24", "/verses-about", "/verses-about/fear-and-anxiety", "/verses-about/anxiety", "/verses-about/nope", "/bible/john/99", "/bible/john/3/999", "/king-james-bible", "/bible-words", "/bible-words/let", "/bible-words/selah", "/bible-words/nope", "/strongs", "/strongs/g26", "/strongs/h7965", "/strongs/G26", "/strongs/h99999", "/sitemap.xml", "/sitemaps/pages.xml", "/sitemaps/verses-john.xml", "/sitemaps/strongs-greek.xml", "/verse-of-the-day", "/churches", "/churches/rogers-city-baptist-church", "/churches/theway-big-rapids", "/churches/nope"];
 for (const p of paths) {
   const t0 = Date.now();
   const out = render(routeToQuery(p));

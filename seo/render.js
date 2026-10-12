@@ -28,6 +28,7 @@ import { TOPIC_LISTS } from "./topic-lists.js";
 import { NAMES } from "./names.js";
 import { inviteHtml, inviteJs, INVITE_CSS } from "./invite.js";
 import { KJV_FACTS, KJV_SECTIONS, KJV_FAQ } from "./kjv-story.js";
+import { WORDS } from "./words-archaic.js";
 import { CHURCHES as DIRECTORY, CHURCH_BY_SLUG, churchesByState } from "./churches.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -51,7 +52,7 @@ const CHURCHES = [
 ];
 
 /* ------------------------------------------------------------------ data */
-let _books, _xrefs, _lex, _words, _titles, _bySlug, _byName, _verseTopics, _commentary, _strongs;
+let _books, _xrefs, _lex, _words, _titles, _bySlug, _byName, _verseTopics, _commentary, _strongs, _archaic;
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(DIR, "data", f), "utf8"));
 
 export function books() {
@@ -66,6 +67,7 @@ const lexicon = () => (_lex ??= readJson("lexicon.json"));
 const wordsIndex = () => (_words ??= readJson("words.json"));
 const titlesIndex = () => (_titles ??= readJson("titles.json"));
 const strongsIndex = () => (_strongs ??= readJson("strongs.json"));
+const archaicIndex = () => (_archaic ??= readJson("archaic.json"));
 function commentaryIndex() {
   if (!_commentary) {
     try { _commentary = readJson("commentary.json"); }
@@ -916,6 +918,98 @@ ${gaSearch}${promo()}`;
 /* ------------------------------------------------------------------ sitemaps */
 const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
+/* ------------------------------------------------------------- bible words */
+/**
+ * /bible-words — the King James English a modern reader does not know, or
+ * thinks they know and does not.
+ *
+ * "circumspectly bible definition" already ranks at 6.7 with no page built for
+ * it. Strong's covers the Hebrew and Greek; this covers the English. The
+ * entries that earn the section are not the obsolete ones — a reader knows to
+ * look up "habergeon" — but the words that are still current and have changed
+ * sides, where nobody thinks to look anything up at all.
+ *
+ * Counts and verses come from seo/data/archaic.json, built from the text. Where
+ * a word kept both senses the page shows chosen verses and says so, rather than
+ * listing every occurrence under a heading only some of them belong to.
+ */
+const WORD_BY_SLUG = new Map(WORDS.map((w) => [w.word.replace(/ /g, "-"), w]));
+const wordUrl = (w) => `/bible-words/${w.word.replace(/ /g, "-")}`;
+const KIND_LABEL = {
+  drifted: "Still in use, different meaning",
+  obsolete: "No longer in ordinary English",
+  loan: "Left in Hebrew, Aramaic or Greek",
+};
+
+function bibleWordPage(w) {
+  const e = archaicIndex()[w.word];
+  if (!e) return notFound();
+  const bs = books();
+  const refs = e.refs.map(([bi, c, v]) => [bs[bi], c, v]).filter(([b, c, v]) => b && b.chapters[c - 1] && b.chapters[c - 1][v - 1]);
+  const first = refs[0];
+  const lex = strongsIndex();
+  const behind = e.strongs.map(([id, c]) => [id, lex[id], c]).filter(([, x]) => x);
+  const times = (n) => `${n} time${n === 1 ? "" : "s"}`;
+
+  const faqs = [
+    [`What does "${w.word}" mean in the Bible?`,
+     `In the King James Version ${w.word} means ${w.sense}. ${w.note}`],
+    [`How many times does "${w.word}" appear in the King James Version?`,
+     `${e.n} ${e.n === 1 ? "time" : "times"}${e.forms.length > 1 ? `, counting its other forms (${e.forms.map(([f, c]) => `${f} ${times(c)}`).join(", ")})` : ""}.`],
+    ...(behind.length ? [[`What ${behind[0][0][0] === "H" ? "Hebrew" : "Greek"} word is behind "${w.word}"?`,
+      `Most often ${behind[0][1].lemma}${behind[0][1].xlit ? ` (${behind[0][1].xlit})` : ""}, Strong's ${behind[0][0]}${behind[0][1].def ? `, meaning ${behind[0][1].def}` : ""}.`]] : []),
+  ];
+
+  const related = WORDS.filter((o) => o !== w && o.kind === w.kind).slice(0, 8);
+  const h = `${crumbs([["Home", "/"], ["Bible words", "/bible-words"], [w.word, wordUrl(w)]])}
+<h1>${esc(w.word)} <span class="badge">${esc(w.sense)}</span></h1>
+<p class="lead">${esc(w.note)}</p>
+<p class="facts"><span>Means: <b>${esc(w.sense)}</b></span><span>In the KJV: <b>${esc(times(e.n))}</b></span><span>${esc(KIND_LABEL[w.kind])}</span></p>
+${e.forms.length > 1 ? `<h2>Forms in the text</h2><div class="chips tally">${e.forms.map(([f, c]) => `<span><b>${esc(f)}</b> ${c}&times;</span>`).join("")}</div>` : ""}
+${behind.length ? `<h2>The word behind it</h2>
+<div class="books">${behind.map(([id, x, c]) => `<a href="${strongsUrl(id)}">${esc(x.lemma)} <small>&middot; ${esc(id)}${x.def ? ` &middot; ${esc(snippet(x.def, 40))}` : ""} &middot; ${c}&times;</small></a>`).join("")}</div>` : ""}
+${refs.length ? `<h2>Where it appears</h2>
+<p class="sub">${e.picked
+  ? `${esc(w.word)} appears ${esc(times(e.n))} in the King James Version, mostly in the sense it still carries today. These are the places where it means ${esc(w.sense)}.`
+  : (e.verses > refs.length ? `The first ${refs.length} of ${e.verses} verses.` : `All ${refs.length} verse${refs.length === 1 ? "" : "s"}.`)}</p>
+<div>${refs.map(([b, c, v]) => `<div class="topicv"><p class="r"><a href="${verseUrl(b, c, v, v)}">${esc(refLabel(b, c, v, v))}</a></p><blockquote>${verseHtml(b.chapters[c - 1][v - 1])}</blockquote></div>`).join("")}</div>` : ""}
+<h2>Common questions</h2><div class="faq">${faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>
+${related.length ? `<h2>More like this</h2><div class="chips">${related.map((o) => `<a href="${wordUrl(o)}">${esc(o.word)}</a>`).join("")}</div>` : ""}
+<p style="font-size:14px;margin-top:20px"><a href="/bible-words">All ${WORDS.length} words &rarr;</a> &middot; <a href="/strongs">Strong's concordance</a></p>
+${promo(first ? first[0] : undefined, first ? first[1] : undefined, first ? first[2] : undefined)}`;
+
+  const description = `"${w.word}" in the King James Bible means ${w.sense}. ${snippet(w.note, 150)} Appears ${times(e.n)}, with the verses quoted in full.`;
+  const jsonld = webPageLd([
+    { "@type": "DefinedTerm", "@id": SITE + wordUrl(w) + "#term", name: w.word, description: w.sense,
+      inDefinedTermSet: { "@type": "DefinedTermSet", name: "King James Bible words", url: SITE + "/bible-words" } },
+    { "@type": "WebPage", name: `${w.word} — meaning in the King James Bible`, url: SITE + wordUrl(w), description, isPartOf: { "@id": SITE + "/#website" } },
+    { "@type": "FAQPage", "@id": SITE + wordUrl(w) + "#faq",
+      mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
+    breadcrumbLd([["Home", "/"], ["Bible words", "/bible-words"], [w.word, wordUrl(w)]]),
+  ]);
+  return ok(shell({ title: `What does "${w.word}" mean in the Bible? (KJV) | ${SITE_NAME}`, description, canonical: wordUrl(w), h, jsonld, pageType: "bible-word", ref: w.word }));
+}
+
+function bibleWordsIndex() {
+  const idx = archaicIndex();
+  const groups = ["drifted", "loan", "obsolete"].map((k) => [k, WORDS.filter((w) => w.kind === k && idx[w.word])]);
+  const h = `${crumbs([["Home", "/"], ["Bible words", "/bible-words"]])}
+<h1>${WORDS.length} King James Words and What They Mean <span class="badge">KJV</span></h1>
+<div class="meaning"><p>The English of 1611 is not the English of now. Some of these words have simply gone — nobody owns a habergeon any more. The dangerous ones are the words still in daily use that have quietly changed sides: <b>let</b> meant to hinder, <b>prevent</b> meant to go before, and a reader who does not know that will get the verse exactly backwards and never think to check.</p></div>
+${groups.map(([k, list]) => list.length ? `<h2>${esc(KIND_LABEL[k])}</h2>
+<div class="books">${list.map((w) => `<a href="${wordUrl(w)}">${esc(w.word)} <small>&middot; ${esc(w.sense)}</small></a>`).join("")}</div>` : "").join("")}
+<p style="font-size:14px;margin-top:20px"><a href="/strongs">The Hebrew and Greek behind the King James &rarr;</a> &middot; <a href="/king-james-bible">How the translation was made</a></p>
+${promo()}`;
+  const description = `${WORDS.length} words from the King James Bible explained — what they meant in 1611, the Hebrew or Greek behind them, and every verse they appear in. Including the ones that still exist and have changed meaning: let, prevent, charity, conversation, suffer, quick.`;
+  const jsonld = webPageLd([
+    { "@type": "DefinedTermSet", "@id": SITE + "/bible-words#set", name: "King James Bible words", url: SITE + "/bible-words", description },
+    { "@type": "CollectionPage", name: "King James Bible words", url: SITE + "/bible-words", description, isPartOf: { "@id": SITE + "/#website" },
+      mainEntity: { "@type": "ItemList", numberOfItems: WORDS.length, itemListElement: WORDS.map((w, i) => ({ "@type": "ListItem", position: i + 1, name: w.word, url: SITE + wordUrl(w) })) } },
+    breadcrumbLd([["Home", "/"], ["Bible words", "/bible-words"]]),
+  ]);
+  return ok(shell({ title: `${WORDS.length} King James Bible Words and What They Mean | ${SITE_NAME}`, description, canonical: "/bible-words", h, jsonld, pageType: "bible-words-index" }));
+}
+
 /* --------------------------------------------------------------- kjv story */
 /** /king-james-bible — where the translation we quote on every page came from. */
 function kjvPage() {
@@ -1076,7 +1170,8 @@ function sitemapFile(name) {
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
     urls.push(["/churches", "0.8"]);
     for (const c of DIRECTORY) urls.push([churchUrl(c), "0.7"]);
-    urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"]);
+    urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"]);
+    for (const w of WORDS) urls.push([`/bible-words/${w.word.replace(/ /g, "-")}`, "0.7"]);
     urls.push(["/bible-names", "0.9"], ["/bible-names/boys", "0.8"], ["/bible-names/girls", "0.8"]);
     for (const n of NAMES) urls.push([`/bible-names/${n.name.toLowerCase()}`, "0.7"]);
     for (const b of books()) { urls.push([bookUrl(b), "0.7"]); b.chapters.forEach((_, i) => urls.push([chapterUrl(b, i + 1), "0.6"])); }
@@ -1123,6 +1218,12 @@ export function render(q = {}) {
     return n ? namePage(n) : notFound();
   }
   if (kind === "kjv") return kjvPage();
+  if (kind === "words") {
+    const raw = String(q.word || "").toLowerCase();
+    if (!raw) return bibleWordsIndex();
+    const w = WORD_BY_SLUG.get(raw);
+    return w ? bibleWordPage(w) : notFound();
+  }
   if (kind === "strongs") {
     const raw = String(q.id || "");
     if (!raw) return strongsHub();

@@ -54,7 +54,7 @@ Verse and range pages are a floor to hold, not a lever to pull.
 Ranked by impressions already earned × the gap to page one × how much of it we
 can build without inventing facts.
 
-### 1. Archaic KJV words — not yet built
+### 1. Archaic KJV words — SHIPPED 12 Oct, /bible-words
 
 `circumspectly bible definition` sits at **6.7**. `molochie` at 10.0. `what is
 the most high` at 44.8. People hit a word in the King James text they do not
@@ -70,7 +70,7 @@ in, which we can already generate.
 
 Nothing else on this list is as under-served.
 
-### 2. Book statistics — part built
+### 2. Book statistics — SHIPPED 12 Oct, /bible-statistics and all 66 book pages
 
 `how long is ephesians` is at **5.9** and `how long is luke in the bible` at
 8.0, both answered by a single line in the book-page FAQ. Meanwhile the bare
@@ -113,7 +113,7 @@ Not a page type, a reminder. A large share of every cluster above ends in
 is public domain and we quote it in full where sites built on modern
 translations cannot.
 
-## Shipped from this round
+## Shipped from this round (12 October)
 
 - **/strongs** — 14,197 Hebrew and Greek entries, each with the lexical entry,
   every KJV rendering with a count, and up to 40 verses quoted in full. Built
@@ -122,6 +122,29 @@ translations cannot.
 - **Seven list pages** rebuilt to lead with the list: the ten commandments, the
   fruit of the Spirit, the twelve disciples, the armor of God, the beatitudes,
   the Lord's prayer, the great commission.
+- **/bible-words** — 100 King James words with their meaning, forms, the Hebrew
+  or Greek behind them and every verse. Ten entries that kept both senses carry
+  a hand-picked verse list, because "let" appears 1,511 times and means hinder
+  in four of them.
+- **/king-james-bible** — how the translation was made, for "who wrote the king
+  james bible" and its neighbours.
+- **/bible-statistics** plus stats and five new FAQs on all 66 book pages —
+  chapters, verses, words, reading time, longest and shortest chapter, and where
+  each book sits among the 66.
+- **The daily-verse invitation** on every indexable page, posting to the existing
+  GoHighLevel endpoint, with /api/daily-verse pushing each morning's verse into
+  GHL custom values on a 05:00 UTC cron. Needs CRON_SECRET set and the GHL
+  workflow built before it sends anything.
+
+### Next, in order
+
+1. **More named entities** — the proven vein, listed above under heading 3.
+2. **Reference parsing for odd formats** — `147/20` at position 8.6.
+3. **Measure before building more.** Everything above shipped on one day and
+   Search Console takes about two weeks to report. Check whether /strongs and
+   /bible-words get crawled, whether the list-page rewrites moved the ten
+   commandments and the fruit of the Spirit off position 50, and whether the
+   invitation converts, before picking the next batch.
 
 ## A note on new routes
 

@@ -60,6 +60,27 @@ export default defineConfig({
         // app's own 404 even though the server returned the real page.
         // THIS LIST AND THE SPA CATCH-ALL IN vercel.json HAVE TO AGREE. Adding a
         // new SEO prefix means adding it in both places.
+        // The service worker must not answer navigations to server-rendered SEO
+        // routes with the app shell: curl sees the real page, the browser sees the
+        // app's own 404. That has now happened twice - /bible-names in September,
+        // /strongs in October - because a denylist has to be extended by hand for
+        // every route added, in a file nobody thinks to open when adding one.
+        //
+        // So the allowlist is what decides: these are the app's own screens, taken
+        // from the <Route> list in src/App.jsx, and a navigation that is not one of
+        // them is left to the server. Anything added to the SEO renderer is then
+        // safe by default. A screen missed here still works online, since the
+        // catch-all rewrite serves index.html; it just is not available offline.
+        // The denylist stays as a second guard and as the list of SEO prefixes.
+        navigateFallbackAllowlist: [
+          /^\/$/, /^\/home(\/|$)/, /^\/read(\/|$)/, /^\/word(\/|$)/, /^\/memory(\/|$)/,
+          /^\/journal(\/|$)/, /^\/progress(\/|$)/, /^\/onboarding(\/|$)/, /^\/login(\/|$)/,
+          /^\/search(\/|$)/, /^\/plans(\/|$)/, /^\/prayers(\/|$)/, /^\/dictionary(\/|$)/,
+          /^\/devotional(\/|$)/, /^\/how-to-study-the-bible(\/|$)/, /^\/people(\/|$)/,
+          /^\/timeline(\/|$)/, /^\/library(\/|$)/, /^\/settings(\/|$)/, /^\/groups(\/|$)/,
+          /^\/topics(\/|$)/, /^\/bookmarks(\/|$)/, /^\/meditation(\/|$)/, /^\/auth(\/|$)/,
+          /^\/reset-password(\/|$)/, /^\/welcome(\/|$)/, /^\/commentaries(\/|$)/,
+        ],
         navigateFallbackDenylist: [/^\/verse-of-the-day(\/|$)/,/^\/bible(\/|$)/, /^\/bible-names(\/|$)/, /^\/verses-about(\/|$)/, /^\/strongs(\/|$)/, /^\/sitemap/, /^\/api\//],
         // Runtime caching strategies
         runtimeCaching: [

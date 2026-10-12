@@ -45,6 +45,18 @@
       "destination": "/api/bible-page?kind=votd"
     },
     {
+      "source": "/churches",
+      "destination": "/api/bible-page?kind=churches"
+    },
+    {
+      "source": "/churches/:slug",
+      "destination": "/api/bible-page?kind=church&slug=:slug"
+    },
+    {
+      "source": "/king-james-bible",
+      "destination": "/api/bible-page?kind=kjv"
+    },
+    {
       "source": "/strongs",
       "destination": "/api/bible-page?kind=strongs"
     },
@@ -73,7 +85,7 @@
       "destination": "/api/app-page?page=login"
     },
     {
-      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|strongs|sitemap).*)",
+      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|churches|strongs|sitemap).*)",
       "destination": "/index.html"
     }
   ],

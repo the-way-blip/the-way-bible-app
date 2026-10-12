@@ -24,6 +24,7 @@ import { votdRef } from "./votd.js";
 import { BOOK_INTROS } from "./books-intro.js";
 import { VERSE_MEANINGS } from "./meanings.js";
 import { TOPIC_INTROS } from "./topic-intros.js";
+import { TOPIC_LISTS } from "./topic-lists.js";
 import { NAMES } from "./names.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
@@ -259,7 +260,7 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 ul.outline{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 ul.outline li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:15px;display:flex;gap:14px;align-items:baseline}
 ul.outline .r{flex:none;font-weight:600;color:var(--gold-dark);min-width:74px}
-.faq{display:grid;gap:10px}
+ol.enum{list-style:none;counter-reset:e;padding:0;margin:0 0 18px;display:grid;gap:8px}ol.enum li{counter-increment:e;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 46px;position:relative;font-size:16px;line-height:1.55}ol.enum li::before{content:counter(e);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}ol.enum .r{font-weight:600;color:var(--gold-dark);white-space:nowrap;font-size:14px}p.note{font-size:14px;color:var(--brown-light);line-height:1.65;border-left:3px solid var(--line);padding-left:14px;margin:0 0 20px}.faq{display:grid;gap:10px}
 .faq details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
 .faq summary{cursor:pointer;font-weight:600;font-size:15px}
 .faq p{margin:10px 0 0;font-size:15px;color:var(--brown-light);line-height:1.6}
@@ -563,25 +564,38 @@ function topicPage(t) {
   const list = items.map(({ ref, r }) => `<div class="topicv"><p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a> <span style="font-weight:400;color:var(--brown-light)">· ${VERSION}</span></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote></div>`).join("");
   const intro = TOPIC_INTROS[t.slug] || null;
   const related = TOPICS.filter((o) => o !== t && o.verses.some((v) => t.verses.includes(v))).slice(0, 8);
+  // Topics that ARE a list (the ten commandments, the nine fruit, the twelve)
+  // get the list itself above the verses. See seo/topic-lists.js for why.
+  const L = TOPIC_LISTS[t.slug] || null;
+  const listBlock = L ? `<h2>${esc(L.heading)}</h2>
+<ol class="enum">${L.items.map(([text, ref]) => { const r = parseRef(ref); return `<li><span>${esc(text)}</span>${r ? ` <a class="r" href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a>` : ""}</li>`; }).join("")}</ol>
+${L.note ? `<p class="note">${esc(L.note)}</p>` : ""}` : "";
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
-<h1>${n} ${esc(topicPhrase(t))} <span class="badge">${VERSION}</span></h1>
-${intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
+<h1>${L ? esc(L.title) : `${n} ${esc(topicPhrase(t))}`} <span class="badge">${VERSION}</span></h1>
+${L ? `<p class="lead">${esc(L.lead)}</p>` : intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
+${listBlock}
+${L ? `<h2>${esc(L.title)} in scripture — ${n} verses, quoted in full</h2>` : ""}
 <p class="sub">${t.blurb ? esc(t.blurb) + " " : ""}Each verse is quoted in full from the King James Version — tap a reference to read it in context, see cross references, and study the original words.</p>
 ${list}
+${L ? `<h2>Common questions</h2><div class="faq">${L.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>` : ""}
 ${related.length ? `<h2>Related topics</h2><div class="chips">${related.map((o) => `<a href="/verses-about/${o.slug}">${esc(o.name)}</a>`).join("")}</div>` : ""}
 <p style="font-size:14px;margin-top:20px"><a href="/verses-about">All ${TOPICS.length} topics →</a></p>
 ${promo()}`;
   const first = items[0];
-  const lead = intro ? snippet(intro, 150) : t.blurb || null;
-  const description = lead
+  const lead = L ? snippet(L.lead, 150) : intro ? snippet(intro, 150) : t.blurb || null;
+  const description = L
+    ? L.desc
+    : lead
     ? `${lead} ${n} verses in the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}.`
     : `${n} ${phrase} from the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}. Read each one in context.`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: topicPhrase(t), url: SITE + `/verses-about/${t.slug}`, description, isPartOf: { "@id": SITE + "/#website" },
       mainEntity: { "@type": "ItemList", numberOfItems: n, itemListElement: items.map(({ ref, r }, i) => ({ "@type": "ListItem", position: i + 1, name: ref, url: SITE + verseUrl(r.book, r.chapter, r.from, r.to) })) } },
     breadcrumbLd([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]]),
+    ...(L ? [{ "@type": "FAQPage", "@id": SITE + `/verses-about/${t.slug}#faq`,
+      mainEntity: L.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }] : []),
   ]);
-  return ok(shell({ title: `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: first ? `${SITE}/api/og?ref=${encodeURIComponent(first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
+  return ok(shell({ title: L ? `${L.title} (KJV) — ${L.titleSuffix || `All ${L.items.length} Listed`} | ${SITE_NAME}` : `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: first ? `${SITE}/api/og?ref=${encodeURIComponent(first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
 }
 
 const NAME_BY_SLUG = new Map(NAMES.map((n) => [n.name.toLowerCase(), n]));
@@ -614,9 +628,6 @@ function nameHits() {
   }
   return _nameHits;
 }
-
-/** "Hebrew · daw-veed'" — the origin line, pronunciation only where Strong's has one. */
-const nameOrigin = (n) => `${n.lang}${n.pron ? ` · ${n.pron}` : ""}`;
 
 function namePage(n) {
   const hits = nameHits().get(nameKey(n)) || [];

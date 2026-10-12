@@ -26,6 +26,7 @@ import { VERSE_MEANINGS } from "./meanings.js";
 import { TOPIC_INTROS } from "./topic-intros.js";
 import { TOPIC_LISTS } from "./topic-lists.js";
 import { NAMES } from "./names.js";
+import { inviteHtml, inviteJs, INVITE_CSS } from "./invite.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -320,7 +321,7 @@ ${APP_STORE_ID ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}"
 <link rel="apple-touch-icon" href="/favicon-180.png">
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 ${ga}
-<style>${CSS}</style>
+<style>${CSS}${INVITE_CSS}</style>
 </head>
 <body>
 <header class="top"><div class="wrap">
@@ -337,6 +338,8 @@ ${h}
 <span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@thewaybible.app">Contact</a></span>
 <span class="churches">Churches: ${CHURCHES.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${esc(n)}</a>`).join(" · ")}</span>
 </div></footer>
+${noindex ? "" : inviteHtml(appHref())}
+${noindex ? "" : `<script>${inviteJs(pageType)}</script>`}
 </body>
 </html>`;
 }

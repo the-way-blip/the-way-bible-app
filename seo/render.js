@@ -987,7 +987,7 @@ ${promo(first ? first[0] : undefined, first ? first[1] : undefined, first ? firs
       mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
     breadcrumbLd([["Home", "/"], ["Bible words", "/bible-words"], [w.word, wordUrl(w)]]),
   ]);
-  return ok(shell({ title: `What does "${w.word}" mean in the Bible? (KJV) | ${SITE_NAME}`, description, canonical: wordUrl(w), h, jsonld, pageType: "bible-word", ref: w.word }));
+  return ok(shell({ title: `What does ${w.word} mean in the Bible? (KJV) | ${SITE_NAME}`, description, canonical: wordUrl(w), h, jsonld, pageType: "bible-word", ref: w.word }));
 }
 
 function bibleWordsIndex() {

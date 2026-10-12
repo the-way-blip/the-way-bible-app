@@ -114,8 +114,17 @@
       ]
     }
   ],
+  "crons": [
+    {
+      "path": "/api/daily-verse",
+      "schedule": "0 5 * * *"
+    }
+  ],
   "functions": {
     "api/bible-page.js": {
+      "includeFiles": "seo/data/*.json"
+    },
+    "api/daily-verse.js": {
       "includeFiles": "seo/data/*.json"
     },
     "api/app-page.js": {

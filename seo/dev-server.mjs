@@ -10,6 +10,7 @@ const ROUTES = [
   [/^\/churches\/?$/, () => ({ kind: "churches" })],
   [/^\/churches\/([^/]+)\/?$/, (m) => ({ kind: "church", slug: m[1] })],
   [/^\/king-james-bible\/?$/, () => ({ kind: "kjv" })],
+  [/^\/bible-statistics\/?$/, () => ({ kind: "stats" })],
   [/^\/bible-words\/?$/, () => ({ kind: "words" })],
   [/^\/bible-words\/([^/]+)\/?$/, (m) => ({ kind: "words", word: m[1] })],
   [/^\/strongs\/?$/, () => ({ kind: "strongs" })],

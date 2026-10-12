@@ -57,6 +57,10 @@
       "destination": "/api/bible-page?kind=kjv"
     },
     {
+      "source": "/bible-statistics",
+      "destination": "/api/bible-page?kind=stats"
+    },
+    {
       "source": "/bible-words",
       "destination": "/api/bible-page?kind=words"
     },

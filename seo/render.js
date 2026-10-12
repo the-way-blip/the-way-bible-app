@@ -415,11 +415,23 @@ function bookPage(b) {
   const whenChip = intro ? (undated ? `Date <b>${esc(intro.when.replace(/^date /, ""))}</b>` : `Traditionally dated <b>${esc(intro.when)}</b>`) : "";
   const whenAnswer = intro ? (undated ? `The date is ${intro.when.replace(/^date /, "")}.` : `It is traditionally dated ${intro.when}.`) : "";
   // Real questions people type, answered from the book's own data. Also emitted as FAQPage JSON-LD.
+  // "how long is ephesians" ranks at 5.9 and "how long is luke in the bible" at
+  // 8.0 off the single line below, so the rest of that question shape is worth
+  // answering too. All counted, none of it written by hand.
+  const st = bookStats(b);
+  const all = books();
+  const prevBook = all[b.index - 1], nextBook = all[b.index + 1];
+  const place = `${b.name} is the ${ordinal(b.index + 1)} book of the Bible and the ${ordinal(b.testament === "OT" ? b.index + 1 : b.index - 38)} of the ${b.testament === "OT" ? "Old" : "New"} Testament${prevBook && nextBook ? `, between ${prevBook.name} and ${nextBook.name}` : prevBook ? `, after ${prevBook.name}` : nextBook ? `, before ${nextBook.name}` : ""}.`;
   const faqs = intro ? [
     [`Who wrote the book of ${b.name}?`, `${intro.wrote}.`],
     [`When was ${b.name} written?`, whenAnswer],
     [`What is the book of ${b.name} about?`, intro.summary],
-    [`How long is ${b.name}?`, `${b.name} has ${sizeText} in the King James Version.`],
+    [`How long is ${b.name}?`, `${b.name} has ${sizeText} in the King James Version — about ${st.words.toLocaleString()} words.`],
+    [`How long does it take to read ${b.name}?`, `${readingTime(st.words)} at an ordinary reading pace of about ${WPM} words a minute.`],
+    ...(oneChapter ? [] : [[`How many chapters are in ${b.name}?`, `${st.chapters}.`]]),
+    [`How many verses are in ${b.name}?`, `${st.verses.toLocaleString()}.`],
+    ...(oneChapter ? [] : [[`What is the longest chapter in ${b.name}?`, `${chapterLabel(b, st.longest[0])}, with ${st.longest[1]} verses. The shortest is ${chapterLabel(b, st.shortest[0])}, with ${st.shortest[1]}.`]]),
+    [`Where is ${b.name} in the Bible?`, place],
   ] : [];
   const popular = [];
   for (const t of TOPICS) for (const ref of t.verses) { const r = parseRef(ref); if (r && r.book === b && !popular.some((p) => p.ref === ref)) popular.push({ ref, r }); }
@@ -427,7 +439,7 @@ function bookPage(b) {
   const prev = books()[b.index - 1], next = books()[b.index + 1];
   const h = `${crumbs([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)]])}
 <h1>${esc(b.name)} <span class="badge">${VERSION}</span></h1>
-<p class="sub">${b.testament === "OT" ? "Old" : "New"} Testament · ${b.chapters.length} chapter${b.chapters.length === 1 ? "" : "s"} · ${verseCount.toLocaleString()} verses</p>
+<p class="sub">${b.testament === "OT" ? "Old" : "New"} Testament · ${b.chapters.length} chapter${b.chapters.length === 1 ? "" : "s"} · ${verseCount.toLocaleString()} verses · ${esc(readingTime(st.words))} to read</p>
 <div class="actions"><a class="btn primary" href="${chapterUrl(b, 1)}" data-cta="book-start-reading">Start reading ${esc(chapterLabel(b, 1))}</a><a class="btn" href="${appChapterUrl(b, 1)}" data-cta="book-open-app">Open in the app</a></div>
 ${intro ? `<p class="lead">${esc(intro.summary)}</p>
 <p class="facts"><span>Author: <b>${esc(intro.wrote)}</b></span><span>${whenChip}</span><span>Theme: <b>${esc(intro.theme)}</b></span></p>` : ""}
@@ -435,6 +447,9 @@ ${intro ? `<p class="lead">${esc(intro.summary)}</p>
 ${intro ? `<h2>Outline of ${esc(b.name)}</h2><ul class="outline">${intro.outline.map(([range, label]) => `<li><a class="r" href="${oneChapter ? verseUrl(b, 1, +String(range).split(/[–-]/)[0], +String(range).split(/[–-]/).pop()) : chapterUrl(b, +String(range).split(/[–-]/)[0])}">${oneChapter ? "vv. " : ""}${esc(range)}</a><span>${esc(label)}</span></li>`).join("")}</ul>` : ""}
 ${intro ? `<h2>Key verses</h2><div>${intro.keys.map((ref) => { const r = parseRef(ref); return r ? `<div class="topicv"><p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote></div>` : ""; }).join("")}</div>` : ""}
 ${popular.length ? `<h2>Well-known verses in ${esc(b.name)}</h2><div class="topicv">${popular.slice(0, 10).map(({ ref, r }) => `<p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote>`).join("")}</div>` : ""}
+${intro ? `<h2>How long ${esc(b.name)} is</h2>
+<p class="facts"><span>Chapters: <b>${st.chapters}</b></span><span>Verses: <b>${st.verses.toLocaleString()}</b></span><span>Words: <b>about ${st.words.toLocaleString()}</b></span><span>Read in: <b>${esc(readingTime(st.words))}</b></span>${oneChapter ? "" : `<span>Longest chapter: <b>${esc(chapterLabel(b, st.longest[0]))}</b> (${st.longest[1]} verses)</span>`}</p>
+<p class="sub">${esc(place)} <a href="/bible-statistics">Compare all 66 books &rarr;</a></p>` : ""}
 ${faqs.length ? `<h2>Common questions</h2><div class="faq">${faqs.map(([q, ans]) => `<details><summary>${esc(q)}</summary><p>${esc(ans)}</p></details>`).join("")}</div>` : ""}
 <div class="pn"><span>${prev ? `<a href="${bookUrl(prev)}">← ${esc(prev.name)}</a>` : ""}</span><span>${next ? `<a href="${bookUrl(next)}">${esc(next.name)} →</a>` : ""}</span></div>
 ${promo(b, 1)}`;
@@ -918,6 +933,140 @@ ${gaSearch}${promo()}`;
 /* ------------------------------------------------------------------ sitemaps */
 const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
+/* ------------------------------------------------------------------ stats */
+/**
+ * Counted facts about the text: how long each book is, which chapter is the
+ * longest, how long the whole thing takes to read.
+ *
+ * Worth building because "how long is ephesians" already ranks at 5.9 and "how
+ * long is luke in the bible" at 8.0, both answered by a single line in a book
+ * page's FAQ, while the bare book names sit at 30-75. The head term is not
+ * winnable; the questions around it are. And unlike most sites quoting these
+ * numbers, we are counting them rather than repeating them.
+ *
+ * Reading time assumes 200 words a minute, which is ordinary silent reading,
+ * and is always given as "about" — word counts shift with how you treat
+ * hyphens and numerals, so a precise figure would be false precision.
+ */
+const ordinal = (n) => {
+  const t = n % 100;
+  return `${n}${t >= 11 && t <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"}`;
+};
+const WPM = 200;
+const wordsIn = (t) => (plain(t).match(/[A-Za-z0-9’'-]+/g) || []).length;
+const readingTime = (words) => {
+  const mins = Math.round(words / WPM);
+  if (mins < 60) return `about ${mins} minute${mins === 1 ? "" : "s"}`;
+  const h = Math.floor(mins / 60), rem = mins % 60;
+  return `about ${h} hour${h === 1 ? "" : "s"}${rem >= 5 ? ` and ${rem} minutes` : ""}`;
+};
+
+let _bookStats;
+function bookStats(b) {
+  if (!_bookStats) _bookStats = new Map();
+  if (_bookStats.has(b.slug)) return _bookStats.get(b.slug);
+  let verses = 0, words = 0, longest = null, shortest = null;
+  b.chapters.forEach((ch, i) => {
+    verses += ch.length;
+    for (const t of ch) words += wordsIn(t);
+    if (!longest || ch.length > longest[1]) longest = [i + 1, ch.length];
+    if (!shortest || ch.length < shortest[1]) shortest = [i + 1, ch.length];
+  });
+  const out = { chapters: b.chapters.length, verses, words, longest, shortest, minutes: Math.round(words / WPM) };
+  _bookStats.set(b.slug, out);
+  return out;
+}
+
+let _bibleStats;
+function bibleStats() {
+  if (_bibleStats) return _bibleStats;
+  const bs = books();
+  const per = bs.map((b) => ({ b, ...bookStats(b) }));
+  const sum = (k) => per.reduce((a, x) => a + x[k], 0);
+  const by = (k, dir) => [...per].sort((x, y) => (dir === "desc" ? y[k] - x[k] : x[k] - y[k]));
+  let longestCh = null, shortestCh = null, shortestV = null, longestV = null;
+  for (const b of bs) {
+    b.chapters.forEach((ch, ci) => {
+      if (!longestCh || ch.length > longestCh[2]) longestCh = [b, ci + 1, ch.length];
+      if (!shortestCh || ch.length < shortestCh[2]) shortestCh = [b, ci + 1, ch.length];
+      ch.forEach((t, vi) => {
+        const n = wordsIn(t);
+        if (!shortestV || n < shortestV[3]) shortestV = [b, ci + 1, vi + 1, n];
+        if (!longestV || n > longestV[3]) longestV = [b, ci + 1, vi + 1, n];
+      });
+    });
+  }
+  _bibleStats = {
+    books: bs.length, chapters: sum("chapters"), verses: sum("verses"), words: sum("words"),
+    ot: per.filter((x) => x.b.testament === "OT"), nt: per.filter((x) => x.b.testament === "NT"),
+    longestBook: by("words", "desc")[0], shortestBook: by("words", "asc")[0],
+    mostChapters: by("chapters", "desc")[0], fewestVerses: by("verses", "asc")[0],
+    longestCh, shortestCh, shortestV, longestV, per,
+  };
+  return _bibleStats;
+}
+
+function bibleStatsPage() {
+  const s = bibleStats();
+  const canonical = "/bible-statistics";
+  const vref = (x) => `<a href="${verseUrl(x[0], x[1], x[2], x[2])}">${esc(refLabel(x[0], x[1], x[2], x[2]))}</a>`;
+  const cref = (x) => `<a href="${chapterUrl(x[0], x[1])}">${esc(chapterLabel(x[0], x[1]))}</a>`;
+  const bref = (x) => `<a href="${bookUrl(x.b)}">${esc(x.b.name)}</a>`;
+  const otWords = s.ot.reduce((a, x) => a + x.words, 0), ntWords = s.nt.reduce((a, x) => a + x.words, 0);
+
+  const rows = [
+    ["Books", `${s.books}`], ["Chapters", s.chapters.toLocaleString()], ["Verses", s.verses.toLocaleString()],
+    ["Words", `about ${s.words.toLocaleString()}`], ["Time to read it all", readingTime(s.words)],
+  ];
+  const faqs = [
+    ["How many books are in the Bible?", `66 — 39 in the Old Testament and 27 in the New.`],
+    ["How many chapters are in the Bible?", `${s.chapters.toLocaleString()}, counted across all 66 books.`],
+    ["How many verses are in the Bible?", `${s.verses.toLocaleString()} in the King James Version. Other translations divide a handful of verses differently, so the figure can vary by a few.`],
+    ["How long does it take to read the Bible?", `${readingTime(s.words)} of reading at an ordinary pace of about ${WPM} words a minute. Spread over a year that is roughly eleven minutes a day.`],
+    ["What is the longest book in the Bible?", `${s.longestBook.b.name}, at about ${s.longestBook.words.toLocaleString()} words across ${s.longestBook.chapters} chapters.`],
+    ["What is the shortest book in the Bible?", `${s.shortestBook.b.name}, at about ${s.shortestBook.words} words. By verse count ${s.fewestVerses.b.name} is shorter, with ${s.fewestVerses.verses} verses to ${s.shortestBook.b.name}'s ${s.shortestBook.verses} — which is why the two are both called the shortest, depending on what is being counted.`],
+    ["What is the longest chapter in the Bible?", `${chapterLabel(s.longestCh[0], s.longestCh[1])}, with ${s.longestCh[2]} verses.`],
+    ["What is the shortest chapter in the Bible?", `${chapterLabel(s.shortestCh[0], s.shortestCh[1])}, with ${s.shortestCh[2]} verses.`],
+    ["What is the shortest verse in the Bible?", `${refLabel(s.shortestV[0], s.shortestV[1], s.shortestV[2], s.shortestV[2])} — "${plain(s.shortestV[0].chapters[s.shortestV[1] - 1][s.shortestV[2] - 1])}" — ${s.shortestV[3]} words in the King James Version.`],
+    ["What is the longest verse in the Bible?", `${refLabel(s.longestV[0], s.longestV[1], s.longestV[2], s.longestV[2])}, at about ${s.longestV[3]} words.`],
+    ["Which book has the most chapters?", `${s.mostChapters.b.name}, with ${s.mostChapters.chapters}.`],
+  ];
+
+  const table = (list) => `<table class="times"><tr><th>Book</th><th>Chapters</th><th>Verses</th><th>Reading time</th></tr>${list.map((x) => `<tr><td class="t"><a href="${bookUrl(x.b)}">${esc(x.b.name)}</a></td><td>${x.chapters}</td><td>${x.verses.toLocaleString()}</td><td>${esc(readingTime(x.words))}</td></tr>`).join("")}</table>`;
+
+  const h = `${crumbs([["Home", "/"], ["Bible statistics", canonical]])}
+<h1>Bible Statistics <span class="badge">KJV</span></h1>
+<p class="lead">How many books, chapters, verses and words are in the Bible, which chapter is longest, and how long the whole thing takes to read. Every number here is counted from the King James text on this site rather than quoted from somewhere else.</p>
+<p class="facts">${rows.map(([k, v]) => `<span>${esc(k)}: <b>${esc(v)}</b></span>`).join("")}</p>
+<h2>The extremes</h2>
+<ul class="outline">
+<li><span>Longest book</span> ${bref(s.longestBook)} — about ${s.longestBook.words.toLocaleString()} words</li>
+<li><span>Shortest book</span> ${bref(s.shortestBook)} — about ${s.shortestBook.words} words</li>
+<li><span>Fewest verses</span> ${bref(s.fewestVerses)} — ${s.fewestVerses.verses} verses</li>
+<li><span>Most chapters</span> ${bref(s.mostChapters)} — ${s.mostChapters.chapters}</li>
+<li><span>Longest chapter</span> ${cref(s.longestCh)} — ${s.longestCh[2]} verses</li>
+<li><span>Shortest chapter</span> ${cref(s.shortestCh)} — ${s.shortestCh[2]} verses</li>
+<li><span>Shortest verse</span> ${vref(s.shortestV)} — ${s.shortestV[3]} words</li>
+<li><span>Longest verse</span> ${vref(s.longestV)} — about ${s.longestV[3]} words</li>
+</ul>
+<h2>Old Testament and New</h2>
+<p class="facts"><span>Old Testament: <b>${s.ot.length} books</b></span><span><b>${otWords.toLocaleString()}</b> words</span><span><b>${esc(readingTime(otWords))}</b></span></p>
+<p class="facts"><span>New Testament: <b>${s.nt.length} books</b></span><span><b>${ntWords.toLocaleString()}</b> words</span><span><b>${esc(readingTime(ntWords))}</b></span></p>
+<h2>Every book, longest to shortest</h2>
+${table([...s.per].sort((a, b2) => b2.words - a.words))}
+<h2>Common questions</h2><div class="faq">${faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>
+${promo()}`;
+
+  const description = `The Bible has 66 books, ${s.chapters.toLocaleString()} chapters and ${s.verses.toLocaleString()} verses — about ${s.words.toLocaleString()} words, or ${readingTime(s.words)} of reading. Longest and shortest book, chapter and verse, with a reading time for all 66 books. Counted from the King James text.`;
+  const jsonld = webPageLd([
+    { "@type": "WebPage", name: "Bible statistics", url: SITE + canonical, description, isPartOf: { "@id": SITE + "/#website" } },
+    { "@type": "FAQPage", "@id": SITE + canonical + "#faq",
+      mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
+    breadcrumbLd([["Home", "/"], ["Bible statistics", canonical]]),
+  ]);
+  return ok(shell({ title: `Bible Statistics: Books, Chapters, Verses and Reading Time | ${SITE_NAME}`, description, canonical, h, jsonld, pageType: "bible-stats" }));
+}
+
 /* ------------------------------------------------------------- bible words */
 /**
  * /bible-words — the King James English a modern reader does not know, or
@@ -1170,7 +1319,7 @@ function sitemapFile(name) {
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
     urls.push(["/churches", "0.8"]);
     for (const c of DIRECTORY) urls.push([churchUrl(c), "0.7"]);
-    urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"]);
+    urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"], ["/bible-statistics", "0.9"]);
     for (const w of WORDS) urls.push([`/bible-words/${w.word.replace(/ /g, "-")}`, "0.7"]);
     urls.push(["/bible-names", "0.9"], ["/bible-names/boys", "0.8"], ["/bible-names/girls", "0.8"]);
     for (const n of NAMES) urls.push([`/bible-names/${n.name.toLowerCase()}`, "0.7"]);
@@ -1218,6 +1367,7 @@ export function render(q = {}) {
     return n ? namePage(n) : notFound();
   }
   if (kind === "kjv") return kjvPage();
+  if (kind === "stats") return bibleStatsPage();
   if (kind === "words") {
     const raw = String(q.word || "").toLowerCase();
     if (!raw) return bibleWordsIndex();

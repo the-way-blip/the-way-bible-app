@@ -45,6 +45,14 @@
       "destination": "/api/bible-page?kind=votd"
     },
     {
+      "source": "/strongs",
+      "destination": "/api/bible-page?kind=strongs"
+    },
+    {
+      "source": "/strongs/:id",
+      "destination": "/api/bible-page?kind=strongs&id=:id"
+    },
+    {
       "source": "/verses-about/:topic",
       "destination": "/api/bible-page?kind=topic&topic=:topic"
     },
@@ -65,7 +73,7 @@
       "destination": "/api/app-page?page=login"
     },
     {
-      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|sitemap).*)",
+      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|strongs|sitemap).*)",
       "destination": "/index.html"
     }
   ],

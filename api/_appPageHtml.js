@@ -19,7 +19,10 @@ export function lexicalMetadata(id, entry, fallback = {}) {
   const meaning = [entry?.strongs_def, fallback.strongs_def].find((value) => typeof value === 'string' && /[\p{L}\p{N}]/u.test(value)) || 'Explore KJV translations and Scripture references.';
   const title = `${id} ${word} — Strong’s Word Study | TheWay Bible App`;
   return {
-    title, description: `${id}: ${meaning}`.slice(0, 300), path: `/word/${id}`,
+    // The app still serves /word/<id> for in-app word taps, but /strongs/<id> is the
+    // real page — lemma, derivation, every KJV rendering with counts, and the verses.
+    // Canonical points there so the two do not compete for the same query.
+    title, description: `${id}: ${meaning}`.slice(0, 300), path: `/strongs/${id.toLowerCase()}`,
     content: `<main class="max-w-2xl mx-auto px-4 py-8"><h1>${escape(id)} ${escape(word)}</h1><h2>Strong’s definition</h2><p>${escape(meaning)}</p><p>Lexical sources: Strong’s data and Open Scriptures. Definitions are study aids, separate from the KJV Bible text.</p><a href="/bible">Read the Bible</a></main>`,
   };
 }

@@ -60,7 +60,7 @@ export default defineConfig({
         // app's own 404 even though the server returned the real page.
         // THIS LIST AND THE SPA CATCH-ALL IN vercel.json HAVE TO AGREE. Adding a
         // new SEO prefix means adding it in both places.
-        navigateFallbackDenylist: [/^\/verse-of-the-day(\/|$)/,/^\/bible(\/|$)/, /^\/bible-names(\/|$)/, /^\/verses-about(\/|$)/, /^\/sitemap/, /^\/api\//],
+        navigateFallbackDenylist: [/^\/verse-of-the-day(\/|$)/,/^\/bible(\/|$)/, /^\/bible-names(\/|$)/, /^\/verses-about(\/|$)/, /^\/strongs(\/|$)/, /^\/sitemap/, /^\/api\//],
         // Runtime caching strategies
         runtimeCaching: [
           {

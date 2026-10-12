@@ -48,7 +48,7 @@ const CHURCHES = [
 ];
 
 /* ------------------------------------------------------------------ data */
-let _books, _xrefs, _lex, _words, _titles, _bySlug, _byName, _verseTopics, _commentary;
+let _books, _xrefs, _lex, _words, _titles, _bySlug, _byName, _verseTopics, _commentary, _strongs;
 const readJson = (f) => JSON.parse(fs.readFileSync(path.join(DIR, "data", f), "utf8"));
 
 export function books() {
@@ -62,6 +62,7 @@ const xrefs = () => (_xrefs ??= readJson("xrefs.json"));
 const lexicon = () => (_lex ??= readJson("lexicon.json"));
 const wordsIndex = () => (_words ??= readJson("words.json"));
 const titlesIndex = () => (_titles ??= readJson("titles.json"));
+const strongsIndex = () => (_strongs ??= readJson("strongs.json"));
 function commentaryIndex() {
   if (!_commentary) {
     try { _commentary = readJson("commentary.json"); }
@@ -260,7 +261,7 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 ul.outline{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 ul.outline li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:15px;display:flex;gap:14px;align-items:baseline}
 ul.outline .r{flex:none;font-weight:600;color:var(--gold-dark);min-width:74px}
-ol.enum{list-style:none;counter-reset:e;padding:0;margin:0 0 18px;display:grid;gap:8px}ol.enum li{counter-increment:e;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 46px;position:relative;font-size:16px;line-height:1.55}ol.enum li::before{content:counter(e);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}ol.enum .r{font-weight:600;color:var(--gold-dark);white-space:nowrap;font-size:14px}p.note{font-size:14px;color:var(--brown-light);line-height:1.65;border-left:3px solid var(--line);padding-left:14px;margin:0 0 20px}.faq{display:grid;gap:10px}
+ol.enum{list-style:none;counter-reset:e;padding:0;margin:0 0 18px;display:grid;gap:8px}ol.enum li{counter-increment:e;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 46px;position:relative;font-size:16px;line-height:1.55}ol.enum li::before{content:counter(e);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}ol.enum .r{font-weight:600;color:var(--gold-dark);white-space:nowrap;font-size:14px}p.note{font-size:14px;color:var(--brown-light);line-height:1.65;border-left:3px solid var(--line);padding-left:14px;margin:0 0 20px}.chips.tally span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;color:var(--brown-light)}.chips.tally b{color:var(--brown);font-weight:600}.faq{display:grid;gap:10px}
 .faq details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
 .faq summary{cursor:pointer;font-weight:600;font-size:15px}
 .faq p{margin:10px 0 0;font-size:15px;color:var(--brown-light);line-height:1.6}
@@ -510,7 +511,7 @@ ${meaning ? `<h2>What ${esc(label)} means</h2><div class="meaning"><p>${esc(mean
 <p style="font-size:14px"><a href="${chapterUrl(b, c)}">Read all of ${esc(chapterLabel(b, c))} →</a></p>
 ${commentary ? `<h2>Commentary</h2><div class="commentary"><p>${esc(commentary.excerpt)}</p><p class="cite">— Matthew Henry's Concise Commentary${commentary.range && commentary.range !== String(from) ? ` on verses ${esc(commentary.range)}` : ""}</p></div>` : ""}
 ${refs.length ? `<h2>Cross references</h2><ul class="refs">${refs.slice(0, 12).map((r) => `<li>${refLink(r)}</li>`).join("")}</ul>` : ""}
-${words.length ? `<h2>Key words (Strong's)</h2><ul class="words">${words.map((w) => `<li><b>${esc(w.word)}</b><span class="tr">${esc(w.translit)}</span>${esc(w.def)}<a class="code" href="/word/${w.code}" data-cta="verse-word-study">${w.code} →</a></li>`).join("")}</ul>` : ""}
+${words.length ? `<h2>Key words (Strong's)</h2><ul class="words">${words.map((w) => `<li><b>${esc(w.word)}</b><span class="tr">${esc(w.translit)}</span>${esc(w.def)}<a class="code" href="${strongsUrl(w.code)}" data-cta="verse-word-study">${w.code} →</a></li>`).join("")}</ul>` : ""}
 ${topics.length ? `<h2>Topics</h2><div class="chips">${topics.map((t) => `<a href="/verses-about/${t.slug}">${esc(topicPhrase(t))}</a>`).join("")}</div>` : ""}
 <div class="pn"><span>${prev ? `<a href="${verseUrl(prev[0], prev[1], prev[2])}">← ${esc(refLabel(prev[0], prev[1], prev[2]))}</a>` : ""}</span><span>${next ? `<a href="${verseUrl(next[0], next[1], next[2])}">${esc(refLabel(next[0], next[1], next[2]))} →</a>` : ""}</span></div>
 ${promo(b, c, from)}`;
@@ -820,18 +821,148 @@ ${gaSearch}${promo()}`;
 /* ------------------------------------------------------------------ sitemaps */
 const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
+/* ----------------------------------------------------------------- strongs */
+/**
+ * Strong's concordance pages: /strongs/g26, /strongs/h7965.
+ *
+ * People really do search raw Strong's numbers. In 28 days of Search Console,
+ * "h5239", "h5971", "h6777", "h7776" and "h444 meaning" all drew impressions and
+ * ranked between 5 and 36 on pages that were never built for them. There are
+ * 14,197 of these entries, the lexicon is public domain, and the KJV text in this
+ * repo is already tagged with the numbers — so each page can carry the word, what
+ * it means, every way the King James translators rendered it, and the verses it
+ * stands in. That last part is the reason to build it: a definition alone is a
+ * dictionary stub, and the web has those.
+ *
+ * Counts come from seo/data/strongs.json, built by seo/build-strongs.mjs from the
+ * tagged text, and the page says so rather than implying an authority it does not
+ * have.
+ */
+const strongsId = (raw) => {
+  const m = /^([ghGH])\s*0*(\d{1,4})$/.exec(String(raw || "").trim());
+  return m ? `${m[1].toUpperCase()}${m[2]}` : null;
+};
+const strongsUrl = (id) => `/strongs/${id.toLowerCase()}`;
+const strongsLang = (id) => (id[0] === "H" ? "Hebrew" : "Greek");
+
+function strongsPage(id) {
+  const e = strongsIndex()[id];
+  if (!e) return notFound();
+  const lang = strongsLang(id);
+  const bs = books();
+  const refs = e.refs.map(([bi, c, v]) => [bs[bi], c, v]).filter(([b]) => b);
+  const first = refs[0];
+  const top = e.kjv.length ? e.kjv[0][0] : null;
+  const total = e.kjv.reduce((a, [, c]) => a + c, 0);
+
+  const chips = [
+    ["Word", e.lemma],
+    e.xlit ? ["Transliteration", e.xlit] : null,
+    e.pron ? ["Said", e.pron] : null,
+    ["Language", lang],
+    ["In the KJV", e.n ? `${e.n} verse${e.n === 1 ? "" : "s"}` : "not tagged in this text"],
+  ].filter(Boolean);
+
+  // "love (69), loved (32), loveth (19)" — how the translators actually rendered it.
+  const renderings = e.kjv.map(([w, c]) => `<span><b>${esc(w)}</b> ${c}&times;</span>`).join("");
+
+  const near = [];
+  const num = +id.slice(1);
+  for (let d = -3; d <= 3; d++) {
+    if (!d) continue;
+    const o = strongsIndex()[`${id[0]}${num + d}`];
+    if (o && o.lemma) near.push([`${id[0]}${num + d}`, o]);
+  }
+
+  const faqs = [
+    [`What does Strong's ${id} mean?`,
+     `${id} is the ${lang} word ${e.lemma}${e.xlit ? ` (${e.xlit})` : ""}${e.def ? `, meaning ${e.def}` : ""}.`],
+    e.kjv.length ? [`How is ${id} translated in the King James Version?`,
+      `The King James translators rendered it ${e.kjv.slice(0, 5).map(([w, c]) => `${w} (${c} time${c === 1 ? "" : "s"})`).join(", ")}${e.kjv.length > 5 ? ", among others" : ""}.`] : null,
+    e.n ? [`How many times does ${id} appear in the Bible?`,
+      `${e.lemma}${e.xlit ? ` (${e.xlit})` : ""} is tagged in ${e.n} verse${e.n === 1 ? "" : "s"} of the King James Version in this edition's word index.`] : null,
+    e.derivation ? [`Where does ${id} come from?`, `Strong's gives its derivation as: ${e.derivation}.`] : null,
+  ].filter(Boolean);
+
+  const h = `${crumbs([["Home", "/"], ["Strong's concordance", "/strongs"], [id, strongsUrl(id)]])}
+<h1><span style="font-size:1.15em">${esc(e.lemma)}</span> <span class="badge">${esc(id)}</span></h1>
+<p class="sub">${esc(id)} is the ${esc(lang)} word ${esc(e.lemma)}${e.xlit ? `, transliterated ${esc(e.xlit)}` : ""}${e.pron ? ` and said ${esc(e.pron)}` : ""}.${top ? ` The King James Version most often renders it <b>${esc(top)}</b>.` : ""}</p>
+<div class="chips">${chips.map(([k, v]) => `<span><b>${esc(k)}:</b> ${esc(v)}</span>`).join("")}</div>
+${e.def ? `<h2>What it means</h2><div class="meaning"><p>${esc(e.def)}.</p></div>` : ""}
+${e.derivation ? `<h2>Where it comes from</h2><p class="sub">${esc(e.derivation)}.</p>` : ""}
+${e.kjv.length ? `<h2>How the King James Version translates it</h2>
+<p class="sub">Across ${total.toLocaleString()} tagged occurrence${total === 1 ? "" : "s"}, counted from this edition's word index.</p>
+<div class="chips tally">${renderings}</div>` : ""}
+${e.kjvDef ? `<p class="note">Strong's own list of renderings: ${esc(e.kjvDef)}.</p>` : ""}
+${refs.length ? `<h2>Verses using ${esc(e.lemma)}</h2>
+<p class="sub">${e.n > refs.length ? `The first ${refs.length} of ${e.n} verses` : `All ${refs.length} verse${refs.length === 1 ? "" : "s"}`}, quoted in full from the ${VERSION_LONG}.</p>
+<div>${refs.map(([b, c, v]) => `<div class="topicv"><p class="r"><a href="${verseUrl(b, c, v, v)}">${esc(refLabel(b, c, v, v))}</a> <span style="font-weight:400;color:var(--brown-light)">&middot; ${VERSION}</span></p><blockquote>${verseHtml(b.chapters[c - 1][v - 1])}</blockquote></div>`).join("")}</div>`
+: `<p class="sub">This entry is in Strong's lexicon but is not tagged anywhere in the King James text used here, so there are no verses to show.</p>`}
+<h2>Common questions</h2><div class="faq">${faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>
+${near.length ? `<h2>Nearby entries</h2><div class="books">${near.map(([oid, o]) => `<a href="${strongsUrl(oid)}">${esc(oid)} <small>&middot; ${esc(o.lemma)}${o.def ? ` — ${esc(snippet(o.def, 44))}` : ""}</small></a>`).join("")}</div>` : ""}
+<p style="font-size:14px;margin-top:20px"><a href="/strongs">Strong's concordance &rarr;</a></p>
+${promo(first ? first[0] : undefined, first ? first[1] : undefined, first ? first[2] : undefined)}`;
+
+  const description = `Strong's ${id}: ${e.lemma}${e.xlit ? ` (${e.xlit})` : ""}, ${lang}${e.def ? ` — ${e.def}` : ""}.${e.kjv.length ? ` Translated ${e.kjv.slice(0, 4).map(([w]) => w).join(", ")} in the KJV.` : ""}${e.n ? ` Appears in ${e.n} verse${e.n === 1 ? "" : "s"}, quoted in full.` : ""}`;
+  const jsonld = webPageLd([
+    { "@type": "DefinedTerm", "@id": SITE + strongsUrl(id) + "#term", name: e.lemma, termCode: id,
+      description: e.def || undefined, inDefinedTermSet: { "@type": "DefinedTermSet", name: "Strong's Exhaustive Concordance of the Bible" } },
+    { "@type": "WebPage", name: `Strong's ${id} — ${e.lemma}`, url: SITE + strongsUrl(id), description, isPartOf: { "@id": SITE + "/#website" } },
+    { "@type": "FAQPage", "@id": SITE + strongsUrl(id) + "#faq",
+      mainEntity: faqs.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) },
+    breadcrumbLd([["Home", "/"], ["Strong's concordance", "/strongs"], [id, strongsUrl(id)]]),
+  ]);
+  return ok(shell({ title: `Strong's ${id}: ${e.lemma}${e.xlit ? ` (${e.xlit})` : ""} — Meaning and Verses | ${SITE_NAME}`,
+    description, canonical: strongsUrl(id), h, jsonld, pageType: "strongs", ref: id }));
+}
+
+/** /strongs — the hub, and the only page that links into 14,197 others. */
+function strongsHub() {
+  const idx = strongsIndex();
+  const all = Object.keys(idx);
+  const heb = all.filter((k) => k[0] === "H").length;
+  const grk = all.length - heb;
+  // A handful of words worth landing on, rather than H1 through H24.
+  const featured = ["H7965", "H2617", "H539", "H3068", "H7307", "H5315",
+                    "G26", "G4102", "G5485", "G1515", "G3056", "G4151"];
+  const h = `${crumbs([["Home", "/"], ["Strong's concordance", "/strongs"]])}
+<h1>Strong's Concordance <span class="badge">${all.length.toLocaleString()} words</span></h1>
+<div class="meaning"><p>Every Hebrew and Greek word behind the King James Version, numbered as Strong's numbered them in 1890. Each entry gives the word itself, how it is said, where it comes from, every way the King James translators rendered it with a count of each, and the verses it stands in — quoted in full.</p></div>
+<div class="chips"><span><b>Hebrew &amp; Aramaic:</b> H1&ndash;H${heb.toLocaleString()}</span><span><b>Greek:</b> G1&ndash;G${grk.toLocaleString()}</span></div>
+<h2>Words worth starting with</h2>
+<div class="books">${featured.map((id) => { const e = idx[id]; return e ? `<a href="${strongsUrl(id)}">${esc(e.lemma)} <small>&middot; ${esc(id)}${e.kjv.length ? ` &middot; ${esc(e.kjv[0][0])}` : ""}</small></a>` : ""; }).join("")}</div>
+<h2>Looking one up</h2>
+<p class="sub">Entries live at <code>/strongs/h7965</code> and <code>/strongs/g26</code> — the letter for the language, then the number. You can also tap any word while reading to see the word behind it.</p>
+<div class="actions"><a class="btn primary" href="/bible/john/3/16" data-cta="strongs-read">Read a chapter and tap a word</a><a class="btn" href="/bible-names">Bible names and meanings</a></div>
+${promo()}`;
+  const description = `Strong's Concordance for the King James Version — all ${all.length.toLocaleString()} Hebrew, Aramaic and Greek words, each with its meaning, pronunciation, derivation, every KJV rendering with counts, and the verses it appears in.`;
+  const jsonld = webPageLd([
+    { "@type": "CollectionPage", name: "Strong's Concordance", url: SITE + "/strongs", description, isPartOf: { "@id": SITE + "/#website" } },
+    breadcrumbLd([["Home", "/"], ["Strong's concordance", "/strongs"]]),
+  ]);
+  return ok(shell({ title: `Strong's Concordance (KJV) — All ${all.length.toLocaleString()} Hebrew and Greek Words | ${SITE_NAME}`,
+    description, canonical: "/strongs", h, jsonld, pageType: "strongs-hub" }));
+}
+
 function sitemapIndex() {
-  const maps = ["/sitemaps/pages.xml", ...books().map((b) => `/sitemaps/verses-${b.slug}.xml`)];
+  const maps = ["/sitemaps/pages.xml", "/sitemaps/strongs-hebrew.xml", "/sitemaps/strongs-greek.xml",
+    ...books().map((b) => `/sitemaps/verses-${b.slug}.xml`)];
   return xml(`<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${maps.map((m) => `<sitemap><loc>${SITE}${m}</loc></sitemap>`).join("\n")}\n</sitemapindex>`);
 }
 function sitemapFile(name) {
   if (name === "pages") {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
+    urls.push(["/strongs", "0.9"]);
     urls.push(["/bible-names", "0.9"], ["/bible-names/boys", "0.8"], ["/bible-names/girls", "0.8"]);
     for (const n of NAMES) urls.push([`/bible-names/${n.name.toLowerCase()}`, "0.7"]);
     for (const b of books()) { urls.push([bookUrl(b), "0.7"]); b.chapters.forEach((_, i) => urls.push([chapterUrl(b, i + 1), "0.6"])); }
     return xml(urlset(urls));
+  }
+  const sm = /^strongs-(hebrew|greek)$/.exec(name);
+  if (sm) {
+    const letter = sm[1] === "hebrew" ? "H" : "G";
+    return xml(urlset(Object.keys(strongsIndex()).filter((k) => k[0] === letter).map((k) => [strongsUrl(k), "0.5"])));
   }
   const m = /^verses-(.+)$/.exec(name);
   const b = m && findBook(m[1]);
@@ -861,6 +992,14 @@ export function render(q = {}) {
     if (raw === "girls") return namesList("girl");
     const n = NAME_BY_SLUG.get(raw);
     return n ? namePage(n) : notFound();
+  }
+  if (kind === "strongs") {
+    const raw = String(q.id || "");
+    if (!raw) return strongsHub();
+    const id = strongsId(raw);
+    if (!id) return notFound();
+    // /strongs/G26 and /strongs/g0026 both settle on /strongs/g26.
+    return raw !== id.toLowerCase() ? redirect(strongsUrl(id)) : strongsPage(id);
   }
   if (kind === "search") return searchPage(q.q);
   if (kind === "topic") {

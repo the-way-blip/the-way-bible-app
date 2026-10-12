@@ -63,7 +63,7 @@ export const INVITE_CSS = `
  border-radius:16px 16px 0 0;padding:22px 20px 18px;box-shadow:0 -8px 40px rgba(40,30,16,.18);
  transform:translateY(100%);transition:transform .28s cubic-bezier(.2,.8,.2,1)}
 .invite.on .invite-card{transform:none}
-.invite-card h2{margin:0 0 6px;font-size:20px;line-height:1.25;padding-right:28px}
+.invite-card h2{margin:0 0 6px;font-size:20px;line-height:1.25;padding-right:28px;text-transform:none;letter-spacing:normal;color:var(--brown);font-weight:600}
 .invite-card p{margin:0 0 12px;font-size:15px;line-height:1.55;color:var(--brown-light)}
 .invite-x{position:absolute;top:10px;right:10px;width:34px;height:34px;border:0;background:none;
  font-size:26px;line-height:1;color:var(--brown-light);cursor:pointer;border-radius:50%}

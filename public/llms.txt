@@ -12,12 +12,14 @@ iOS app: https://apps.apple.com/us/app/read-the-bible-follow-jesus/id6762105782
 - Book pages: https://thewaybible.app/bible/<book> — chapter list and well-known verses.
 - Topic pages: https://thewaybible.app/verses-about/<topic> — verses quoted in full on a subject (anxiety, strength, love, healing, marriage, Christmas, Easter, …). Index: https://thewaybible.app/verses-about
 - Verse of the day: https://thewaybible.app/verse-of-the-day — changes daily.
+- Church directory: https://thewaybible.app/churches — Bible-preaching churches with service times, address, pastor, and website; one page per church at https://thewaybible.app/churches/<slug>.
 
 ## Key pages
 
 - [Read the Bible (all 66 books)](https://thewaybible.app/bible)
 - [Bible verses by topic](https://thewaybible.app/verses-about)
 - [Verse of the day](https://thewaybible.app/verse-of-the-day)
+- [Find a church](https://thewaybible.app/churches)
 - [Sitemap](https://thewaybible.app/sitemap.xml)
 
 ## Citing

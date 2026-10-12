@@ -781,8 +781,8 @@ function churchPage(c) {
   const title = churchTitle(c);
   const place = `${c.city}, ${c.stateName}`;
   const others = DIRECTORY.filter((x) => x !== c && x.state === c.state);
-  const social = Object.entries(c.social || {}).map(([k, u]) => `<a class="btn" href="${attr(u)}" target="_blank" rel="noopener">${k[0].toUpperCase() + k.slice(1)}</a>`).join("");
-  const facts = [c.affiliation && `<span><b>${esc(c.affiliation)}</b></span>`, c.founded && `<span>Founded <b>${c.founded}</b></span>`, c.kjv && `<span><b>King James Bible</b></span>`, c.county && `<span>${esc(c.county)}</span>`].filter(Boolean).join("");
+  const social = Object.entries(c.social || {}).map(([k, u]) => `<a class="btn" href="${attr(u)}" target="_blank" rel="noopener">${{ facebook: "Facebook", instagram: "Instagram", youtube: "YouTube" }[k] || k}</a>`).join("");
+  const facts = [c.affiliation && `<span><b>${esc(c.affiliation)}</b></span>`, c.founded && `<span>Founded <b>${c.founded}</b></span>`, c.kjv && `<span><b>King James Bible</b></span>`, ].filter(Boolean).join("");
   const times = c.services.length
     ? `<table class="times">${c.services.map((s) => `<tr><td class="t">${esc(s.day)} ${esc(s.time)}</td><td>${esc(s.label)}</td></tr>`).join("")}</table>`
     : `<div class="card"><p>No regular service times yet. ${esc(c.name)} is gathering people first and meeting in homes and coffee shops. Join the interest list on the church website to hear the location and times first.</p></div>`;
@@ -795,7 +795,7 @@ ${c.pastor ? `<p><b>Pastor:</b> ${esc(c.pastor)}</p>` : ""}
 </div>`;
   const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], [c.stateName, `/churches#${c.state.toLowerCase()}`], [c.name, churchUrl(c)]])}
 <h1>${esc(title)}</h1>
-<p class="sub">${esc(c.planting ? "A church forming in" : "A church in")} ${esc(place)}${c.tagline ? ` — ${esc(c.tagline.replace(/\.$/, ""))}` : ""}</p>
+<p class="sub">${esc(place)}${c.county ? ` · ${esc(c.county)}` : ""}${c.tagline ? `<br>${esc(c.tagline)}` : ""}</p>
 ${facts ? `<div class="facts">${facts}</div>` : ""}
 <div class="actions"><a class="btn primary" href="${attr(c.website)}" target="_blank" rel="noopener" data-cta="church-website">Visit ${esc(c.name)}'s website</a>${c.address ? `<a class="btn" href="${mapsHref(c)}" target="_blank" rel="noopener" data-cta="church-directions">Directions</a>` : ""}${c.phone ? `<a class="btn" href="${telHref(c.phone)}" data-cta="church-call">Call</a>` : ""}</div>
 <h2>Service times</h2>

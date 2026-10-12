@@ -40,7 +40,7 @@ export const inviteHtml = (appHref) => `
   <div class="invite-card" role="dialog" aria-modal="true" aria-labelledby="tw-invite-h" aria-describedby="tw-invite-p">
     <button class="invite-x" type="button" data-invite-close aria-label="Close">&times;</button>
     <h2 id="tw-invite-h">A verse in your inbox each morning</h2>
-    <p id="tw-invite-p">One passage from the King James Version, with a short note on what it means. Free, and you can stop any time.</p>
+    <p id="tw-invite-p">One passage of Scripture, with a short note on what it means. Free, and you can stop any time.</p>
     <form class="invite-form" novalidate>
       <label class="sr-only" for="tw-invite-email">Email address</label>
       <input id="tw-invite-email" type="email" name="email" inputmode="email" autocomplete="email"
@@ -125,7 +125,7 @@ form.addEventListener('submit',function(e){e.preventDefault();
   body:JSON.stringify({type:'sign-up',subscribeToDevo:true,email:email})})
  .then(function(r){if(!r.ok)throw 0;set({s:1});
   if(typeof gtag==='function')gtag('event','invite_signup',{page_type:${JSON.stringify(pageType)}});
-  form.hidden=true;msg.className='invite-note';msg.textContent='Done — the first one arrives tomorrow morning.';
+  form.hidden=true;msg.className='invite-note';msg.textContent='You are on the list.';
   setTimeout(function(){close(false)},2600);})
  .catch(function(){btn.disabled=false;msg.className='invite-note err';
   msg.textContent='That did not go through. Try again, or get the app instead.';});

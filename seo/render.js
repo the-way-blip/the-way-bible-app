@@ -506,7 +506,7 @@ function versePage(b, c, from, to) {
 
   const h = `${crumbs([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)], [chapterLabel(b, c), chapterUrl(b, c)], [label, verseUrl(b, c, from, to)]])}
 <h1>${esc(label)} <span class="badge">${VERSION}</span></h1>
-<p class="sub">${esc(b.name)} · chapter ${c}${single ? ` · verse ${from}` : ` · verses ${from}–${to}`} · King James Version</p>
+<p class="sub">${esc(b.name)} · chapter ${c}${single ? ` · verse ${from}` : ` · verses ${from}–${to}`}</p>
 ${scripture}
 <div class="actions"><a class="btn primary" href="${appChapterUrl(b, c, from)}" data-cta="verse-study-app">Study in the app</a><a class="btn" href="${chapterUrl(b, c)}#${from}" data-cta="verse-read-chapter">Read ${esc(chapterLabel(b, c))} in full</a><a class="btn" href="/api/og?ref=${encodeURIComponent(label)}" data-cta="verse-share-image" download="${attr(label.replace(/[: ]/g, "-"))}.png">Share image</a></div>
 ${meaning ? `<h2>What ${esc(label)} means</h2><div class="meaning"><p>${esc(meaning)}</p></div><p class="muted">Study note provided by TheWay Bible App, separate from the KJV text. Read the full chapter in context and compare interpretations. <a href="mailto:dillon@branddesignco.com">Report a correction</a>.</p>` : ""}
@@ -538,7 +538,7 @@ function topicsIndex() {
     ...TOPIC_GROUPS.map((g) => [g, TOPICS.filter((t) => t.group === g)])].filter(([, arr]) => arr.length);
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"]])}
 <h1>Bible verses by topic <span class="badge">${VERSION}</span></h1>
-<p class="sub">${TOPICS.length} topics — what you are walking through, who is in the story, and what God is called. Every verse is quoted in full in the King James Version, with a link to read it in context.</p>
+<p class="sub">${TOPICS.length} topics — what you are walking through, who is in the story, and what God is called. Every verse is quoted in full, with a link to read it in context.</p>
 ${sections.map(([label, arr]) => `<h2>${esc(label)} — ${arr.length}</h2>${topicList(arr)}`).join("")}
 ${promo()}`;
   const jsonld = webPageLd([
@@ -579,7 +579,7 @@ ${L.note ? `<p class="note">${esc(L.note)}</p>` : ""}` : "";
 ${L ? `<p class="lead">${esc(L.lead)}</p>` : intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
 ${listBlock}
 ${L ? `<h2>${esc(L.title)} in scripture — ${n} verses, quoted in full</h2>` : ""}
-<p class="sub">${t.blurb ? esc(t.blurb) + " " : ""}Each verse is quoted in full from the King James Version — tap a reference to read it in context, see cross references, and study the original words.</p>
+<p class="sub">${t.blurb ? esc(t.blurb) + " " : ""}Each verse is quoted in full — tap a reference to read it in context, see cross references, and study the original words.</p>
 ${list}
 ${L ? `<h2>Common questions</h2><div class="faq">${L.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>` : ""}
 ${related.length ? `<h2>Related topics</h2><div class="chips">${related.map((o) => `<a href="/verses-about/${o.slug}">${esc(o.name)}</a>`).join("")}</div>` : ""}
@@ -656,7 +656,7 @@ function namePage(n) {
 <div class="chips">${chips.map(([k, v]) => `<span><b>${esc(k)}:</b> ${esc(v)}</span>`).join("")}</div>
 <h2>Where the name comes from</h2>
 <div class="meaning"><p>${n.lemma ? `<span style="font-size:22px">${esc(n.lemma)}</span>${n.xlit ? ` <i>${esc(n.xlit)}</i>` : ""} — ` : ""}${esc(n.gloss)}.${n.source ? ` Strong's ${esc(n.strongs)} derives it: ${esc(n.source)}.` : ""}</p></div>
-${hits.length ? `<h2>${esc(n.name)} in the King James Version</h2>
+${hits.length ? `<h2>${esc(n.name)} in Scripture</h2>
 ${n.kjv ? `<p class="sub">The King James Version spells it ${esc(n.kjv)}.</p>` : ""}
 <p class="sub">The name appears in ${hits.length} verse${hits.length === 1 ? "" : "s"}${first ? `, first at <a href="${verseUrl(first[0], first[1], first[2], first[2])}">${esc(refLabel(first[0], first[1], first[2], first[2]))}</a>` : ""}.</p>
 <div>${shown.map(([b, c, v]) => `<div class="topicv"><p class="r"><a href="${verseUrl(b, c, v, v)}">${esc(refLabel(b, c, v, v))}</a> <span style="font-weight:400;color:var(--brown-light)">· ${VERSION}</span></p><blockquote>${verseHtml(b.chapters[c - 1][v - 1])}</blockquote></div>`).join("")}</div>
@@ -898,7 +898,7 @@ ${e.kjv.length ? `<h2>How the King James Version translates it</h2>
 <div class="chips tally">${renderings}</div>` : ""}
 ${e.kjvDef ? `<p class="note">Strong's own list of renderings: ${esc(e.kjvDef)}.</p>` : ""}
 ${refs.length ? `<h2>Verses using ${esc(e.lemma)}</h2>
-<p class="sub">${e.n > refs.length ? `The first ${refs.length} of ${e.n} verses` : `All ${refs.length} verse${refs.length === 1 ? "" : "s"}`}, quoted in full from the ${VERSION_LONG}.</p>
+<p class="sub">${e.n > refs.length ? `The first ${refs.length} of ${e.n} verses` : `All ${refs.length} verse${refs.length === 1 ? "" : "s"}`}, quoted in full.</p>
 <div>${refs.map(([b, c, v]) => `<div class="topicv"><p class="r"><a href="${verseUrl(b, c, v, v)}">${esc(refLabel(b, c, v, v))}</a> <span style="font-weight:400;color:var(--brown-light)">&middot; ${VERSION}</span></p><blockquote>${verseHtml(b.chapters[c - 1][v - 1])}</blockquote></div>`).join("")}</div>`
 : `<p class="sub">This entry is in Strong's lexicon but is not tagged anywhere in the King James text used here, so there are no verses to show.</p>`}
 <h2>Common questions</h2><div class="faq">${faqs.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>

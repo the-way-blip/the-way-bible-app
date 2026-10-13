@@ -31,7 +31,10 @@
  *          topics-named.js, after Search Console showed the named pages
  *          ranking around position 12 and the generic ones around 77.
  */
+import { DOCTRINE_INTROS } from "./topics-doctrine.js";
+
 export const TOPIC_INTROS = {
+  ...DOCTRINE_INTROS,
   "fear-and-anxiety": "Fear turns up constantly in scripture, and almost never as something to be ashamed of. The command not to be afraid usually comes with a reason attached, and the reason is God rather than the size of the thing in front of you. These verses run from Isaiah to Philippians.",
   "hope": "Hope in the Bible isn't wishing. It's expectation with something solid underneath it, a promise made by somebody who keeps promises. Most of these verses were written to people in exile, in prison, or waiting on something that hadn't come yet, which is why they hold up when a good mood won't.",
   "marriage": "Scripture talks about marriage as a covenant before it talks about it as a feeling. These verses cover what husbands and wives are each told to do, what Jesus said about two becoming one flesh, and what Paul meant by love that suffereth long — the passages read at weddings and the ones that matter afterward.",

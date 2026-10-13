@@ -13,6 +13,7 @@ import appTopics from "../src/data/topicIndex.js";
 import { MORE_TOPICS } from "./topics-more.js";
 import { PEOPLE_TOPICS } from "./topics-people.js";
 import { NAMED_TOPICS } from "./topics-named.js";
+import { DOCTRINE_TOPICS } from "./topics-doctrine.js";
 
 const slugOf = (name) =>
   name.toLowerCase().replace(/&/g, "and").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -91,7 +92,7 @@ const extra = [
 const appAliases = {
   "fear-and-anxiety": ["anxiety", "fear", "worry", "stress", "being-afraid"],
   "gods-promises": ["promises", "promises-of-god"],
-  "scripture-and-gods-word": ["the-bible", "gods-word", "scripture"],
+  "scripture-and-gods-word": ["the-bible", "gods-word", "scripture", "the-word-of-god", "inspiration-of-scripture", "the-scriptures", "scriptures-on-the-word-of-god"],
   "worship-and-praise": ["worship", "praise"],
   "patience-and-endurance": ["patience", "endurance", "perseverance", "waiting"],
   "grace-and-mercy": ["grace", "mercy"],
@@ -124,6 +125,7 @@ const moreVerses = {
   "gods-promises": ["2 Corinthians 1:20", "Hebrews 10:23", "Numbers 23:19", "Joshua 21:45", "Psalm 145:13", "2 Peter 1:4", "Isaiah 40:31", "Romans 4:21", "Hebrews 6:18", "Deuteronomy 7:9", "1 Kings 8:56", "2 Peter 3:9", "Isaiah 55:11", "Jeremiah 29:11"],
   salvation: ["John 1:12", "1 Timothy 2:3-4", "Isaiah 12:2", "Psalm 27:1", "Romans 10:13", "Luke 19:10", "John 5:24", "Acts 2:21", "Hebrews 7:25", "1 Peter 1:8-9", "Titus 2:11", "Romans 1:16"],
   healing: ["Psalm 41:3", "Isaiah 57:18-19", "Proverbs 17:22", "Psalm 6:2", "Mark 5:34", "Luke 6:19", "Proverbs 4:20-22", "2 Kings 20:5", "Psalm 107:20"],
+  "scripture-and-gods-word": ["2 Peter 1:20-21", "Psalm 119:89", "Matthew 24:35", "Proverbs 30:5", "Psalm 12:6", "2 Timothy 3:16", "2 Timothy 3:17"],
   encouragement: ["Psalm 55:22", "Isaiah 43:2", "Psalm 34:17", "Matthew 11:28", "Galatians 6:9", "Romans 15:5", "1 Chronicles 28:20", "Psalm 27:14", "Lamentations 3:22-23"],
 };
 const withMore = (slug, verses) => [...new Set([...verses, ...(moreVerses[slug] || [])])];
@@ -133,7 +135,7 @@ const fromApp = appTopics.map((t) => {
   return { name: t.name, slug, aliases: appAliases[slug] || [], verses: withMore(slug, t.verses) };
 });
 
-export const TOPICS = [...fromApp, ...[...extra, ...MORE_TOPICS, ...PEOPLE_TOPICS, ...NAMED_TOPICS].map((t) => ({ ...t, slug: slugOf(t.name), verses: withMore(slugOf(t.name), t.verses) }))]
+export const TOPICS = [...fromApp, ...[...extra, ...MORE_TOPICS, ...PEOPLE_TOPICS, ...NAMED_TOPICS, ...DOCTRINE_TOPICS].map((t) => ({ ...t, slug: slugOf(t.name), verses: withMore(slugOf(t.name), t.verses) }))]
   .sort((a, b) => a.name.localeCompare(b.name));
 
 export const TOPIC_BY_SLUG = new Map();

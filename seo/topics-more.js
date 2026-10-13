@@ -168,7 +168,7 @@ export const MORE_TOPICS = [
     verses: ["Romans 3:23", "Romans 6:23", "1 John 1:8-9", "James 4:17", "Isaiah 59:2", "Romans 5:12", "Psalm 51:5", "1 John 3:4", "Genesis 4:7", "Romans 6:12-14", "Proverbs 28:13", "Hebrews 4:15"] },
   { name: "Confession", aliases: ["confessing-sin", "confessing-sins", "confess", "admitting-sin"],
     verses: ["1 John 1:9", "James 5:16", "Proverbs 28:13", "Psalm 32:5", "Romans 10:9-10", "Psalm 51:3-4", "Leviticus 5:5", "Daniel 9:4-5", "Nehemiah 9:2-3", "Psalm 38:18", "Matthew 10:32", "Acts 19:18"] },
-  { name: "Holiness", aliases: ["being-holy", "be-ye-holy", "sanctification", "living-a-holy-life", "set-apart"],
+  { name: "Holiness", aliases: ["being-holy", "be-ye-holy", "scriptures-on-holiness", "living-a-holy-life", "set-apart"],
     verses: ["1 Peter 1:15-16", "Hebrews 12:14", "Leviticus 20:26", "1 Thessalonians 4:7", "Romans 12:1", "2 Corinthians 7:1", "Ephesians 1:4", "1 Peter 2:9", "Psalm 99:9", "Isaiah 6:3", "Exodus 15:11", "2 Timothy 1:9"] },
   { name: "Righteousness", aliases: ["being-righteous", "the-righteous", "living-righteously", "justification", "justified-by-faith"],
     verses: ["Matthew 6:33", "Romans 3:22", "2 Corinthians 5:21", "Romans 5:1", "Philippians 3:9", "Psalm 37:25", "Proverbs 21:21", "Matthew 5:6", "Romans 1:17", "Isaiah 61:10", "James 5:16", "Psalm 34:15"] },

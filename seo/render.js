@@ -576,7 +576,7 @@ const topicPhrase = (t, cap = false) => {
 };
 
 // Sections on /verses-about, in the order they are shown.
-const TOPIC_GROUPS = ["People of the Bible", "Names & Titles of God", "Stories & Teachings"];
+const TOPIC_GROUPS = ["People of the Bible", "Names & Titles of God", "Stories & Teachings", "What We Believe"];
 // Chips on /bible — a spread of the most-searched pages, not the first 24 alphabetically.
 const FEATURED_TOPICS = ["fear-and-anxiety", "strength", "love", "healing", "hope", "faith", "peace", "prayer", "marriage", "forgiveness", "grief-and-loss", "encouragement", "trusting-god", "gods-love", "protection", "joy", "david", "jesus", "the-names-of-god", "the-fruit-of-the-spirit", "most-popular-bible-verses", "verses-to-memorize", "short-bible-verses", "christmas"];
 

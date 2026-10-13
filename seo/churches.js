@@ -20,7 +20,9 @@
  *   social      { facebook, instagram, youtube }
  *   planting    true for a church that is gathering but has no building or schedule yet.
  */
-export const CHURCHES = [
+import { CHURCHES_MI } from "./churches-mi.js";
+
+const HAND = [
   {
     slug: "rogers-city-baptist-church",
     name: "Rogers City Baptist Church",
@@ -152,6 +154,23 @@ export const CHURCHES = [
     ministries: ["Spanish service", "Addictions Program (7:00 pm)"],
   },
 ];
+
+// Merge: hand-curated churches win; a harvested listing for the same church only lends its coordinates.
+const digits = (p) => (p || "").replace(/\D/g, "");
+const nameKey = (c) => `${c.name} ${c.city}`.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const known = new Map();
+for (const c of HAND) { known.set(nameKey(c), c); if (c.phone) known.set(digits(c.phone), c); }
+const slugs = new Set(HAND.map((c) => c.slug));
+const harvested = [];
+for (const c of CHURCHES_MI) {
+  const hit = known.get(nameKey(c)) || (c.phone && known.get(digits(c.phone)));
+  if (hit) { hit.lat ??= c.lat; hit.lng ??= c.lng; continue; }
+  let slug = c.slug, i = 2;
+  while (slugs.has(slug)) slug = `${c.slug}-${i++}`;
+  slugs.add(slug);
+  harvested.push({ ...c, slug });
+}
+export const CHURCHES = [...HAND, ...harvested];
 
 export const CHURCH_BY_SLUG = new Map(CHURCHES.map((c) => [c.slug, c]));
 

@@ -6,7 +6,9 @@
  * a name. Fields:
  *   slug        URL slug (lowercase, hyphens). Changing it needs a redirect.
  *   name        Full church name as the church writes it.
- *   website     Their homepage. This is the outbound link the page exists to give.
+ *   website     Their homepage — the outbound link the page exists to give. Optional: when a church has
+ *               no site, set `sermons` (their SermonAudio page) and the page links there instead.
+ *   source/checked  Where the details came from and when (defaults: the church's website, October 2026).
  *   city/state/stateName/county
  *   address     { street, city, state, zip } — omit when the church has no building yet.
  *   phone, email, pastor, founded (year), affiliation (their own label)
@@ -95,6 +97,59 @@ export const CHURCHES = [
     about: "TheWay is a new church being formed in Big Rapids, Michigan, serving Mecosta County and the towns around it. It is gathering people first — meeting in homes and coffee shops — before holding regular Sunday services. The church aims to preach the Bible book by book, sing together, help every believer use their spiritual gifts, and say the gospel clearly at every gathering. Its stated purposes are to exhort, equip, and exalt Christ. Join the interest list on the website to hear the location and service times first.",
     services: [],
     social: { facebook: "https://facebook.com/thewaybigrapids", instagram: "https://instagram.com/theway_bigrapids", youtube: "https://youtube.com/@theway_bigrapids" },
+  },
+  {
+    slug: "bible-believers-baptist-church",
+    name: "Bible Believers Baptist Church",
+    sermons: "https://sermonaudio.com/solo/bbbctawascity/",
+    source: "the church's SermonAudio profile",
+    city: "Tawas City", state: "MI", stateName: "Michigan", county: "Iosco County",
+    address: { street: "21 South Chambers Road", city: "Tawas City", state: "MI", zip: "48763" },
+    pastor: "Pastor Jeremy Evans",
+    affiliation: "Independent Baptist",
+    kjv: true,
+    about: "Bible Believers Baptist Church is an independent, Bible-believing Baptist church in Tawas City, Michigan. The church aims to please the Lord by preaching from the Authorized Version King James Bible. Pastor Jeremy Evans has served as pastor since May 2015.",
+    services: [
+      { day: "Sunday", label: "Sunday School", time: "9:45 am" },
+      { day: "Sunday", label: "Sunday Morning", time: "11:00 am" },
+      { day: "Sunday", label: "Sunday Evening", time: "5:00 pm" },
+      { day: "Wednesday", label: "Wednesday Night", time: "7:00 pm" },
+    ],
+  },
+  {
+    slug: "liberty-baptist-church-greenville",
+    name: "Liberty Baptist Church",
+    sermons: "https://sermonaudio.com/solo/jesusdied4u/",
+    source: "the church's SermonAudio profile",
+    city: "Greenville", state: "MI", stateName: "Michigan", county: "Montcalm County",
+    address: { street: "11845 W. Carson City Road", city: "Greenville", state: "MI", zip: "48838" },
+    kjv: true,
+    about: "Liberty Baptist Church in Greenville, Michigan uses the King James Bible. The church also runs a printing ministry, Liberty Gospel Tracts.",
+    services: [
+      { day: "Sunday", label: "Sunday School", time: "10:00 am" },
+      { day: "Sunday", label: "Sunday Morning Service", time: "11:00 am" },
+      { day: "Sunday", label: "Sunday Evening Service", time: "6:00 pm" },
+      { day: "Wednesday", label: "Wednesday Prayer Meeting", time: "7:00 pm" },
+    ],
+    ministries: ["Gospel tract printing ministry"],
+  },
+  {
+    slug: "beth-haven-baptist-church",
+    name: "Beth Haven Baptist Church",
+    sermons: "https://www.sermonaudio.com/broadcasters/bethhavenbaptist/",
+    source: "the church's SermonAudio profile",
+    city: "Sheridan", state: "MI", stateName: "Michigan", county: "Montcalm County",
+    address: { street: "1158 W Carson City Rd", city: "Sheridan", state: "MI", zip: "48884" },
+    kjv: true,
+    about: "Beth Haven Baptist Church in Sheridan, Michigan preaches from the King James Bible. There is a Spanish service at 11:00 am on Sundays, the church holds back-to-back services on the last Sunday of each month, and services are broadcast live online.",
+    services: [
+      { day: "Sunday", label: "Sunday School", time: "10:00 am" },
+      { day: "Sunday", label: "Sunday Morning Service", time: "11:00 am" },
+      { day: "Sunday", label: "Spanish Service", time: "11:00 am" },
+      { day: "Sunday", label: "Sunday Evening Service", time: "6:00 pm" },
+      { day: "Wednesday", label: "Wednesday Service", time: "7:00 pm" },
+    ],
+    ministries: ["Spanish service", "Addictions Program (7:00 pm)"],
   },
 ];
 

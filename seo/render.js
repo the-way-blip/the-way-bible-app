@@ -293,7 +293,7 @@ footer.bottom .churches{flex-basis:100%;border-top:1px solid var(--line);padding
 @media(max-width:560px){h1{font-size:28px}.scripture{font-size:20px;padding:20px}nav.main .hide{display:none}}
 `;
 
-function shell({ title, description, canonical, h, jsonld, ogImage, noindex, pageType = "bible-other", ref = "", hideSearch = false, extraCss = "" }) {
+function shell({ title, description, canonical, h, jsonld, ogImage, noindex, pageType = "bible-other", ref = "", hideSearch = false, extraCss = "", noInvite = false }) {
   const url = SITE + canonical;
   // GA4: same property as the app. content_group / page_type / bible_ref let reports
   // split verse vs chapter vs topic traffic; seo_cta_click measures hand-off into the app.
@@ -342,8 +342,8 @@ ${h}
 <span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="/churches">Find a church</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@thewaybible.app">Contact</a></span>
 <span class="churches">Churches: ${CHURCHES.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${esc(n)}</a>`).join(" · ")}</span>
 </div></footer>
-${noindex ? "" : inviteHtml(appHref())}
-${noindex ? "" : `<script>${inviteJs(pageType)}</script>`}
+${noindex || noInvite ? "" : inviteHtml(appHref())}
+${noindex || noInvite ? "" : `<script>${inviteJs(pageType)}</script>`}
 </body>
 </html>`;
 }
@@ -765,56 +765,103 @@ const churchTitle = (c) => c.nameLong || c.name;
 const addressLine = (a) => `${a.street}, ${a.city}, ${a.state} ${a.zip}`;
 const mapsHref = (c) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${c.name}, ${addressLine(c.address)}`)}`;
 const telHref = (p) => `tel:+1${p.replace(/\D/g, "")}`;
-const sundayAt = (c) => { const s = c.services.find((x) => x.day === "Sunday" && /worship|morning/i.test(x.label)) || c.services.find((x) => x.day === "Sunday"); return s ? `Sunday ${s.time}` : (c.planting ? "Gathering now" : ""); };
+const hostOf = (u) => u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
+/** The one outbound link a church page leads with: its own site, else its sermon page. */
+const mainLink = (c) => c.website ? { href: c.website, label: `Visit ${c.name}'s website`, short: "Website", cta: "church-website" }
+  : c.sermons ? { href: c.sermons, label: "Listen to sermons", short: "Sermons", cta: "church-sermons" } : null;
+/** One scannable line for list cards: "Sun 9:45 am · 11:00 am · 6:00 pm — Wed 7:00 pm". */
+const glance = (c) => {
+  if (!c.services.length) return c.planting ? "Gathering now — join the interest list" : "";
+  const sun = [...new Set(c.services.filter((x) => x.day === "Sunday").map((x) => x.time))];
+  const wed = [...new Set(c.services.filter((x) => x.day !== "Sunday").map((x) => `${x.day.slice(0, 3)} ${x.time}`))];
+  return [sun.length ? `Sun ${sun.join(" · ")}` : "", ...wed].filter(Boolean).join(" — ");
+};
+const churchCard = (c) => `<div class="card row" data-s="${attr([c.name, c.city, c.stateName, c.state, c.county || "", c.pastor || "", c.affiliation || "", c.address ? c.address.zip : ""].join(" ").toLowerCase())}" data-kjv="${c.kjv ? 1 : 0}"><a class="main" href="${churchUrl(c)}"><div class="n">${esc(c.name)}</div><div class="m"><b>${esc(c.city)}, ${esc(c.state)}</b>${c.county ? ` · ${esc(c.county)}` : ""}${c.kjv ? ` · <span class="kjv">King James Bible</span>` : ""}</div>${glance(c) ? `<div class="g">${esc(glance(c))}</div>` : ""}</a>${c.phone ? `<a class="call" href="${telHref(c.phone)}" aria-label="Call ${attr(c.name)}" data-cta="church-call-list">Call</a>` : ""}</div>`;
+
 const CHURCH_CSS = `
-.dir{display:grid;gap:10px}.dir a.card{display:block;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;color:var(--brown)}.dir a.card:hover{border-color:var(--gold);text-decoration:none}
-.dir .n{font-weight:600;font-size:17px}.dir .m{font-size:14px;color:var(--brown-light);margin-top:2px}.dir .m b{color:var(--brown);font-weight:500}
-table.times{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:15px}
-table.times td{padding:11px 14px;border-top:1px solid var(--line)}table.times tr:first-child td{border-top:0}table.times td.t{white-space:nowrap;font-weight:600;color:var(--gold-dark);width:1%}
-.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:15px;line-height:1.6}.card p{margin:0 0 6px}.card p:last-child{margin:0}
+[hidden]{display:none!important}
+.dir{display:grid;gap:10px}
+.card.row{display:flex;align-items:stretch;padding:0;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:12px}
+.card.row:hover{border-color:var(--gold)}
+.card.row .main{flex:1;min-width:0;display:block;padding:14px 16px;color:var(--brown)}.card.row .main:hover{text-decoration:none;background:var(--cream-dark)}
+.card.row .call{flex:none;display:flex;align-items:center;padding:0 20px;border-left:1px solid var(--line);font-weight:600;font-size:14px;min-width:64px;justify-content:center}.card.row .call:hover{background:var(--cream-dark);text-decoration:none}
+.dir .n{font-weight:600;font-size:17px;line-height:1.3}.dir .m{font-size:14px;color:var(--brown-light);margin-top:2px}.dir .m b{color:var(--brown);font-weight:500}.dir .g{font-size:14px;margin-top:5px}
+.kjv{color:var(--gold-dark);font-weight:600}
+.finder{display:grid;gap:4px;margin:0 0 22px}
+.finder input[type=search]{width:100%;border:1px solid var(--line);border-radius:10px;padding:14px;font:16px Inter,system-ui,sans-serif;color:var(--brown);background:var(--paper);-webkit-appearance:none;appearance:none}
+.finder input[type=search]:focus{outline:none;border-color:var(--gold)}
+.finder .chk{display:flex;gap:10px;align-items:center;min-height:44px;font-size:15px;cursor:pointer}.finder .chk input{width:20px;height:20px;accent-color:var(--gold-dark)}
+.finder .count{font-size:14px;color:var(--brown-light);margin:0;min-height:20px}
+section.st{margin:0 0 8px}
+table.times{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:16px}
+table.times td{padding:12px 14px;border-top:1px solid var(--line)}table.times tr:first-child td{border-top:0}table.times td.t{white-space:nowrap;font-weight:600;color:var(--gold-dark);width:1%}
+.info{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:16px;line-height:1.6}.info p{margin:0 0 8px}.info p:last-child{margin:0}
 .about p{font-size:17px;line-height:1.7;margin:0 0 12px}
-.list p{margin:0 0 20px;font-size:16px;line-height:1.65}
+p.fine{font-size:13px;color:var(--brown-light);line-height:1.6;margin:22px 0 0}
+p.slim{font-size:14px;color:var(--brown-light);margin:26px 0 0;padding-top:16px;border-top:1px solid var(--line)}
+.cbar{display:none}
+@media(max-width:640px){
+.cbar{display:flex;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px max(14px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));background:var(--paper);border-top:1px solid var(--line)}
+.cbar a{flex:1;text-align:center;padding:13px 8px;border:1px solid var(--line);border-radius:10px;font-weight:600;font-size:15px;color:var(--brown);background:var(--cream)}
+.cbar a.go{background:var(--gold);border-color:var(--gold);color:#fff}
+.cbar a:hover{text-decoration:none}
+main{padding-bottom:96px}
+.card.row .call{padding:0 16px}
+}
 `;
+const FINDER_JS = `(function(){var f=document.querySelector('.finder');if(!f)return;f.hidden=false;var q=document.getElementById('q'),k=document.getElementById('kjv'),cards=[].slice.call(document.querySelectorAll('.dir .card')),secs=[].slice.call(document.querySelectorAll('section.st')),n=document.getElementById('count'),none=document.getElementById('none');
+function run(){var t=q.value.trim().toLowerCase(),words=t.split(' ').filter(Boolean),shown=0;cards.forEach(function(c){var s=c.getAttribute('data-s'),ok=words.every(function(w){return s.indexOf(w)>-1})&&(!k.checked||c.getAttribute('data-kjv')==='1');c.hidden=!ok;if(ok)shown++});secs.forEach(function(s){s.hidden=!s.querySelector('.card:not([hidden])')});n.textContent=(t||k.checked)?shown+' of '+cards.length+' churches':'';none.hidden=shown>0}
+q.addEventListener('input',run);k.addEventListener('change',run);run()})();`;
 
 function churchesIndex() {
   const groups = churchesByState();
   const h = `${crumbs([["Home", "/"], ["Churches", "/churches"]])}
 <h1>Find a church</h1>
-<p class="sub">A directory of Bible-preaching churches — service times, address, pastor, and a link to each church's own website. No ads, no paid placement. ${DIRECTORY.length} churches listed so far.</p>
-${groups.map((g) => `<h2 id="${g.state.toLowerCase()}">${esc(g.stateName)} — ${g.churches.length}</h2>
-<div class="dir">${g.churches.map((c) => `<a class="card" href="${churchUrl(c)}"><div class="n">${esc(c.name)}</div><div class="m"><b>${esc(c.city)}, ${esc(c.state)}</b>${c.county ? ` · ${esc(c.county)}` : ""}${sundayAt(c) ? ` · ${esc(sundayAt(c))}` : ""}${c.kjv ? " · King James Bible" : ""}</div></a>`).join("")}</div>`).join("")}
+<p class="sub">Service times, address, pastor, and a link to each church's own website. ${DIRECTORY.length} churches listed. No ads, no paid placement.</p>
+<div class="finder" hidden>
+<input id="q" type="search" placeholder="Search by church, city, or county" aria-label="Search churches" autocomplete="off" autocapitalize="none" autocorrect="off" enterkeyhint="search">
+<label class="chk"><input type="checkbox" id="kjv"> King James Bible churches only</label>
+<p class="count" id="count" aria-live="polite"></p>
+</div>
+${groups.map((g) => `<section class="st" id="${g.state.toLowerCase()}"><h2>${esc(g.stateName)} — ${g.churches.length}</h2><div class="dir">${g.churches.map(churchCard).join("")}</div></section>`).join("")}
+<p class="note" id="none" hidden>No churches match that search. Try a city or county name, or <a href="mailto:hello@thewaybible.app?subject=List%20our%20church">tell us about a church to add</a>.</p>
 <h2 id="list-your-church">List your church</h2>
-<div class="list"><p>Listing is free. If your church preaches the Bible and would like a page here, email <a href="mailto:hello@thewaybible.app?subject=List%20our%20church">hello@thewaybible.app</a> with your church name, website, address, service times, and pastor's name. Each page links straight to your website, and the whole directory is built to load fast and read clearly on a phone.</p></div>
-${promo()}`;
+<div class="info"><p>Listing is free. Email <a href="mailto:hello@thewaybible.app?subject=List%20our%20church">hello@thewaybible.app</a> with your church name, website, address, service times, and pastor's name. Your page links straight to your website.</p></div>
+<p class="slim">Free King James Bible online and in the app: <a href="/bible">read on the web</a> · <a href="${appHref()}" data-cta="churches-ios">get the iPhone app</a></p>
+<script>${FINDER_JS}</script>`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: "Church directory", url: SITE + "/churches", isPartOf: { "@id": SITE + "/#website" },
       mainEntity: { "@type": "ItemList", itemListElement: DIRECTORY.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, url: SITE + churchUrl(c) })) } },
     breadcrumbLd([["Home", "/"], ["Churches", "/churches"]]),
   ]);
-  return ok(shell({ title: `Find a Church Near You – Bible-Preaching Church Directory | ${SITE_NAME}`, description: `Find a Bible-preaching church: service times, address, pastor, and website for churches in ${groups.map((g) => g.stateName).join(", ")}. Free listings, no ads.`, canonical: "/churches", h, jsonld, pageType: "churches", extraCss: CHURCH_CSS }));
+  return ok(shell({ title: `Find a Church Near You – Bible-Preaching Church Directory | ${SITE_NAME}`, description: `Find a Bible-preaching church: service times, address, pastor, and website for churches in ${groups.map((g) => g.stateName).join(", ")}. Free listings, no ads.`, canonical: "/churches", h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true }));
 }
 
 function churchPage(c) {
   const title = churchTitle(c);
   const place = `${c.city}, ${c.stateName}`;
-  const others = DIRECTORY.filter((x) => x !== c && x.state === c.state);
+  const main = mainLink(c);
+  const others = DIRECTORY.filter((x) => x !== c && x.state === c.state)
+    .sort((x, y) => (y.county === c.county) - (x.county === c.county) || x.city.localeCompare(y.city)).slice(0, 4);
   const social = Object.entries(c.social || {}).map(([k, u]) => `<a class="btn" href="${attr(u)}" target="_blank" rel="noopener">${{ facebook: "Facebook", instagram: "Instagram", youtube: "YouTube" }[k] || k}</a>`).join("");
-  const facts = [c.affiliation && `<span><b>${esc(c.affiliation)}</b></span>`, c.founded && `<span>Founded <b>${c.founded}</b></span>`, c.kjv && `<span><b>King James Bible</b></span>`, ].filter(Boolean).join("");
+  const extra = [...(c.website && c.sermons ? [["Sermons", c.sermons]] : []), ...(c.links || [])].map(([n, u]) => `<a class="btn" href="${attr(u)}" target="_blank" rel="noopener">${esc(n)}</a>`).join("");
+  const facts = [c.kjv && `<span class="kjv-b"><b>King James Bible</b></span>`, c.affiliation && `<span><b>${esc(c.affiliation)}</b></span>`, c.founded && `<span>Founded <b>${c.founded}</b></span>`].filter(Boolean).join("");
   const times = c.services.length
     ? `<table class="times">${c.services.map((s) => `<tr><td class="t">${esc(s.day)} ${esc(s.time)}</td><td>${esc(s.label)}</td></tr>`).join("")}</table>`
-    : `<div class="card"><p>No regular service times yet. ${esc(c.name)} is gathering people first and meeting in homes and coffee shops. Join the interest list on the church website to hear the location and times first.</p></div>`;
-  const contact = `<div class="card">
+    : `<div class="info"><p>No regular service times yet. ${esc(c.name)} is gathering people first and meeting in homes and coffee shops. Join the interest list on the church website to hear the location and times first.</p></div>`;
+  const contact = `<div class="info">
 ${c.address ? `<p><b>Address:</b> ${esc(addressLine(c.address))} · <a href="${mapsHref(c)}" target="_blank" rel="noopener">Get directions</a></p>` : `<p><b>Location:</b> ${esc(place)} — meeting place not announced yet.</p>`}
 ${c.phone ? `<p><b>Phone:</b> <a href="${telHref(c.phone)}">${esc(c.phone)}</a></p>` : ""}
 ${c.email ? `<p><b>Email:</b> <a href="mailto:${attr(c.email)}">${esc(c.email)}</a></p>` : ""}
 ${c.pastor ? `<p><b>Pastor:</b> ${esc(c.pastor)}</p>` : ""}
-<p><b>Website:</b> <a href="${attr(c.website)}" target="_blank" rel="noopener">${esc(c.website.replace(/^https?:\/\//, ""))}</a></p>
+${c.website ? `<p><b>Website:</b> <a href="${attr(c.website)}" target="_blank" rel="noopener">${esc(hostOf(c.website))}</a></p>` : ""}
 </div>`;
+  const bar = [c.phone && `<a href="${telHref(c.phone)}" data-cta="church-call-bar">Call</a>`, c.address && `<a href="${mapsHref(c)}" target="_blank" rel="noopener" data-cta="church-directions-bar">Directions</a>`, main && `<a class="go" href="${attr(main.href)}" target="_blank" rel="noopener" data-cta="${main.cta}-bar">${main.short}</a>`].filter(Boolean);
   const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], [c.stateName, `/churches#${c.state.toLowerCase()}`], [c.name, churchUrl(c)]])}
 <h1>${esc(title)}</h1>
 <p class="sub">${esc(place)}${c.county ? ` · ${esc(c.county)}` : ""}${c.tagline ? `<br>${esc(c.tagline)}` : ""}</p>
 ${facts ? `<div class="facts">${facts}</div>` : ""}
-<div class="actions"><a class="btn primary" href="${attr(c.website)}" target="_blank" rel="noopener" data-cta="church-website">Visit ${esc(c.name)}'s website</a>${c.address ? `<a class="btn" href="${mapsHref(c)}" target="_blank" rel="noopener" data-cta="church-directions">Directions</a>` : ""}${c.phone ? `<a class="btn" href="${telHref(c.phone)}" data-cta="church-call">Call</a>` : ""}</div>
+<div class="actions">${main ? `<a class="btn primary" href="${attr(main.href)}" target="_blank" rel="noopener" data-cta="${main.cta}">${esc(main.label)}</a>` : ""}${c.address ? `<a class="btn" href="${mapsHref(c)}" target="_blank" rel="noopener" data-cta="church-directions">Directions</a>` : ""}${c.phone ? `<a class="btn" href="${telHref(c.phone)}" data-cta="church-call">Call</a>` : ""}</div>
 <h2>Service times</h2>
 ${times}
 <h2>Visit</h2>
@@ -822,19 +869,20 @@ ${contact}
 <h2>About ${esc(c.name)}</h2>
 <div class="about"><p>${esc(c.about)}</p></div>
 ${c.ministries?.length ? `<h2>Ministries</h2><ul class="outline">${c.ministries.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}
-${social || c.links?.length ? `<h2>Online</h2><div class="actions">${social}${(c.links || []).map(([n, u]) => `<a class="btn" href="${attr(u)}" target="_blank" rel="noopener">${esc(n)}</a>`).join("")}</div>` : ""}
-${others.length ? `<h2>Other churches in ${esc(c.stateName)}</h2><div class="dir">${others.map((o) => `<a class="card" href="${churchUrl(o)}"><div class="n">${esc(o.name)}</div><div class="m"><b>${esc(o.city)}, ${esc(o.state)}</b>${sundayAt(o) ? ` · ${esc(sundayAt(o))}` : ""}</div></a>`).join("")}</div>` : ""}
-<p style="font-size:14px;margin-top:24px"><a href="/churches">All churches</a> · Is this your church? Email <a href="mailto:hello@thewaybible.app?subject=${encodeURIComponent("Update: " + c.name)}">hello@thewaybible.app</a> to update this page.</p>
-${promo()}`;
+${social || extra ? `<h2>Online</h2><div class="actions">${social}${extra}</div>` : ""}
+${others.length ? `<h2>More churches in ${esc(c.stateName)}</h2><div class="dir">${others.map(churchCard).join("")}</div>` : ""}
+<p class="fine">Details from ${esc(c.source || "the church's website")}, checked ${esc(c.checked || "October 2026")}. Times change — confirm with the church before you visit. Is this your church? Email <a href="mailto:hello@thewaybible.app?subject=${encodeURIComponent("Update: " + c.name)}">hello@thewaybible.app</a> to update this page. <a href="/churches">All churches</a></p>
+<p class="slim">Free King James Bible online and in the app: <a href="/bible">read on the web</a> · <a href="${appHref()}" data-cta="church-ios">get the iPhone app</a></p>
+${bar.length ? `<nav class="cbar" aria-label="Contact ${attr(c.name)}">${bar.join("")}</nav>` : ""}`;
   const church = {
-    "@type": "Church", "@id": SITE + churchUrl(c) + "#church", name: c.name, url: c.website, description: c.about,
+    "@type": "Church", "@id": SITE + churchUrl(c) + "#church", name: c.name, url: c.website || SITE + churchUrl(c), description: c.about,
     ...(c.address ? { address: { "@type": "PostalAddress", streetAddress: c.address.street, addressLocality: c.address.city, addressRegion: c.address.state, postalCode: c.address.zip, addressCountry: "US" } }
       : { address: { "@type": "PostalAddress", addressLocality: c.city, addressRegion: c.state, addressCountry: "US" } }),
     ...(c.phone ? { telephone: "+1" + c.phone.replace(/\D/g, "") } : {}),
     ...(c.email ? { email: c.email } : {}),
     ...(c.founded ? { foundingDate: String(c.founded) } : {}),
     ...(c.pastor ? { employee: { "@type": "Person", name: c.pastor.replace(/^Pastor\s+/, ""), jobTitle: "Pastor" } } : {}),
-    ...(c.social ? { sameAs: Object.values(c.social) } : {}),
+    ...((c.social || c.sermons) ? { sameAs: [...Object.values(c.social || {}), ...(c.sermons ? [c.sermons] : [])] } : {}),
   };
   const jsonld = webPageLd([
     { "@type": "WebPage", name: `${c.name} – ${place}`, url: SITE + churchUrl(c), isPartOf: { "@id": SITE + "/#website" }, about: { "@id": church["@id"] } },
@@ -844,8 +892,8 @@ ${promo()}`;
   const sun = c.services.filter((s) => s.day === "Sunday").map((s) => `${s.label} ${s.time}`).join(", ");
   const description = c.planting
     ? `${c.name} is a new church forming in ${place}. ${c.tagline} Contact, social links, and how to join the interest list.`
-    : `${c.name} in ${place}${c.address ? ` (${c.address.street})` : ""}. Service times: ${sun}. ${c.pastor ? c.pastor + ". " : ""}Address, phone, directions, and website.`;
-  return ok(shell({ title: c.planting ? `${c.name} – A New Church in ${c.city}, ${c.state} | ${SITE_NAME}` : `${title} – ${c.city}, ${c.state} | Service Times, Address & Website`, description, canonical: churchUrl(c), h, jsonld, pageType: "church", ref: c.slug, extraCss: CHURCH_CSS }));
+    : `${c.name} in ${place}${c.address ? ` (${c.address.street})` : ""}. Service times: ${sun}. ${c.pastor ? c.pastor + ". " : ""}Address, phone, directions, and ${c.website ? "website" : "sermons"}.`;
+  return ok(shell({ title: c.planting ? `${c.name} – A New Church in ${c.city}, ${c.state} | ${SITE_NAME}` : `${title} – ${c.city}, ${c.state} | Service Times, Address & Website`, description, canonical: churchUrl(c), h, jsonld, pageType: "church", ref: c.slug, extraCss: CHURCH_CSS, noInvite: true }));
 }
 
 /* ------------------------------------------------------------------ search */

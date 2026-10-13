@@ -50,8 +50,9 @@ async function queue(row) {
       headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Prefer: "return=minimal" },
       body: JSON.stringify(row),
     });
+    if (!r.ok) console.error("church-submit queue failed", r.status, (await r.text()).slice(0, 300));
     return r.ok;
-  } catch { return false; }
+  } catch (e) { console.error("church-submit queue error", e.message); return false; }
 }
 
 async function email(row) {
@@ -69,6 +70,7 @@ async function email(row) {
         html: `<p><b>${verb} submitted on thewaybible.app/churches</b></p><table cellpadding="4">${lines.map(([k, v]) => `<tr><td><b>${esc(k)}</b></td><td>${esc(v)}</td></tr>`).join("")}</table><p>Review the queue in Supabase: church_submissions (status = pending).</p>`,
       }),
     });
+    if (!r.ok) console.error("church-submit email failed", r.status, (await r.text()).slice(0, 300));
     return r.ok;
-  } catch { return false; }
+  } catch (e) { console.error("church-submit email error", e.message); return false; }
 }

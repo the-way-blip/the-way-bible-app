@@ -6,7 +6,7 @@ let n = 0, bad = 0, bytes = 0; const t0 = Date.now();
 const check = (q, p) => { try { const o = render(q); n++; bytes += o.body.length; if (o.status !== 200) { bad++; console.log("NON-200", p, o.status); } if (o.status===200 && !/<title>/.test(o.body) && !/<\?xml/.test(o.body)) { bad++; console.log("NO TITLE", p); } } catch (e) { bad++; console.log("THROW", p, e.message); } };
 check({kind:"bible"},"/bible"); check({kind:"topics"},"/verses-about"); check({kind:"sitemap-index"},"/sitemap.xml"); check({kind:"sitemap",file:"pages"},"/sitemaps/pages.xml");
 for (const t of TOPICS) check({kind:"topic",topic:t.slug},"/verses-about/"+t.slug);
-check({kind:"churches"},"/churches"); for (const c of CHURCHES) check({kind:"church",slug:c.slug},"/churches/"+c.slug);
+check({kind:"churches"},"/churches"); for (const k of new Set(CHURCHES.map((c)=>c.city.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-"+c.state.toLowerCase()))) check({kind:"churchcity",city:k},"/churches/in/"+k); for (const c of CHURCHES) check({kind:"church",slug:c.slug},"/churches/"+c.slug);
 check({kind:"names"},"/bible-names"); check({kind:"name",name:"boys"},"/bible-names/boys"); check({kind:"name",name:"girls"},"/bible-names/girls");
 for (const n of NAMES) check({kind:"name",name:n.name.toLowerCase()},"/bible-names/"+n.name.toLowerCase());
 for (const b of books()) { check({kind:"book",book:b.slug},"/bible/"+b.slug); check({kind:"sitemap",file:"verses-"+b.slug},"sitemap "+b.slug);

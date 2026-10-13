@@ -8,6 +8,7 @@ const ROUTES = [
   [/^\/verses-about\/?$/, () => ({ kind: "topics" })],
   [/^\/verse-of-the-day\/?$/, () => ({ kind: "votd" })],
   [/^\/churches\/?$/, () => ({ kind: "churches" })],
+  [/^\/churches\/in\/([^/]+)\/?$/, (m) => ({ kind: "churchcity", city: m[1] })],
   [/^\/churches\/([^/]+)\/?$/, (m) => ({ kind: "church", slug: m[1] })],
   [/^\/king-james-bible\/?$/, () => ({ kind: "kjv" })],
   [/^\/bible-statistics\/?$/, () => ({ kind: "stats" })],

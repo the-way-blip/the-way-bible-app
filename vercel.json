@@ -49,6 +49,10 @@
       "destination": "/api/bible-page?kind=churches"
     },
     {
+      "source": "/churches/in/:city",
+      "destination": "/api/bible-page?kind=churchcity&city=:city"
+    },
+    {
       "source": "/churches/:slug",
       "destination": "/api/bible-page?kind=church&slug=:slug"
     },

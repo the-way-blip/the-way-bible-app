@@ -788,6 +788,7 @@ const churchCard = (c, mi) => `<div class="card row" data-s="${attr([c.name, c.c
 const CHURCH_CSS = `
 [hidden]{display:none!important}
 .dir{display:grid;gap:10px}
+.citylinks{line-height:2;font-size:15px}.citylinks a{white-space:nowrap}
 .card.row{display:flex;align-items:stretch;padding:0;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:12px}
 .card.row:hover{border-color:var(--gold)}
 .card.row .main{flex:1;min-width:0;display:block;padding:14px 16px;color:var(--brown)}.card.row .main:hover{text-decoration:none;background:var(--cream-dark)}
@@ -843,6 +844,7 @@ function churchesIndex() {
 <p class="count" id="count" aria-live="polite"></p>
 </div>
 ${groups.map((g) => `<section class="st" id="${g.state.toLowerCase()}"><h2>${esc(g.stateName)} — ${g.churches.length}</h2><div class="dir">${g.churches.map((c) => churchCard(c)).join("")}</div></section>`).join("")}
+${(() => { const cs = CITY_LIST.filter((x) => x.list.length > 1); return cs.length ? `<h2>Browse by city</h2><p class="citylinks">${cs.map((x) => `<a href="/churches/in/${x.key}">${esc(x.city)}, ${esc(x.state)} (${x.list.length})</a>`).join(" · ")}</p>` : ""; })()}
 <p class="note" id="none" hidden>No churches match that search. Try a city name, or <a href="mailto:hello@thewaybible.app?subject=List%20our%20church">tell us about a church to add</a>.</p>
 <h2 id="list-your-church">List your church</h2>
 <div class="info"><p>Listing is free. Email <a href="mailto:hello@thewaybible.app?subject=List%20our%20church">hello@thewaybible.app</a> with your church name, website, address, service times, and pastor's name. Your page links straight to your website. Don't see your church or see something out of date? Same address.</p></div>
@@ -854,6 +856,35 @@ ${groups.map((g) => `<section class="st" id="${g.state.toLowerCase()}"><h2>${esc
     breadcrumbLd([["Home", "/"], ["Churches", "/churches"]]),
   ]);
   return ok(shell({ title: `Find a Church Near You – ${DIRECTORY.length} Bible-Preaching Churches | ${SITE_NAME}`, description: `Find a Bible-preaching church: service times, address, pastor, and website for ${DIRECTORY.length} churches in ${groups.map((g) => g.stateName).join(", ")}. Search by city or use your location. Free listings, no ads.`, canonical: "/churches", h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true }));
+}
+
+
+/* ---- church city pages */
+const cityKey = (c) => `${c.city.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${c.state.toLowerCase()}`;
+const cityUrl = (c) => `/churches/in/${cityKey(c)}`;
+const CITY_MAP = new Map();
+for (const c of DIRECTORY) { const k = cityKey(c); if (!CITY_MAP.has(k)) CITY_MAP.set(k, []); CITY_MAP.get(k).push(c); }
+const CITY_LIST = [...CITY_MAP.entries()].map(([key, list]) => ({ key, city: list[0].city, state: list[0].state, stateName: list[0].stateName, list: list.slice().sort((a, b) => a.name.localeCompare(b.name)) }))
+  .sort((a, b) => a.city.localeCompare(b.city));
+function cityPage(key) {
+  const g = CITY_LIST.find((x) => x.key === key);
+  if (!g) return notFound();
+  const n = g.list.length;
+  const title = `${n === 1 ? "Church" : "Churches"} in ${g.city}, ${g.state} – Service Times & Addresses | ${SITE_NAME}`;
+  const near = DIRECTORY.filter((c) => cityKey(c) !== key && c.lat != null && g.list[0].lat != null)
+    .map((c) => ({ c, mi: milesBetween(g.list[0], c) })).filter((x) => x.mi <= 25).sort((a, b) => a.mi - b.mi).slice(0, 6);
+  const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], [`${g.city}, ${g.state}`, `/churches/in/${key}`]])}
+<h1>${n === 1 ? "Church" : "Churches"} in ${esc(g.city)}, ${esc(g.state)}</h1>
+<p class="sub">${n} Bible-preaching ${n === 1 ? "church" : "churches"} listed in ${esc(g.city)}, ${esc(g.stateName)}, with service times, address, pastor, and a link to each church's own website.</p>
+<div class="dir">${g.list.map((c) => churchCard(c)).join("")}</div>
+${near.length ? `<h2>Churches near ${esc(g.city)}</h2><div class="dir">${near.map((x) => churchCard(x.c, x.mi)).join("")}</div>` : ""}
+<p class="slim"><a href="/churches">All churches</a> · <a href="/churches#list-your-church">List your church</a></p>`;
+  const jsonld = webPageLd([
+    { "@type": "CollectionPage", name: `Churches in ${g.city}, ${g.state}`, url: SITE + `/churches/in/${key}`, isPartOf: { "@id": SITE + "/#website" },
+      mainEntity: { "@type": "ItemList", itemListElement: g.list.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, url: SITE + churchUrl(c) })) } },
+    breadcrumbLd([["Home", "/"], ["Churches", "/churches"], [`${g.city}, ${g.state}`, `/churches/in/${key}`]]),
+  ]);
+  return ok(shell({ title, description: `${n} ${n === 1 ? "church" : "churches"} in ${g.city}, ${g.stateName}: ${g.list.slice(0, 3).map((c) => c.name).join(", ")}${n > 3 ? " and more" : ""}. Service times, addresses, phone numbers and websites. Free, no ads.`, canonical: `/churches/in/${key}`, h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true, noindex: n < 2 }));
 }
 
 function churchPage(c) {
@@ -881,7 +912,7 @@ ${c.pastor ? `<p><b>Pastor:</b> ${esc(c.pastor)}</p>` : ""}
 ${c.website ? `<p><b>Website:</b> <a href="${attr(c.website)}" target="_blank" rel="noopener">${esc(hostOf(c.website))}</a></p>` : ""}
 </div>`;
   const bar = [c.phone && `<a href="${telHref(c.phone)}" data-cta="church-call-bar">Call</a>`, c.address && `<a href="${mapsHref(c)}" target="_blank" rel="noopener" data-cta="church-directions-bar">Directions</a>`, main && `<a class="go" href="${attr(main.href)}" target="_blank" rel="noopener" data-cta="${main.cta}-bar">${main.short}</a>`].filter(Boolean);
-  const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], [c.stateName, `/churches#${c.state.toLowerCase()}`], [c.name, churchUrl(c)]])}
+  const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], [c.stateName, `/churches#${c.state.toLowerCase()}`], [`${c.city}, ${c.state}`, cityUrl(c)], [c.name, churchUrl(c)]])}
 <h1>${esc(title)}</h1>
 <p class="sub">${esc(place)}${c.county ? ` · ${esc(c.county)}` : ""}${c.tagline ? `<br>${esc(c.tagline)}` : ""}</p>
 ${facts ? `<div class="facts">${facts}</div>` : ""}
@@ -1392,6 +1423,7 @@ function sitemapFile(name) {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
     urls.push(["/churches", "0.8"]);
+    for (const g of CITY_LIST) if (g.list.length > 1) urls.push([`/churches/in/${g.key}`, "0.7"]);
     for (const c of DIRECTORY) urls.push([churchUrl(c), "0.7"]);
     urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"], ["/bible-statistics", "0.9"]);
     for (const w of WORDS) urls.push([`/bible-words/${w.word.replace(/ /g, "-")}`, "0.7"]);
@@ -1427,6 +1459,7 @@ export function render(q = {}) {
   if (kind === "topics") return topicsIndex();
   if (kind === "votd") return votdPage();
   if (kind === "churches") return churchesIndex();
+  if (kind === "churchcity") return cityPage(String(q.city || "").toLowerCase());
   if (kind === "church") {
     const slug = String(q.slug || "").toLowerCase();
     const c = CHURCH_BY_SLUG.get(slug);

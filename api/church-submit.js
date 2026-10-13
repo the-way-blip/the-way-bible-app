@@ -2,8 +2,9 @@ import process from "node:process";
 import { rateLimit, checkOrigin } from "./_rateLimit.js";
 
 // Church directory submissions: emails Dillon and queues the row in Supabase (public.church_submissions).
+// Resend is in test mode (sends only to the account owner) until a domain is verified at resend.com/domains; then set CHURCH_SUBMIT_FROM.
 // Either channel succeeding counts as received.
-const TO = process.env.CHURCH_SUBMIT_TO || "dillon@branddesignco.com";
+const TO = process.env.CHURCH_SUBMIT_TO || "dillon@bigrapids.church";
 const FROM = process.env.CHURCH_SUBMIT_FROM || "TheWay Bible <onboarding@resend.dev>";
 
 const clip = (v, n) => String(v ?? "").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "").trim().slice(0, n);

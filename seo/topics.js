@@ -14,6 +14,7 @@ import { MORE_TOPICS } from "./topics-more.js";
 import { PEOPLE_TOPICS } from "./topics-people.js";
 import { NAMED_TOPICS } from "./topics-named.js";
 import { DOCTRINE_TOPICS } from "./topics-doctrine.js";
+import { LIFE_TOPICS } from "./topics-life.js";
 
 const slugOf = (name) =>
   name.toLowerCase().replace(/&/g, "and").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -135,7 +136,7 @@ const fromApp = appTopics.map((t) => {
   return { name: t.name, slug, aliases: appAliases[slug] || [], verses: withMore(slug, t.verses) };
 });
 
-export const TOPICS = [...fromApp, ...[...extra, ...MORE_TOPICS, ...PEOPLE_TOPICS, ...NAMED_TOPICS, ...DOCTRINE_TOPICS].map((t) => ({ ...t, slug: slugOf(t.name), verses: withMore(slugOf(t.name), t.verses) }))]
+export const TOPICS = [...fromApp, ...[...extra, ...MORE_TOPICS, ...PEOPLE_TOPICS, ...NAMED_TOPICS, ...DOCTRINE_TOPICS, ...LIFE_TOPICS].map((t) => ({ ...t, slug: slugOf(t.name), verses: withMore(slugOf(t.name), t.verses) }))]
   .sort((a, b) => a.name.localeCompare(b.name));
 
 export const TOPIC_BY_SLUG = new Map();

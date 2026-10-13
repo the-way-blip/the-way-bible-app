@@ -788,7 +788,7 @@ const churchCard = (c, mi) => `<div class="card row" data-s="${attr([c.name, c.c
 const CHURCH_CSS = `
 [hidden]{display:none!important}
 .dir{display:grid;gap:10px}
-.citylinks{line-height:2;font-size:15px}.citylinks a{white-space:nowrap}
+.subform{display:grid;gap:12px;margin-top:12px}.subform label{display:grid;gap:4px;font-size:14px;font-weight:600}.subform input,.subform textarea{font:inherit;font-weight:400;padding:11px 12px;border:1px solid var(--line,#d7d2c8);border-radius:10px;background:#fff;color:inherit;width:100%;box-sizing:border-box}.subform .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.subform .hp{position:absolute;left:-9999px;height:0;overflow:hidden}.citylinks{line-height:2;font-size:15px}.citylinks a{white-space:nowrap}
 .card.row{display:flex;align-items:stretch;padding:0;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:12px}
 .card.row:hover{border-color:var(--gold)}
 .card.row .main{flex:1;min-width:0;display:block;padding:14px 16px;color:var(--brown)}.card.row .main:hover{text-decoration:none;background:var(--cream-dark)}
@@ -833,6 +833,8 @@ nb.textContent='Sorted by distance from you';n.textContent='Nearest churches fir
 function(){nb.disabled=false;nb.textContent='Churches near me';n.textContent='Could not get your location. You can still search by city.'},{timeout:10000,maximumAge:600000})});
 })();`;
 
+const SUBMIT_JS = "(function(){var f=document.getElementById(\"subform\");if(!f)return;var m=document.getElementById(\"submsg\"),b=document.getElementById(\"subbtn\");\nvar qs=new URLSearchParams(location.search),fix=qs.get(\"fix\");if(fix){f.kind.value=qs.get(\"remove\")?\"remove\":\"update\";f.slug.value=fix;f.name.value=qs.get(\"n\")||\"\";f.city.value=qs.get(\"c\")||\"\";document.getElementById(\"sub-intro\").textContent=(qs.get(\"remove\")?\"Request removal of this listing\":\"Send corrections for this listing\")+\" and we will review it.\";}\nf.addEventListener(\"submit\",function(e){e.preventDefault();m.hidden=false;if(!f.name.value.trim()||!f.city.value.trim()){m.textContent=\"Please add the church name and city.\";return;}\nb.disabled=true;m.textContent=\"Sending...\";var d={};new FormData(f).forEach(function(v,k){d[k]=v;});\nfetch(\"/api/church-submit\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify(d)}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});}).then(function(x){if(x.ok){f.reset();m.textContent=\"Thank you. We received it and will review it soon.\";}else{m.textContent=x.j.error||\"Something went wrong. Please try again.\";b.disabled=false;}}).catch(function(){m.textContent=\"Could not send. Please email hello@thewaybible.app.\";b.disabled=false;});});})();";
+
 function churchesIndex() {
   const groups = churchesByState();
   const h = `${crumbs([["Home", "/"], ["Churches", "/churches"]])}
@@ -845,11 +847,26 @@ function churchesIndex() {
 </div>
 ${groups.map((g) => `<section class="st" id="${g.state.toLowerCase()}"><h2>${esc(g.stateName)} — ${g.churches.length}</h2><div class="dir">${g.churches.map((c) => churchCard(c)).join("")}</div></section>`).join("")}
 ${(() => { const cs = CITY_LIST.filter((x) => x.list.length > 1); return cs.length ? `<h2>Browse by city</h2><p class="citylinks">${cs.map((x) => `<a href="/churches/in/${x.key}">${esc(x.city)}, ${esc(x.state)} (${x.list.length})</a>`).join(" · ")}</p>` : ""; })()}
-<p class="note" id="none" hidden>No churches match that search. Try a city name, or <a href="mailto:hello@thewaybible.app?subject=List%20our%20church">tell us about a church to add</a>.</p>
+<p class="note" id="none" hidden>No churches match that search. Try a city name, or <a href="#list-your-church">tell us about a church to add</a>.</p>
 <h2 id="list-your-church">List your church</h2>
-<div class="info"><p>Listing is free. Email <a href="mailto:hello@thewaybible.app?subject=List%20our%20church">hello@thewaybible.app</a> with your church name, website, address, service times, and pastor's name. Your page links straight to your website. Don't see your church or see something out of date? Same address.</p></div>
+<div class="info"><p id="sub-intro">Listing is free, and your page links straight to your website. Send us the basics and we'll review and publish it, usually within a few days.</p>
+<form id="subform" class="subform" novalidate>
+<input type="hidden" name="kind" value="add"><input type="hidden" name="slug" value="">
+<div class="hp" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></div>
+<label>Church name<input name="name" required maxlength="160" autocomplete="organization"></label>
+<div class="two"><label>City<input name="city" required maxlength="80" autocomplete="address-level2"></label><label>State<input name="state" maxlength="40" value="MI" autocomplete="address-level1"></label></div>
+<label>Website<input name="website" type="url" inputmode="url" placeholder="https://" maxlength="300" autocomplete="url"></label>
+<label>Street address<input name="address" maxlength="240" autocomplete="street-address"></label>
+<div class="two"><label>Phone<input name="phone" type="tel" maxlength="40" autocomplete="tel"></label><label>Pastor<input name="pastor" maxlength="120"></label></div>
+<label>Service times<textarea name="times" rows="3" maxlength="600" placeholder="Sunday School 10:00 am, Sunday Morning 11:00 am, Sunday Evening 6:00 pm, Wednesday 7:00 pm"></textarea></label>
+<label>Anything else (Bible version, what to expect)<textarea name="notes" rows="2" maxlength="1200"></textarea></label>
+<label>Your email (so we can reach you)<input name="email" type="email" maxlength="200" autocomplete="email"></label>
+<button type="submit" class="nearbtn" id="subbtn">Send for review</button>
+<p class="note" id="submsg" role="status" aria-live="polite" hidden></p>
+</form></div>
 <p class="slim">Free King James Bible online and in the app: <a href="/bible">read on the web</a> · <a href="${appHref()}" data-cta="churches-ios">get the iPhone app</a></p>
-<script>${FINDER_JS}</script>`;
+<script>${FINDER_JS}</script>
+<script>${SUBMIT_JS}</script>`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: "Church directory", url: SITE + "/churches", isPartOf: { "@id": SITE + "/#website" },
       mainEntity: { "@type": "ItemList", itemListElement: DIRECTORY.slice(0, 100).map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, url: SITE + churchUrl(c) })) } },
@@ -926,7 +943,7 @@ ${contact}
 ${c.ministries?.length ? `<h2>Ministries</h2><ul class="outline">${c.ministries.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}
 ${social || extra ? `<h2>Online</h2><div class="actions">${social}${extra}</div>` : ""}
 ${nearby.length ? `<h2>Churches nearby</h2><div class="dir">${nearby.map(({ x, mi }) => churchCard(x, mi)).join("")}</div>` : ""}
-<p class="fine">Details from ${esc(c.source || "the church's website")}, checked ${esc(c.checked || "October 2026")}. Times change, so confirm with the church before you visit. Is this your church? Email <a href="mailto:hello@thewaybible.app?subject=${encodeURIComponent("Update: " + c.name)}">hello@thewaybible.app</a> to update or remove this page. <a href="/churches">All churches</a></p>
+<p class="fine">Details from ${esc(c.source || "the church's website")}, checked ${esc(c.checked || "October 2026")}. Times change, so confirm with the church before you visit. Is this your church? <a href="/churches?fix=${encodeURIComponent(c.slug)}&n=${encodeURIComponent(c.name)}&c=${encodeURIComponent(c.city)}#list-your-church">Send a correction</a> or <a href="/churches?fix=${encodeURIComponent(c.slug)}&n=${encodeURIComponent(c.name)}&c=${encodeURIComponent(c.city)}&remove=1#list-your-church">ask us to remove this page</a>. <a href="/churches">All churches</a></p>
 <p class="slim">Free King James Bible online and in the app: <a href="/bible">read on the web</a> · <a href="${appHref()}" data-cta="church-ios">get the iPhone app</a></p>
 ${bar.length ? `<nav class="cbar" aria-label="Contact ${attr(c.name)}">${bar.join("")}</nav>` : ""}`;
   const church = {

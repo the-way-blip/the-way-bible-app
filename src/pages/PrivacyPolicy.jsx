@@ -112,8 +112,8 @@ export default function PrivacyPolicy() {
           <p>
             For questions about this privacy policy, to request access, correction, or
             deletion of your data, or to unsubscribe from emails, contact us at{" "}
-            <a href="mailto:hello@thewaybible.app" className="text-gold underline">
-              hello@thewaybible.app
+            <a href="mailto:dillon@bigrapids.church" className="text-gold underline">
+              dillon@bigrapids.church
             </a>
             . We respond to all data requests within 30 days.
           </p>

@@ -37,6 +37,8 @@ const SITE_NAME = "TheWay Bible";
 const VERSION = "KJV";
 const VERSION_LONG = "King James Version";
 const GA_ID = "G-H116EGYPXS"; // same GA4 property as the app (index.html)
+const META_PIXEL_ID = "3564612140355598"; // Meta dataset "The Way" — lets paid social
+// optimise for landing page views and build a retargeting pool from these pages.
 // iOS app push. Fill these in once the app is live on the App Store:
 //  - APP_STORE_URL: where every "Get the iOS app" CTA points (falls back to the homepage until then)
 //  - APP_STORE_ID: numeric Apple ID → enables Safari's native Smart App Banner (<meta name="apple-itunes-app">)
@@ -300,6 +302,7 @@ function shell({ title, description, canonical, h, jsonld, ogImage, noindex, pag
   const ga = `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag('js',new Date());gtag('config','${GA_ID}',{content_group:${js(pageType)},page_type:${js(pageType)},bible_ref:${js(ref)}});
 document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[data-cta]'):null;if(!a||typeof gtag!=='function')return;gtag('event','seo_cta_click',{cta:a.getAttribute('data-cta'),page_type:${js(pageType)},bible_ref:${js(ref)},link_url:a.getAttribute('href'),transport_type:'beacon'})});</script>`;
+  const fb = `<script>!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',${js(META_PIXEL_ID)});fbq('track','PageView');</script>`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -325,6 +328,7 @@ ${APP_STORE_ID ? `<meta name="apple-itunes-app" content="app-id=${APP_STORE_ID}"
 <link rel="apple-touch-icon" href="/favicon-180.png">
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 ${ga}
+${fb}
 <style>${CSS}${INVITE_CSS}${extraCss}</style>
 </head>
 <body>

@@ -338,7 +338,7 @@ ${hideSearch ? "" : `<form class="search" action="/bible/search" role="search"><
 ${h}
 </div></main>
 <footer class="bottom"><div class="wrap">
-<span class="apps"><strong>More from TheWay</strong> · <a href="https://scroll.thewaybible.app">Scroll</a> — a verse a day, in a feed</span>
+<span class="apps"><strong>More from TheWay</strong> · <a href="https://scroll.thewaybible.app">Scroll</a> — a verse a day, in a feed · <a href="https://lamp.thewaybible.app">Lamp Bible</a> — the Gospels, for children learning to read</span>
 <span>© ${new Date().getFullYear()} TheWay Bible App · Scripture text: ${VERSION_LONG} (public domain)</span>
 <span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="/churches">Find a church</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@thewaybible.app">Contact</a></span>
 </div></footer>

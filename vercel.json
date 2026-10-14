@@ -1,6 +1,16 @@
 {
   "rewrites": [
     {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "lamp.thewaybible.app"
+        }
+      ],
+      "destination": "/lamp/index.html"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/bible-page?kind=sitemap-index"
     },
@@ -101,7 +111,7 @@
       "destination": "/api/app-page?page=login"
     },
     {
-      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|churches|strongs|sitemap).*)",
+      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|churches|strongs|sitemap|lamp).*)",
       "destination": "/index.html"
     }
   ],

@@ -528,7 +528,7 @@ function versePage(b, c, from, to) {
 <p class="sub">${esc(b.name)} · chapter ${c}${single ? ` · verse ${from}` : ` · verses ${from}–${to}`}</p>
 ${scripture}
 <div class="actions"><a class="btn primary" href="${appChapterUrl(b, c, from)}" data-cta="verse-study-app">Study in the app</a><a class="btn" href="${chapterUrl(b, c)}#${from}" data-cta="verse-read-chapter">Read ${esc(chapterLabel(b, c))} in full</a><a class="btn" href="/api/og?ref=${encodeURIComponent(label)}" data-cta="verse-share-image" download="${attr(label.replace(/[: ]/g, "-"))}.png">Share image</a></div>
-${meaning ? `<h2>What ${esc(label)} means</h2><div class="meaning"><p>${esc(meaning)}</p></div><p class="muted">Study note provided by TheWay Bible App, separate from the KJV text. Read the full chapter in context and compare interpretations. <a href="mailto:dillon@branddesignco.com">Report a correction</a>.</p>` : ""}
+${meaning ? `<h2>What ${esc(label)} means</h2><div class="meaning"><p>${esc(meaning)}</p></div><p class="muted">Study note provided by TheWay Bible App, separate from the KJV text. Read the full chapter in context and compare interpretations. <a href="mailto:hello@thewaybible.app">Report a correction</a>.</p>` : ""}
 <h2>${esc(label)} in context</h2><div class="ctx">${context}</div>
 <p style="font-size:14px"><a href="${chapterUrl(b, c)}">Read all of ${esc(chapterLabel(b, c))} →</a></p>
 ${commentary ? `<h2>Commentary</h2><div class="commentary"><p>${esc(commentary.excerpt)}</p><p class="cite">— Matthew Henry's Concise Commentary${commentary.range && commentary.range !== String(from) ? ` on verses ${esc(commentary.range)}` : ""}</p></div>` : ""}

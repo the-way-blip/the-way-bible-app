@@ -112,8 +112,8 @@ export default function PrivacyPolicy() {
           <p>
             For questions about this privacy policy, to request access, correction, or
             deletion of your data, or to unsubscribe from emails, contact us at{" "}
-            <a href="mailto:dillon@branddesignco.com" className="text-gold underline">
-              dillon@branddesignco.com
+            <a href="mailto:hello@thewaybible.app" className="text-gold underline">
+              hello@thewaybible.app
             </a>
             . We respond to all data requests within 30 days.
           </p>

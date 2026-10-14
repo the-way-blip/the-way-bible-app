@@ -284,6 +284,8 @@ ul.words b{font-family:Georgia,serif;font-size:16px}ul.words .tr{color:var(--gol
 .promo h3{margin:0 0 6px;font-size:18px}.promo p{margin:0 0 12px;color:var(--brown-light);font-size:15px}
 footer.bottom{border-top:1px solid var(--line);color:var(--brown-light);font-size:13px;padding:22px 0 36px}
 footer.bottom .wrap{display:flex;flex-wrap:wrap;gap:8px 20px;justify-content:space-between}
+footer.bottom .apps{flex-basis:100%;color:var(--brown-light)}
+footer.bottom .apps strong{font-weight:600;color:var(--brown)}
 footer.bottom a{color:var(--brown-light)}
 
 @media(max-width:560px){h1{font-size:28px}.scripture{font-size:20px;padding:20px}nav.main .hide{display:none}}
@@ -336,6 +338,7 @@ ${hideSearch ? "" : `<form class="search" action="/bible/search" role="search"><
 ${h}
 </div></main>
 <footer class="bottom"><div class="wrap">
+<span class="apps"><strong>More from TheWay</strong> · <a href="https://scroll.thewaybible.app">Scroll</a> — a verse a day, in a feed</span>
 <span>© ${new Date().getFullYear()} TheWay Bible App · Scripture text: ${VERSION_LONG} (public domain)</span>
 <span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="/churches">Find a church</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:hello@thewaybible.app">Contact</a></span>
 </div></footer>

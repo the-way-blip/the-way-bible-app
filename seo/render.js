@@ -262,7 +262,7 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 ul.outline{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 ul.outline li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:15px;display:flex;gap:14px;align-items:baseline}
 ul.outline .r{flex:none;font-weight:600;color:var(--gold-dark);min-width:74px}
-ol.enum{list-style:none;counter-reset:e;padding:0;margin:0 0 18px;display:grid;gap:8px}ol.enum li{counter-increment:e;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 46px;position:relative;font-size:16px;line-height:1.55}ol.enum li::before{content:counter(e);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}ol.enum .r{font-weight:600;color:var(--gold-dark);white-space:nowrap;font-size:14px}p.note{font-size:14px;color:var(--brown-light);line-height:1.65;border-left:3px solid var(--line);padding-left:14px;margin:0 0 20px}.chips.tally span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;color:var(--brown-light)}.chips.tally b{color:var(--brown);font-weight:600}.faq{display:grid;gap:10px}
+ol.enum{list-style:none;counter-reset:e;padding:0;margin:0 0 18px;display:grid;gap:8px}ol.enum li{counter-increment:e;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 46px;position:relative;font-size:16px;line-height:1.55}ol.enum li::before{content:counter(e);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}ol.enum .r{font-weight:600;color:var(--gold-dark);white-space:nowrap;font-size:14px}p.alt{font-size:14px;color:var(--brown-light);margin:-4px 0 18px}p.note{font-size:14px;color:var(--brown-light);line-height:1.65;border-left:3px solid var(--line);padding-left:14px;margin:0 0 20px}.chips.tally span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;color:var(--brown-light)}.chips.tally b{color:var(--brown);font-weight:600}.faq{display:grid;gap:10px}
 .faq details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
 .faq summary{cursor:pointer;font-weight:600;font-size:15px}
 .faq p{margin:10px 0 0;font-size:15px;color:var(--brown-light);line-height:1.6}
@@ -580,6 +580,41 @@ const TOPIC_GROUPS = ["People of the Bible", "Names & Titles of God", "Stories &
 // Chips on /bible — a spread of the most-searched pages, not the first 24 alphabetically.
 const FEATURED_TOPICS = ["fear-and-anxiety", "strength", "love", "healing", "hope", "faith", "peace", "prayer", "marriage", "forgiveness", "grief-and-loss", "encouragement", "trusting-god", "gods-love", "protection", "joy", "david", "jesus", "the-names-of-god", "the-fruit-of-the-spirit", "most-popular-bible-verses", "verses-to-memorize", "short-bible-verses", "christmas"];
 
+/* ------------------------------------------------------------------ aliases
+ * Every topic carries `aliases` — the other things people actually type for it
+ * ("palm sunday" for the triumphal entry, "nabal" for Abigail, "aaron's rod"
+ * for Aaron). Until now they were read only by site search, so a page could not
+ * rank for the words that should bring the most searches to it. These helpers
+ * put them on the page as an "Also called" line and into alternateName.
+ * Aliases that only restate the title ("aaron-in-the-bible") are dropped, and
+ * the line is capped at four so it reads as a label and not a keyword list. */
+const ALIAS_SMALL = new Set(["a","an","and","as","at","but","by","for","from","in","nor","of","on","or","the","to","via","vs","with"]);
+const ALIAS_FILLER = /\b(?:in|the|of|a|an|bible|meaning|verses|verse|story|and|about)\b/g;
+
+/** Alias phrases worth showing for a topic, title-cased, most useful first. */
+function aliasNames(t) {
+  const name = String(t.name).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const nameBare = name.replace(ALIAS_FILLER, " ").replace(/\s+/g, " ").trim();
+  const first = name.split(" ")[0];
+  const seen = new Set(), out = [];
+  for (const a of t.aliases || []) {
+    const words = String(a).replace(/-/g, " ").replace(/\s+/g, " ").trim();
+    if (!words) continue;
+    const bare = words.replace(ALIAS_FILLER, " ").replace(/\s+/g, " ").trim();
+    // Drop anything the title already says, in either direction.
+    if (!bare || bare === nameBare || nameBare.includes(bare) || bare.includes(nameBare)) continue;
+    if (seen.has(bare)) continue;
+    seen.add(bare);
+    out.push(words.split(" ").map((w, i) => {
+      // "noahs ark" -> "Noah's Ark", but only where the stem is the topic's own name.
+      const poss = w.endsWith("s") && w.slice(0, -1) === first ? `${w.slice(0, -1)}'s` : w;
+      return i && ALIAS_SMALL.has(w) ? w : poss.charAt(0).toUpperCase() + poss.slice(1);
+    }).join(" "));
+    if (out.length === 4) break;
+  }
+  return out;
+}
+
 function topicPage(t) {
   const items = t.verses.map((ref) => ({ ref, r: parseRef(ref) })).filter((x) => x.r);
   const n = items.length;
@@ -590,12 +625,15 @@ function topicPage(t) {
   // Topics that ARE a list (the ten commandments, the nine fruit, the twelve)
   // get the list itself above the verses. See seo/topic-lists.js for why.
   const L = TOPIC_LISTS[t.slug] || null;
+  const alts = aliasNames(t);
+  const altBlock = alts.length ? `<p class="alt">Also called ${alts.map((a) => esc(a)).join(" · ")}</p>` : "";
   const listBlock = L ? `<h2>${esc(L.heading)}</h2>
 <ol class="enum">${L.items.map(([text, ref]) => { const r = parseRef(ref); return `<li><span>${esc(text)}</span>${r ? ` <a class="r" href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a>` : ""}</li>`; }).join("")}</ol>
 ${L.note ? `<p class="note">${esc(L.note)}</p>` : ""}` : "";
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
 <h1>${L ? esc(L.title) : `${n} ${esc(topicPhrase(t))}`} <span class="badge">${VERSION}</span></h1>
 ${L ? `<p class="lead">${esc(L.lead)}</p>` : intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
+${altBlock}
 ${listBlock}
 ${L ? `<h2>${esc(L.title)} in scripture — ${n} verses, quoted in full</h2>` : ""}
 <p class="sub">${t.blurb ? esc(t.blurb) + " " : ""}Each verse is quoted in full — tap a reference to read it in context, see cross references, and study the original words.</p>
@@ -612,7 +650,8 @@ ${promo()}`;
     ? `${lead} ${n} verses in the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}.`
     : `${n} ${phrase} from the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}. Read each one in context.`;
   const jsonld = webPageLd([
-    { "@type": "CollectionPage", name: topicPhrase(t), url: SITE + `/verses-about/${t.slug}`, description, isPartOf: { "@id": SITE + "/#website" },
+    { "@type": "CollectionPage", name: topicPhrase(t), url: SITE + `/verses-about/${t.slug}`, description,
+      ...(alts.length ? { alternateName: alts } : {}), isPartOf: { "@id": SITE + "/#website" },
       mainEntity: { "@type": "ItemList", numberOfItems: n, itemListElement: items.map(({ ref, r }, i) => ({ "@type": "ListItem", position: i + 1, name: ref, url: SITE + verseUrl(r.book, r.chapter, r.from, r.to) })) } },
     breadcrumbLd([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]]),
     ...(L ? [{ "@type": "FAQPage", "@id": SITE + `/verses-about/${t.slug}#faq`,

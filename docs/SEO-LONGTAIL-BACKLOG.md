@@ -136,15 +136,85 @@ translations cannot.
   GHL custom values on a 05:00 UTC cron. Needs CRON_SECRET set and the GHL
   workflow built before it sends anything.
 
+## Measured — 28 days to Oct 17, 2026
+
+The previous section said to measure before building more. This is that.
+
+| | 13 Sept – 10 Oct | 20 Sept – 17 Oct |
+|---|---|---|
+| Clicks | 328 | **427** |
+| Impressions | 120K | 130K |
+| Average position | 32.8 | **30.2** |
+
+Nine of the site's ten best pages are now the named entities shipped on Sept 30:
+god-most-high (13 clicks / 302 impressions), jehovah-nissi (12/277), el-roi
+(11/208), jehovah-shalom (9/391), king-of-kings (7/485), spiritual-dryness
+(7/264), jehovah-sabaoth (7/212), el-shaddai (6/514), i-am (4/261). The tenth is
+the home page. El-roi went from nothing to the site's third-best page in three
+weeks.
+
+The generic themes have not moved at all. "Hope" and "forgiveness" are still on
+page 8, exactly where they were. The split the fourth wave was built on holds,
+and it is not narrowing: specific names win, themes lose, and no amount of
+better writing on a theme page changes that, because those queries belong to
+sites with twenty years of links.
+
+So the strategy is settled. Named entities, and only named entities, until the
+data says otherwise.
+
+### Shipped Oct 20
+
+**Aliases on the page.** Every topic already carried `aliases` — the other
+things people type for it — and they were read only by the site-search matcher.
+They appeared nowhere in any page's text, so no page could rank for them.
+"Palm sunday" was nowhere on the triumphal entry page. "The plagues of egypt"
+was nowhere on the ten plagues. "Shadrach meshach and abednego" was nowhere on
+the fiery furnace. All three sat in this document as unserved demand that
+already had a page. They now render as an "Also called" line and as
+`alternateName` in the CollectionPage JSON-LD: 348 of 399 topic pages gained
+one, and 919 phrases that were data-only became text. No new pages, no new
+prose. This was the cheapest thing on the list and it had been sitting there
+since the aliases were first written.
+
+**44 new named-entity pages**, because the fourth wave had consumed almost the
+whole candidate list above. Nineteen parables individually — there was one page
+for "The Parables of Jesus" and nothing for "the parable of the sower", which is
+the actual query. Eleven prophetic and Revelation entities, none of them served:
+the four horsemen, armageddon, the mark of the beast, the great white throne,
+the book of life, the tree of life, the antichrist, the seven churches, the two
+witnesses, the new jerusalem, the valley of dry bones. Fourteen named events and
+places: the last supper, jacob's ladder, manna, the rich young ruler, sodom and
+gomorrah, the red sea, sinai, the upper room, bethesda, the passover, the day of
+atonement, the tabernacle, the mercy seat, the veil.
+
+Topics 399 → 443. All 5,284 references resolve.
+
 ### Next, in order
 
-1. **More named entities** — the proven vein, listed above under heading 3.
-2. **Reference parsing for odd formats** — `147/20` at position 8.6.
-3. **Measure before building more.** Everything above shipped on one day and
-   Search Console takes about two weeks to report. Check whether /strongs and
-   /bible-words get crawled, whether the list-page rewrites moved the ten
-   commandments and the fruit of the Spirit off position 50, and whether the
-   invitation converts, before picking the next batch.
+1. **Reference parsing for odd formats** — `147/20` at position 8.6, `106/12` at
+   19.8. Still unbuilt, still cheap, and the only non-content item left.
+2. **Promote the strongest aliases to their own pages.** The "Also called" line
+   lets a page rank for a phrase; a page of its own ranks better. Once this wave
+   reports, look at which alias phrases are drawing impressions onto a host page
+   and give those their own entry. This is how to find the next wave's
+   candidates without guessing.
+3. **The named-entity candidates still unbuilt**, so the next session does not
+   have to derive them again. People: Rebekah, Esau, Absalom, Bathsheba,
+   Nebuchadnezzar, Belshazzar, Methuselah, Balaam, Mephibosheth, Joseph of
+   Arimathaea, Jephthah, Korah, Eli, Jesse, Joab, Ahab, Caiaphas, Herod, Simon
+   of Cyrene, Silas, Titus, and the ten minor prophets as people (Hosea, Joel,
+   Amos, Obadiah, Micah, Nahum, Habakkuk, Zephaniah, Haggai, Zechariah,
+   Malachi). Titles: the Son of Man, the Messiah, the Redeemer, the Bridegroom,
+   the Rose of Sharon, Wonderful Counsellor, the Root of Jesse, the Only
+   Begotten Son, the Sun of Righteousness, El Olam, Jehovah Mekoddishkem, the
+   Advocate, the Mediator, the Potter.
+4. **Measure this wave on or after Nov 3.** Two weeks for Search Console to
+   report. The question is whether the alias line moved the host pages, which is
+   a cleaner experiment than usual: 348 pages changed in one way, on one day,
+   with no other edits.
+
+Still unverified from the October wave: whether Bing has indexed anything, and
+whether the daily-verse invitation converts.
 
 ## A note on new routes
 

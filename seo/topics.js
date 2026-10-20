@@ -13,6 +13,7 @@ import appTopics from "../src/data/topicIndex.js";
 import { MORE_TOPICS } from "./topics-more.js";
 import { PEOPLE_TOPICS } from "./topics-people.js";
 import { NAMED_TOPICS } from "./topics-named.js";
+import { NAMED_TOPICS_2 } from "./topics-named-2.js";
 import { DOCTRINE_TOPICS } from "./topics-doctrine.js";
 import { LIFE_TOPICS } from "./topics-life.js";
 
@@ -136,7 +137,7 @@ const fromApp = appTopics.map((t) => {
   return { name: t.name, slug, aliases: appAliases[slug] || [], verses: withMore(slug, t.verses) };
 });
 
-export const TOPICS = [...fromApp, ...[...extra, ...MORE_TOPICS, ...PEOPLE_TOPICS, ...NAMED_TOPICS, ...DOCTRINE_TOPICS, ...LIFE_TOPICS].map((t) => ({ ...t, slug: slugOf(t.name), verses: withMore(slugOf(t.name), t.verses) }))]
+export const TOPICS = [...fromApp, ...[...extra, ...MORE_TOPICS, ...PEOPLE_TOPICS, ...NAMED_TOPICS, ...NAMED_TOPICS_2, ...DOCTRINE_TOPICS, ...LIFE_TOPICS].map((t) => ({ ...t, slug: slugOf(t.name), verses: withMore(slugOf(t.name), t.verses) }))]
   .sort((a, b) => a.name.localeCompare(b.name));
 
 export const TOPIC_BY_SLUG = new Map();

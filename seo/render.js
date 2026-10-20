@@ -606,7 +606,9 @@ function aliasNames(t) {
     if (seen.has(bare)) continue;
     seen.add(bare);
     out.push(words.split(" ").map((w, i) => {
-      // "noahs ark" -> "Noah's Ark", but only where the stem is the topic's own name.
+      // "noahs ark" -> "Noah's Ark", but only where the stem is the topic's own
+      // name. Any other possessive is written into the alias itself ("lot's-wife");
+      // guessing one from a trailing s turns "the-books-were-opened" into "Book's".
       const poss = w.endsWith("s") && w.slice(0, -1) === first ? `${w.slice(0, -1)}'s` : w;
       return i && ALIAS_SMALL.has(w) ? w : poss.charAt(0).toUpperCase() + poss.slice(1);
     }).join(" "));
@@ -1079,7 +1081,7 @@ function searchPage(qRaw) {
 
   // 3. Full-text: matching topics + verses containing every word.
   const qWords = q.toLowerCase().split(/[^a-z0-9']+/).filter((w) => w && !STOP.has(w));
-  const topicHits = TOPICS.filter((t) => { const hay = `${t.name} ${t.aliases.join(" ")}`.toLowerCase().replace(/-/g, " "); return qWords.some((w) => hay.includes(w)); }).slice(0, 10);
+  const topicHits = TOPICS.filter((t) => { const hay = `${t.name} ${t.aliases.join(" ")}`.toLowerCase().replace(/-/g, " ").replace(/'/g, ""); return qWords.some((w) => hay.includes(w)); }).slice(0, 10);
   const { hits, total = 0, res } = searchVerses(q);
   const mark = (t) => esc(t).replace(res, (m) => `<mark>${m}</mark>`);
   const gaSearch = `<script>if(typeof gtag==='function')gtag('event','view_search_results',{search_term:${js(q)},results:${total}});</script>`;

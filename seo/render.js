@@ -1012,12 +1012,27 @@ ${bar.length ? `<nav class="cbar" aria-label="Contact ${attr(c.name)}">${bar.joi
 }
 
 /* ------------------------------------------------------------------ search */
+/* Noise people type around a reference, mostly copied out of Google's own
+ * suggestions: "john 3:16 kjv", "psalm 23 bible verse", "psalm chapter 23".
+ * Search Console shows "kjv" appended to a large share of the queries that
+ * reach the site, and until now any of it made the reference unparseable.
+ * Nothing listed here is a book name, so removing it is safe: a topic search
+ * such as "bible verses about hope" loses the noise too and then fails to match
+ * a book, which is the right answer for it. */
+const REF_NOISE = /\b(?:kjv|king\s+james(?:\s+version)?|bible|scriptures?|verses?|passage|chapter(?=\s*\d)|meaning|explained|commentary)\b/gi;
+
 /**
  * Loose reference parser for the search box: "john 3:16", "John 3 16", "jn 3:16-18",
  * "psalm 23", "1 john", "1john4:8" → { book, chapter?, from?, to? } or null.
+ *
+ * Also accepts the formats people actually type that used to fall through to a
+ * word search: a slash ("psalm 147/20" — 24 impressions at position 8.6 before
+ * this worked), a spelled-out verse ("john 3 v 16", "john 3 verse 16"), "to" for
+ * a range ("psalm 23:1 to 3"), and any of the noise above around it.
  */
 function parseLooseRef(q) {
-  const m = /^\s*(\d?\s*[a-z]+(?:\s+(?:of\s+)?[a-z]+)*)\.?\s*(?:(\d+)(?:\s*[:.,\s]\s*(\d+)(?:\s*[-–]\s*(\d+))?)?)?\s*$/i.exec(q);
+  const cleaned = String(q).replace(REF_NOISE, " ").replace(/\s+/g, " ").trim();
+  const m = /^\s*(\d?\s*[a-z]+(?:\s+(?:of\s+)?[a-z]+)*)\.?\s*(?:(\d+)(?:\s*(?:[:.,\/\s]|\bvs?\b)\s*(\d+)(?:\s*(?:[-\u2013\u2014]|\bto\b)\s*(\d+))?)?)?\s*$/i.exec(cleaned);
   if (!m) return null;
   const book = findBook(m[1].replace(/\s+/g, "-"));
   if (!book) return null;
@@ -1033,6 +1048,19 @@ function parseLooseRef(q) {
 
 const STOP = new Set(["the", "and", "of", "a", "to", "in", "that", "he", "shall", "unto", "for", "i", "his", "is", "be", "not", "they", "him", "with", "it", "all", "thou", "thy", "was", "my", "them", "which", "me", "you", "ye", "as", "have", "from", "but", "are", "this", "their", "were", "on", "or", "by", "an", "will", "so", "we", "our", "us"]);
 const escRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+let _aliasBySlug = null;
+/** alias slug -> topic. A real topic slug always wins; first alias wins a tie. */
+function ALIAS_BY_SLUG() {
+  if (!_aliasBySlug) {
+    _aliasBySlug = new Map();
+    for (const t of TOPICS) for (const a of t.aliases || []) {
+      const k = String(a).toLowerCase().replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      if (k && !TOPIC_BY_SLUG.has(k) && !_aliasBySlug.has(k)) _aliasBySlug.set(k, t);
+    }
+  }
+  return _aliasBySlug;
+}
 
 function searchVerses(q, limit = 50) {
   const phrase = q.toLowerCase().replace(/[^a-z0-9' ]+/g, " ").replace(/\s+/g, " ").trim();
@@ -1074,9 +1102,14 @@ function searchPage(qRaw) {
     if (r.chapter) return found(chapterUrl(r.book, r.chapter));
     return found(bookUrl(r.book));
   }
-  // 2. An exact topic name/slug → go straight there.
-  const slugQ = q.toLowerCase().replace(/&/g, "and").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const exact = TOPIC_BY_SLUG.get(slugQ) || TOPIC_BY_SLUG.get(slugQ.replace(/^(bible-)?verses?-(about|for|on)-/, ""));
+  // 2. An exact topic name, slug, or alias → go straight there. The noise is
+  // stripped first, so "king of kings kjv" lands on the page rather than a
+  // results list, and aliases resolve too: "palm sunday" is the triumphal
+  // entry, "666" is the mark of the beast, "nabal" is Abigail.
+  const slugOfQ = (x) => x.toLowerCase().replace(/&/g, "and").replace(/['’]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const slugQ = slugOfQ(String(q).replace(REF_NOISE, " "));
+  const bare = slugQ.replace(/^(?:bible-)?(?:verses?-)?(?:about|for|on)-/, "");
+  const exact = TOPIC_BY_SLUG.get(slugQ) || TOPIC_BY_SLUG.get(bare) || ALIAS_BY_SLUG().get(slugQ) || ALIAS_BY_SLUG().get(bare);
   if (exact) return found(`/verses-about/${exact.slug}`);
 
   // 3. Full-text: matching topics + verses containing every word.

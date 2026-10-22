@@ -95,6 +95,18 @@ export default defineConfig({
             },
           },
           {
+            // App data (dictionary, people, timeline, commentaries, Bible text…):
+            // serve what was seen before when offline, refresh in the background.
+            // Narration is not here: downloaded books keep it in their own cache.
+            urlPattern: ({ url }) => url.origin === self.location.origin && url.pathname.startsWith('/data/') && !url.pathname.endsWith('search-index.json'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'app-data',
+              expiration: { maxEntries: 400, maxAgeSeconds: 60 * 24 * 60 * 60 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
             // Search index — cache for offline keyword search
             urlPattern: /\/data\/search-index\.json$/,
             handler: 'CacheFirst',

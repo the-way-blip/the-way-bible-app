@@ -11,6 +11,7 @@ import useT from "../hooks/useT";
 import { logEvent } from "../services/ga";
 import { Capacitor } from "@capacitor/core";
 import { booksWithStudy, buildStudyDoc, printDoc, saveFile } from "../services/studyExport";
+import OfflineBooks from "../components/OfflineBooks";
 
 const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 
@@ -547,6 +548,7 @@ function DataManagement({ t }) {
 
   return (
     <div className="space-y-3">
+      <OfflineBooks />
       <StudyNotesExport />
       <div className="flex gap-2">
         <button

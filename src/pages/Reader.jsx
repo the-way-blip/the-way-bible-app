@@ -33,6 +33,7 @@ import useBookmarks from "../hooks/useBookmarks";
 import { syncReadingProgressUpdate } from "../services/supabaseSync";
 import { requestedVerse } from "../utils/verseLink";
 import { logEvent } from "../services/ga";
+import { offlineBooks, downloadBook, estimateAudioMB } from "../services/offlineService";
 
 export default function Reader() {
   const t = useT();
@@ -544,6 +545,7 @@ export default function Reader() {
                       <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
                     </svg>
                   </button>
+                  <OfflineMenuItem book={displayedChapter.book} onDone={() => setShowTools(false)} showToast={showToast} />
                   <button
                     onClick={() => { setShowTools(false); navigate(`/timeline?ref=${encodeURIComponent(`${displayedChapter.book} ${displayedChapter.chapter}`)}`); }}
                     className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50"
@@ -893,4 +895,33 @@ function findMatchingWord(words, tappedWord) {
   if (match) return match;
   match = words.find((w) => !w.added && clean.includes(w.word.replace(/[.,;:!?'"]/g, "").toLowerCase()));
   return match || null;
+}
+
+/** Aa menu: save the book on screen for offline reading and listening. */
+function OfflineMenuItem({ book, onDone, showToast }) {
+  const [state, setState] = useState(() => offlineBooks()[book]);
+  const [progress, setProgress] = useState(null);
+  const save = async () => {
+    setProgress(0);
+    try {
+      const entry = await downloadBook(book, { audio: true, onProgress: (d, t) => setProgress(Math.round((d / t) * 100)) });
+      setState(entry);
+      showToast?.(`${book} saved for offline`, { icon: "✓" });
+      onDone();
+    } catch {
+      showToast?.("Couldn't finish the download. Try again with a connection.", { icon: "⚠️" });
+    } finally { setProgress(null); }
+  };
+  return (
+    <button onClick={state?.audio || progress != null ? undefined : save} disabled={!!state?.audio}
+      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50 disabled:hover:bg-transparent">
+      <span>
+        {state?.audio ? `${book} saved for offline` : progress != null ? `Saving ${book}… ${progress}%` : `Save ${book} for offline`}
+        {!state?.audio && progress == null && <span className="block text-[10px] text-warm-brown-light">Text + narration, about {estimateAudioMB(book)} MB</span>}
+      </span>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`w-4 h-4 ${state?.audio ? "text-gold" : "text-warm-brown-light"}`}>
+        {state?.audio ? <polyline points="20 6 9 17 4 12" /> : <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></>}
+      </svg>
+    </button>
+  );
 }

@@ -38,7 +38,11 @@ export async function getChapterAudio(book, chapter) {
   const mine = own?.[String(chapter)];
   if (!mine) return archive;
   const [duration, starts] = mine;
-  return { url: `${AUDIO_BASE}/kjv/${usfm}/${chapter}.mp3`, start: 0, end: duration, verses: starts, reader, fallback: archive };
+  const remote = `${AUDIO_BASE}/kjv/${usfm}/${chapter}.mp3`;
+  // Downloaded for offline? Play the copy on the device.
+  const { cachedAudioUrl } = await import("./offlineService");
+  const local = await cachedAudioUrl(remote);
+  return { url: local || remote, start: 0, end: duration, verses: starts, reader, fallback: local ? { url: remote, start: 0, end: duration, verses: starts, reader, fallback: archive } : archive };
 }
 
 // archive.org's storage node can take 20–30 s to answer the first request for

@@ -7,6 +7,7 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import usePageMeta from "../hooks/usePageMeta";
 import { useToast } from "../components/Toast";
 import useT from "../hooks/useT";
+import { useAudio } from "../stores/AudioContext";
 
 export default function ReadingPlan() {
   useDocumentTitle("Reading Plans");
@@ -154,6 +155,7 @@ function maybeRequestReview() {
 /* ─────────────────────────── Active Plan View ─────────────────────────── */
 function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToast }) {
   const t = useT();
+  const audioPlayer = useAudio();
   const currentDay = getCurrentDay(plan, record);
   const [viewingDay, setViewingDay] = useState(currentDay);
   const dayData = plan.days[viewingDay - 1];
@@ -205,6 +207,18 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
       <div className="bg-white rounded-xl border border-cream-dark p-4 mb-4">
         {dayData?.note && (
           <p className="text-xs text-warm-brown-light italic mb-3 leading-relaxed">{dayData.note}</p>
+        )}
+        {dayData?.refs?.length > 0 && (
+          <button
+            type="button"
+            onClick={() => audioPlayer?.openQueue(dayData.refs, `${plan.shortName || plan.name} · Day ${viewingDay}`)}
+            className="w-full mb-3 flex items-center justify-center gap-2 py-2.5 rounded-full border border-gold/40 text-gold text-sm font-semibold hover:bg-gold/10 transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+            </svg>
+            {dayData.refs.length > 1 ? `Listen to all ${dayData.refs.length} chapters` : "Listen to this reading"}
+          </button>
         )}
         <div className="space-y-2">
           {dayData?.refs.map((r, i) => (

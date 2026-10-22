@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../stores/AuthContext";
+import { savedInScroll } from "../services/scrollBridge";
 import useBookmarks from "../hooks/useBookmarks";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import usePageMeta from "../hooks/usePageMeta";
@@ -14,6 +17,9 @@ export default function Bookmarks() {
     ogTitle: "Bookmarks — TheWay Bible App",
   });
   const { bookmarks, loading, removeBookmark } = useBookmarks();
+  const { user } = useAuth();
+  const [fromScroll, setFromScroll] = useState([]);
+  useEffect(() => { savedInScroll(user?.id).then(setFromScroll).catch(() => {}); }, [user?.id]);
   const showToast = useToast();
 
   const handleRemove = async (b) => {
@@ -54,7 +60,7 @@ export default function Bookmarks() {
           {bookmarks.map((b) => (
             <li key={b.id} className="bg-white rounded-xl border border-cream-dark p-3 flex items-center justify-between gap-3 hover:border-gold/30 transition-colors">
               <Link
-                to={`/read/${encodeURIComponent(b.book)}/${b.chapter}${b.verse ? `#v${b.verse}` : ""}`}
+                to={`/read/${encodeURIComponent(b.book)}/${b.chapter}${b.verse ? `?verse=${b.verse}` : ""}`}
                 className="flex-1 min-w-0"
               >
                 <p className="text-sm font-medium text-warm-brown truncate">
@@ -82,6 +88,23 @@ export default function Bookmarks() {
             </li>
           ))}
         </ul>
+      )}
+      {fromScroll.length > 0 && (
+        <section className="mt-8">
+          <h2 className="text-sm font-semibold text-warm-brown">Saved in Scroll</h2>
+          <p className="text-xs text-warm-brown-light mb-3">Verses you saved in the Scroll app, on the same account.</p>
+          <ul className="space-y-2">
+            {fromScroll.map((v) => (
+              <li key={v.ref}>
+                <Link to={`/read/${encodeURIComponent(v.book)}/${v.chapter}${v.verse ? `?verse=${v.verse}` : ""}`}
+                  className="block bg-white rounded-xl border border-cream-dark p-3 hover:border-gold/30 transition-colors">
+                  <p className="text-sm font-medium text-warm-brown">{v.ref}</p>
+                  {v.text && <p className="text-xs text-warm-brown-light line-clamp-2 mt-0.5">{v.text}</p>}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

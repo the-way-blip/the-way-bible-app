@@ -3,6 +3,7 @@ import { dbGetAll, dbPut, dbDelete } from "./useDB";
 import { syncPush, syncDelete } from "../services/supabaseSync";
 import { useAuth } from "../stores/AuthContext";
 import { logEvent } from "../services/ga";
+import { shareSavedVerse, unshareSavedVerse } from "../services/scrollBridge";
 
 /**
  * Bookmarks: save a chapter (or a specific verse) to return to later.
@@ -52,6 +53,7 @@ export default function useBookmarks() {
     };
     await dbPut("bookmarks", record);
     syncPush("bookmarks", record, user?.id);
+    shareSavedVerse(user?.id, record); // also appears in Scroll's saved scrolls
     await load();
     return record;
   }, [user?.id, load]);
@@ -60,6 +62,7 @@ export default function useBookmarks() {
     const id = buildId(book, chapter, verse);
     await dbDelete("bookmarks", id);
     syncDelete("bookmarks", id, user?.id);
+    unshareSavedVerse(user?.id, { book, chapter, verse });
     await load();
   }, [user?.id, load]);
 

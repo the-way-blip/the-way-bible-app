@@ -840,10 +840,16 @@ function StudyNotesExport() {
 function DailyReminder() {
   const [r, setR] = useState(getReminder);
   const [denied, setDenied] = useState(false);
+  const [error, setError] = useState(null);
   const update = async (patch) => {
-    const next = await setReminder({ ...r, ...patch });
-    setDenied(patch.enabled && !next.enabled);
-    setR(next);
+    setError(null);
+    try {
+      const next = await setReminder({ ...r, ...patch });
+      setDenied(patch.enabled && !next.enabled);
+      setR(next);
+    } catch (e) {
+      setError(`Couldn't set the reminder: ${e?.message || e}`);
+    }
   };
   return (
     <div className="bg-white border border-cream-dark rounded-xl p-4 space-y-3">
@@ -853,11 +859,12 @@ function DailyReminder() {
           <span className="block text-sm font-medium text-warm-brown">Remind me every day</span>
           <span className="block text-xs text-warm-brown-light">A short notification at the time you choose.</span>
         </span>
-        <span className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${r.enabled ? "bg-gold" : "bg-cream-dark"}`}>
+        <span className={`w-11 h-6 rounded-full relative transition-colors shrink-0 border ${r.enabled ? "bg-gold border-gold" : "bg-cream-dark border-warm-brown-light/40"}`}>
           <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${r.enabled ? "left-[22px]" : "left-0.5"}`} />
         </span>
       </button>
       {denied && <p className="text-xs text-red-600">Notifications are turned off for TheWay. Turn them on in the iPhone Settings app, then try again.</p>}
+      {error && <p className="text-xs text-red-600">{error}</p>}
       {r.enabled && (
         <>
           <label className="flex items-center justify-between text-sm text-warm-brown">

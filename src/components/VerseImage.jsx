@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { track } from "@vercel/analytics";
 import { logEvent } from "../services/ga";
+import { Capacitor } from "@capacitor/core";
+
+// Can this device hand an image file to the system share sheet?
+const canShareFiles = () => {
+  if (Capacitor.isNativePlatform()) return true;
+  try {
+    return typeof navigator.canShare === "function" && navigator.canShare({ files: [new File([""], "t.png", { type: "image/png" })] });
+  } catch { return false; }
+};
 
 /* ─────────────────── Solid color themes (always free) ─────────────────── */
 const COLOR_THEMES = [
@@ -60,6 +69,7 @@ export default function VerseImage({ content, reference, onClose }) {
   const [fontIdx, setFontIdx] = useState(0);
   const [overlay, setOverlay] = useState(50); // 0-100 darkening on photos
   const [downloading, setDownloading] = useState(false);
+  const [shareable] = useState(canShareFiles);
 
   const previewCanvasRef = useRef(null);
 
@@ -259,8 +269,24 @@ export default function VerseImage({ content, reference, onClose }) {
         size: size.label,
         category: mode === "photo" ? photoCategory : null,
       });
+      const filename = `${reference.replace(/[\s:]/g, "_")}_${size.label.toLowerCase()}.png`;
+      const shareText = `${reference} — TheWay Bible App\nhttps://thewaybible.app/?utm_source=share&utm_medium=image`;
+      if (Capacitor.isNativePlatform()) {
+        // iOS app: write the PNG to the cache, then open the share sheet (Save Image, Messages, Instagram…)
+        const [{ Filesystem, Directory }, { Share }] = await Promise.all([import("@capacitor/filesystem"), import("@capacitor/share")]);
+        const data = canvas.toDataURL("image/png").split(",")[1];
+        const { uri } = await Filesystem.writeFile({ path: filename, data, directory: Directory.Cache });
+        await Share.share({ title: reference, text: shareText, files: [uri] }).catch(() => {});
+        return;
+      }
+      const blob = await new Promise((res) => canvas.toBlob(res, "image/png"));
+      const file = blob && new File([blob], filename, { type: "image/png" });
+      if (file && canShareFiles()) {
+        try { await navigator.share({ files: [file], title: reference, text: shareText }); return; }
+        catch (e) { if (e?.name === "AbortError") return; } // cancelled — otherwise fall back to download
+      }
       const link = document.createElement("a");
-      link.download = `${reference.replace(/[\s:]/g, "_")}_${size.label.toLowerCase()}.png`;
+      link.download = filename;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } finally {
@@ -438,7 +464,7 @@ export default function VerseImage({ content, reference, onClose }) {
               disabled={downloading || (mode === "photo" && (!photo || photosLoading))}
               className="w-full bg-gold text-white rounded-xl py-3 text-sm font-semibold hover:bg-gold/90 disabled:opacity-50 transition-colors"
             >
-              {downloading ? "Generating…" : `Download ${size.label} (${size.w}×${size.h})`}
+              {downloading ? "Generating…" : `${shareable ? "Share" : "Download"} ${size.label} image (${size.w}×${size.h})`}
             </button>
             {mode === "photo" && photo && (
               <p className="text-[10px] text-warm-brown-light/70 text-center mt-2">

@@ -75,7 +75,8 @@ export async function setReminder(next) {
   return settings;
 }
 
-/** Call once at startup (inside the router): keeps the window full and opens the right chapter on tap. */
+/** Call once at startup (inside the router): keeps the window full and opens the right chapter on tap
+ *  (from a reminder or the home-screen widget). */
 export async function initReminders(navigate) {
   if (!remindersSupported()) return () => {};
   const LN = await plugin();
@@ -84,7 +85,14 @@ export async function initReminders(navigate) {
     const url = e.notification?.extra?.url;
     if (url) { logEvent("reminder_open", { kind: getReminder().kind }); navigate(url); }
   });
+  // The home-screen widget opens https://thewaybible.app/read/... in the app
+  const opened = await App.addListener("appUrlOpen", ({ url }) => {
+    try {
+      const u = new URL(url);
+      if (u.hostname.endsWith("thewaybible.app") && u.pathname.startsWith("/read/")) { logEvent("widget_open"); navigate(u.pathname + u.search); }
+    } catch { /* not a URL we route */ }
+  });
   const resume = await App.addListener("appStateChange", ({ isActive }) => { if (isActive && getReminder().enabled) scheduleReminders(); });
   if (getReminder().enabled) scheduleReminders();
-  return () => { tap.remove(); resume.remove(); };
+  return () => { tap.remove(); resume.remove(); opened.remove(); };
 }

@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
-import { Outlet, useLocation, Link } from "react-router-dom";
+import { Outlet, useLocation, Link, useNavigate } from "react-router-dom";
 import BottomNav from "./BottomNav";
 import PageTransition from "./PageTransition";
 import { AudioProvider } from "../stores/AudioContext";
 import WelcomeTour from "./WelcomeTour";
 import InstallPrompt from "./InstallPrompt";
 import Logo from "./Logo";
+import { initReminders } from "../services/reminders";
 
 const sidebarLinks = [
   { to: "/home", label: "Home", icon: "M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z", end: true },
@@ -134,6 +135,14 @@ export default function Layout() {
       try { localStorage.setItem("lastReaderPath", location.pathname); } catch {}
     }
   }, [location.pathname]);
+
+  // Daily reminders (iOS app): keep the next 30 days scheduled; tapping one opens its chapter
+  const navigate = useNavigate();
+  useEffect(() => {
+    let cleanup = () => {};
+    initReminders(navigate).then((fn) => { cleanup = fn; }).catch(() => {});
+    return () => cleanup();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const showTourOnRoute = ["/", "/onboarding", "/home"].includes(location.pathname);
 

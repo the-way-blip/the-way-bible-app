@@ -12,6 +12,7 @@ import { logEvent } from "../services/ga";
 import { Capacitor } from "@capacitor/core";
 import { booksWithStudy, buildStudyDoc, printDoc, saveFile } from "../services/studyExport";
 import OfflineBooks from "../components/OfflineBooks";
+import { getReminder, setReminder, remindersSupported } from "../services/reminders";
 
 const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 
@@ -266,6 +267,12 @@ export default function Settings() {
       </SettingsSection>
 
       {/* Data Management */}
+      {remindersSupported() && (
+        <SettingsSection title="Daily reminder">
+          <DailyReminder />
+        </SettingsSection>
+      )}
+
       <SettingsSection title={t("settings.data")}>
         <DataManagement t={t} />
       </SettingsSection>
@@ -822,6 +829,47 @@ function StudyNotesExport() {
               className={`flex-1 rounded-lg py-2 text-sm font-semibold disabled:opacity-50 ${native ? "bg-gold text-white" : "border border-gold/40 text-gold"}`}>{busy === "html" ? "Preparing…" : native ? "Share document" : "Download"}</button>
             <button type="button" onClick={() => run("text")} disabled={!!busy}
               className="flex-1 border border-cream-dark text-warm-brown rounded-lg py-2 text-sm disabled:opacity-50">{busy === "text" ? "Preparing…" : "Plain text"}</button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/** iOS app: a daily notification with the verse of the day, or a nudge back to the chapter you were reading. */
+function DailyReminder() {
+  const [r, setR] = useState(getReminder);
+  const [denied, setDenied] = useState(false);
+  const update = async (patch) => {
+    const next = await setReminder({ ...r, ...patch });
+    setDenied(patch.enabled && !next.enabled);
+    setR(next);
+  };
+  return (
+    <div className="bg-white border border-cream-dark rounded-xl p-4 space-y-3">
+      <button type="button" role="switch" aria-checked={r.enabled} onClick={() => update({ enabled: !r.enabled })}
+        className="w-full flex items-center justify-between text-left">
+        <span>
+          <span className="block text-sm font-medium text-warm-brown">Remind me every day</span>
+          <span className="block text-xs text-warm-brown-light">A short notification at the time you choose.</span>
+        </span>
+        <span className={`w-11 h-6 rounded-full relative transition-colors shrink-0 ${r.enabled ? "bg-gold" : "bg-cream-dark"}`}>
+          <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white shadow transition-all ${r.enabled ? "left-[22px]" : "left-0.5"}`} />
+        </span>
+      </button>
+      {denied && <p className="text-xs text-red-600">Notifications are turned off for TheWay. Turn them on in the iPhone Settings app, then try again.</p>}
+      {r.enabled && (
+        <>
+          <label className="flex items-center justify-between text-sm text-warm-brown">
+            Time
+            <input type="time" value={r.time} onChange={(e) => e.target.value && update({ time: e.target.value })}
+              className="bg-cream border border-cream-dark rounded-lg px-2 py-1 text-sm text-warm-brown" />
+          </label>
+          <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="What the reminder shows">
+            {[["verse", "Verse of the day"], ["reading", "Keep reading where I left off"]].map(([k, label]) => (
+              <button key={k} type="button" role="radio" aria-checked={r.kind === k} onClick={() => update({ kind: k })}
+                className={`rounded-lg px-3 py-2 text-xs font-medium text-left ${r.kind === k ? "bg-gold text-white" : "bg-cream-dark/60 text-warm-brown"}`}>{label}</button>
+            ))}
           </div>
         </>
       )}

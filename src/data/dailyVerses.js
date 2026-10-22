@@ -98,8 +98,9 @@ const DAILY_VERSES = [
  *
  * Falls back to pure rotation if no profile data.
  */
-export function getSmartDailyVerse({ topics = [], lastReadBook = null, profile = null } = {}) {
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+export function getSmartDailyVerse({ topics = [], lastReadBook = null, profile = null, date = new Date() } = {}) {
+  // `date` lets reminders look ahead and schedule each day's verse in advance
+  const dayOfYear = Math.floor((date.getTime() - new Date(date.getFullYear(), 0, 0)) / 86400000);
   // Stable per-day seed
   const seed = dayOfYear;
 

@@ -116,6 +116,11 @@ async function ghl(path, opts = {}) {
   if (!r.ok) throw new Error(`GHL ${path.split("?")[0]} ${r.status}`);
   return r.json();
 }
+const dayOf = (v) => {
+  if (v == null || v === "") return null;
+  const d = new Date(typeof v === "string" && /^\d+$/.test(v) ? Number(v) : v);
+  return isNaN(d) ? null : iso(d);
+};
 async function email(w) {
   const loc = process.env.GHL_LOCATION_ID;
   if (!process.env.GHL_PIT_TOKEN || !loc) throw new Error("GHL env missing");
@@ -150,7 +155,7 @@ async function email(w) {
       const delivered = x.successCount ?? null;
       const openedBeforeResend = rs && delivered != null && rs.totalCount != null ? Math.max(0, delivered - rs.totalCount) : null;
       return {
-        name: x.name, sentAt: (x.dateScheduled || x.createdAt || "").slice(0, 10), status: x.status,
+        name: x.name, sentAt: dayOf(x.dateScheduled || x.createdAt), status: x.status,
         audience: x.totalCount ?? null, delivered,
         openedBeforeResend,
         resendDelivered: rs ? rs.successCount ?? null : null,

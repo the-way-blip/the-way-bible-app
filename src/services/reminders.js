@@ -24,15 +24,15 @@ const lastReading = () => {
 const profileTopics = () => { try { return JSON.parse(localStorage.getItem("userProfile") || "{}")?.topics || []; } catch { return []; } };
 const clip = (s, n) => (s.length > n ? `${s.slice(0, n - 1).trimEnd()}…` : s);
 
-async function plugin() {
-  const { LocalNotifications } = await import("@capacitor/local-notifications");
-  return LocalNotifications;
-}
+// Returns the module, not the plugin: Capacitor plugin proxies answer every
+// property, including `then`, so returning one from an async function makes
+// JavaScript treat it as a promise and wait on it forever.
+const plugin = () => import("@capacitor/local-notifications");
 
 /** Cancel and re-create the next 30 days of reminders from the saved settings. */
 export async function scheduleReminders(settings = getReminder()) {
   if (!remindersSupported()) return false;
-  const LN = await plugin();
+  const { LocalNotifications: LN } = await plugin();
   await LN.cancel({ notifications: Array.from({ length: DAYS }, (_, i) => ({ id: FIRST_ID + i })) }).catch(() => {});
   if (!settings.enabled) return true;
   const { display } = await LN.checkPermissions();
@@ -64,7 +64,7 @@ export async function scheduleReminders(settings = getReminder()) {
 export async function setReminder(next) {
   const settings = { ...getReminder(), ...next };
   if (settings.enabled && remindersSupported()) {
-    const LN = await plugin();
+    const { LocalNotifications: LN } = await plugin();
     let { display } = await LN.checkPermissions();
     if (display !== "granted") ({ display } = await LN.requestPermissions());
     if (display !== "granted") settings.enabled = false;
@@ -79,7 +79,7 @@ export async function setReminder(next) {
  *  (from a reminder or the home-screen widget). */
 export async function initReminders(navigate) {
   if (!remindersSupported()) return () => {};
-  const LN = await plugin();
+  const { LocalNotifications: LN } = await plugin();
   const { App } = await import("@capacitor/app");
   const tap = await LN.addListener("localNotificationActionPerformed", (e) => {
     const url = e.notification?.extra?.url;

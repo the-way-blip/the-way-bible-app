@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		41E5D2406FE3A0321F1B7FEA /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 08E08828CC6C17313D64B380 /* WidgetKit.framework */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
@@ -15,11 +16,43 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		7E7FE1AEE4E40C1FB2C344BE /* TheWayWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A7C3B124D4D855288782B87B /* TheWayWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		909727B5CBA29373432C022B /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3FF51BF2C8D5729DF6417678 /* SwiftUI.framework */; };
 		A1B2C3D400000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A1B2C3D400000002 /* PrivacyInfo.xcprivacy */; };
+		D51DF7AE2AA7B80693D82456 /* DailyVerses.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7631296612E8DDC373B9905 /* DailyVerses.swift */; };
+		D5AB185D4682C07A937D5971 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0113F9755AE83EE12AC6F1E1 /* Foundation.framework */; };
+		F38A1F97D9DFAFF9F7285496 /* TheWayWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5846984E6D030C6B2764635 /* TheWayWidget.swift */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		6A0A272DC345455108B0135B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D97CBAD2357F3DAD32980373;
+			remoteInfo = TheWayWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		371837DC0512E2F620B9386C /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				7E7FE1AEE4E40C1FB2C344BE /* TheWayWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		0113F9755AE83EE12AC6F1E1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS26.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		08E08828CC6C17313D64B380 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		3FF51BF2C8D5729DF6417678 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* Read the Bible. Follow Jesus..app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Read the Bible. Follow Jesus..app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -31,6 +64,10 @@
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A1B2C3D400000002 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		A1B2C3D400000003 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
+		A7631296612E8DDC373B9905 /* DailyVerses.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = DailyVerses.swift; sourceTree = "<group>"; };
+		A7C3B124D4D855288782B87B /* TheWayWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = TheWayWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		DEEA5CD235E51D9BF4417081 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		E5846984E6D030C6B2764635 /* TheWayWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TheWayWidget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +76,16 @@
 			buildActionMask = 2147483647;
 			files = (
 				4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AFDFA4EA125213B0F2DFC1E7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5AB185D4682C07A937D5971 /* Foundation.framework in Frameworks */,
+				41E5D2406FE3A0321F1B7FEA /* WidgetKit.framework in Frameworks */,
+				909727B5CBA29373432C022B /* SwiftUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -51,6 +98,8 @@
 				958DCC722DB07C7200EA8C5F /* debug.xcconfig */,
 				504EC3061FED79650016851F /* App */,
 				504EC3051FED79650016851F /* Products */,
+				69CC3F57E503E3ECEE4CF969 /* Frameworks */,
+				C6744F33AA67770A5D3B2AF1 /* TheWayWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,6 +107,7 @@
 			isa = PBXGroup;
 			children = (
 				504EC3041FED79650016851F /* Read the Bible. Follow Jesus..app */,
+				A7C3B124D4D855288782B87B /* TheWayWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -79,6 +129,35 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		69CC3F57E503E3ECEE4CF969 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				EFDE07AB386736B7CECE4CA9 /* iOS */,
+				08E08828CC6C17313D64B380 /* WidgetKit.framework */,
+				3FF51BF2C8D5729DF6417678 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C6744F33AA67770A5D3B2AF1 /* TheWayWidget */ = {
+			isa = PBXGroup;
+			children = (
+				E5846984E6D030C6B2764635 /* TheWayWidget.swift */,
+				A7631296612E8DDC373B9905 /* DailyVerses.swift */,
+				DEEA5CD235E51D9BF4417081 /* Info.plist */,
+			);
+			name = TheWayWidget;
+			path = TheWayWidget;
+			sourceTree = "<group>";
+		};
+		EFDE07AB386736B7CECE4CA9 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				0113F9755AE83EE12AC6F1E1 /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -89,10 +168,12 @@
 				504EC3001FED79650016851F /* Sources */,
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
+				371837DC0512E2F620B9386C /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				3E96ABF4F680F478503312B4 /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -101,6 +182,23 @@
 			productName = App;
 			productReference = 504EC3041FED79650016851F /* Read the Bible. Follow Jesus..app */;
 			productType = "com.apple.product-type.application";
+		};
+		D97CBAD2357F3DAD32980373 /* TheWayWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ACA76EC3D0924474BBB24053 /* Build configuration list for PBXNativeTarget "TheWayWidget" */;
+			buildPhases = (
+				74CE3484D630DB1628D9BBFE /* Sources */,
+				AFDFA4EA125213B0F2DFC1E7 /* Frameworks */,
+				3085A6136245BDBDDA2F030F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TheWayWidget;
+			productName = TheWayWidget;
+			productReference = A7C3B124D4D855288782B87B /* TheWayWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -135,11 +233,19 @@
 			projectRoot = "";
 			targets = (
 				504EC3031FED79650016851F /* App */,
+				D97CBAD2357F3DAD32980373 /* TheWayWidget */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		3085A6136245BDBDDA2F030F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		504EC3021FED79650016851F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -165,7 +271,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		74CE3484D630DB1628D9BBFE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F38A1F97D9DFAFF9F7285496 /* TheWayWidget.swift in Sources */,
+				D51DF7AE2AA7B80693D82456 /* DailyVerses.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3E96ABF4F680F478503312B4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = TheWayWidget;
+			target = D97CBAD2357F3DAD32980373 /* TheWayWidget */;
+			targetProxy = 6A0A272DC345455108B0135B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		504EC30B1FED79650016851F /* Main.storyboard */ = {
@@ -187,6 +311,33 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		0F3C89420574FB1072652263 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_TEAM = NG6DBB2567;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TheWayWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = app.theway.bible.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
@@ -318,7 +469,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = NG6DBB2567;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -326,7 +477,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				OTHER_SWIFT_FLAGS = "$(inherited) \"-D\" \"COCOAPODS\" \"-DDEBUG\"";
 				PRODUCT_BUNDLE_IDENTIFIER = app.theway.bible;
 				PRODUCT_NAME = "Read the Bible. Follow Jesus.";
@@ -344,7 +495,7 @@
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEVELOPMENT_TEAM = NG6DBB2567;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -352,7 +503,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.1;
+				MARKETING_VERSION = 1.2;
 				PRODUCT_BUNDLE_IDENTIFIER = app.theway.bible;
 				PRODUCT_NAME = "Read the Bible. Follow Jesus.";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -361,6 +512,32 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		};
+		97B7CB6B39A43891713A833D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10;
+				DEVELOPMENT_TEAM = NG6DBB2567;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TheWayWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.2;
+				PRODUCT_BUNDLE_IDENTIFIER = app.theway.bible.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
@@ -379,6 +556,15 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ACA76EC3D0924474BBB24053 /* Build configuration list for PBXNativeTarget "TheWayWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0F3C89420574FB1072652263 /* Release */,
+				97B7CB6B39A43891713A833D /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

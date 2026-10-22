@@ -10,6 +10,7 @@ import {
 } from "../services/bibleSearch";
 import { parseRef } from "../utils/scriptureRef";
 import DictionaryPeek from "../components/DictionaryPeek";
+import { logEvent } from "../services/ga";
 
 const TOPIC_CHIPS = ["Faith", "Love", "Prayer", "Salvation", "Grace", "Peace", "Hope", "Forgiveness", "Wisdom", "Strength", "Joy", "Anxiety"];
 const EXAMPLES = ["John 3:16", "Psalm 23", "faith hope love", "what does the Bible say about anxiety", "\"be still\"", "H430"];
@@ -145,6 +146,7 @@ export default function Search() {
   const submit = (q) => {
     const trimmed = (q ?? query).trim();
     if (!trimmed) return;
+    logEvent("search", { length: trimmed.length });
     setQuery(trimmed);
     setShowHistory(false);
     inputRef.current?.blur();

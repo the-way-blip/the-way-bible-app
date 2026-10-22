@@ -31,6 +31,7 @@ import { useAuth } from "../stores/AuthContext";
 import useBookmarks from "../hooks/useBookmarks";
 import { syncReadingProgressUpdate } from "../services/supabaseSync";
 import { requestedVerse } from "../utils/verseLink";
+import { logEvent } from "../services/ga";
 
 export default function Reader() {
   const t = useT();
@@ -295,6 +296,7 @@ export default function Reader() {
   const openAtlas = useCallback(
     (place, context) => {
       if (!place) return;
+      logEvent("atlas_open", { book: displayedChapter?.book, chapter: displayedChapter?.chapter });
       setSelectedVerse(null);
       setActiveWordInfo(null);
       setPendingWord(null);

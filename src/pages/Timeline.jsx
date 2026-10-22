@@ -5,6 +5,7 @@ import useDocumentTitle from "../hooks/useDocumentTitle";
 import { getTimeline, getChrono, formatYear } from "../services/libraryService";
 import { linkifyRefs } from "../components/RefText";
 import { PeopleTabs } from "./People";
+import { logEvent } from "../services/ga";
 
 // Bible + World timeline: two lanes side by side (Bible left, world right),
 // synchronized in time blocks like the old Adams Synchronological Chart.
@@ -83,6 +84,7 @@ export default function Timeline() {
   }, []);
 
   // "You are here" from the reader: /timeline?ref=Jeremiah 39 (or ?y=-587)
+  useEffect(() => { logEvent("timeline_open", { from: params.get("ref") ? "reader" : "browse" }); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const here = useMemo(() => {
     const ref = params.get("ref");
     if (!chrono || (!ref && params.get("y") == null)) return null;

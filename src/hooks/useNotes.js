@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { dbGetByIndex, dbPut, dbDelete, dbGet } from "./useDB";
 import { syncPush, syncDelete } from "../services/supabaseSync";
 import { useAuth } from "../stores/AuthContext";
+import { logEvent } from "../services/ga";
 
 export default function useNotes(book, chapter) {
   const [notes, setNotes] = useState([]);
@@ -22,6 +23,7 @@ export default function useNotes(book, chapter) {
   }, [load]);
 
   const saveNote = async (verseNumber, text, tags = []) => {
+    logEvent("note_save", { book, chapter });
     const id = `${book}-${chapter}-${verseNumber}`;
     const existing = await dbGet("notes", id);
     const record = {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import VerseImage from "./VerseImage";
+import { logEvent } from "../services/ga";
 
 export default function ShareSheet({ content, reference, translation, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -16,6 +17,7 @@ export default function ShareSheet({ content, reference, translation, onClose })
     : `${content}\n\n${shareUrl}`;
 
   const handleCopy = async () => {
+    logEvent("share", { method: "copy" });
     try {
       await navigator.clipboard.writeText(shareText);
       setCopied(true);
@@ -34,6 +36,7 @@ export default function ShareSheet({ content, reference, translation, onClose })
   };
 
   const handleNativeShare = async () => {
+    logEvent("share", { method: "native" });
     if (navigator.share) {
       try {
         await navigator.share({

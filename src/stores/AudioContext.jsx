@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useCallback, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { getNextChapter } from "../data/bibleBooks";
+import { logEvent } from "../services/ga";
 
 const NarratedAudio = lazy(() => import("../features/reader/NarratedAudio"));
 const AudioContext = createContext(null);
@@ -27,6 +28,7 @@ export function AudioProvider({ children }) {
 
   const open = useCallback((book, chapter, verse = null) => {
     unlock(); // must run synchronously inside the tap
+    logEvent("audio_play", { book, chapter, from_verse: verse || 0 });
     setPlayer({ book, chapter, verse, token: Date.now() });
   }, []);
   const close = useCallback(() => {

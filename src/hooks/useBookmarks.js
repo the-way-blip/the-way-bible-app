@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { dbGetAll, dbPut, dbDelete } from "./useDB";
 import { syncPush, syncDelete } from "../services/supabaseSync";
 import { useAuth } from "../stores/AuthContext";
+import { logEvent } from "../services/ga";
 
 /**
  * Bookmarks: save a chapter (or a specific verse) to return to later.
@@ -38,6 +39,7 @@ export default function useBookmarks() {
     verse ? `${book}-${chapter}-${verse}` : `${book}-${chapter}`;
 
   const addBookmark = useCallback(async ({ book, chapter, verse = null, label = "" }) => {
+    logEvent("bookmark_add", { book, verse: verse ? 1 : 0 });
     const id = buildId(book, chapter, verse);
     const record = {
       id,

@@ -9,6 +9,7 @@ import { getVerseTextCached } from "../../services/bibleApi";
 import useJournal from "../../hooks/useJournal";
 import { tokenizeRefs } from "../../utils/scriptureRef";
 import useT from "../../hooks/useT";
+import { logEvent } from "../../services/ga";
 
 export default function SidePanel({
   book,
@@ -126,7 +127,7 @@ export function CommentaryTab({ book, chapter, selectedVerse }) {
   const toggle = (id) => {
     setOpen((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id); else { next.add(id); logEvent("commentary_open", { commentary: id, book }); }
       try { localStorage.setItem(OPEN_KEY, JSON.stringify([...next])); } catch {}
       return next;
     });
@@ -475,6 +476,7 @@ function WordStudyTab({ wordInfo }) {
   const t = useT();
   const [chipSearch, setChipSearch] = useState(null);
   const chipAbortRef = useRef(null);
+  useEffect(() => { if (wordInfo?.strongs) logEvent("word_study", { strongs: wordInfo.strongs }); }, [wordInfo?.strongs]);
 
   if (!wordInfo) {
     return (

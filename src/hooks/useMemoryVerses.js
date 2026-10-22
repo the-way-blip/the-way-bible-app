@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { dbGetAll, dbPut, dbDelete } from "./useDB";
 import { syncPush, syncDelete } from "../services/supabaseSync";
 import { useAuth } from "../stores/AuthContext";
+import { logEvent } from "../services/ga";
 
 export default function useMemoryVerses() {
   const [verses, setVerses] = useState([]);
@@ -21,6 +22,7 @@ export default function useMemoryVerses() {
   }, [load]);
 
   const addVerse = useCallback(async (book, chapter, verseNumber, text) => {
+    logEvent("memory_verse_add", { book });
     const id = `${book}-${chapter}-${verseNumber}`;
     const existing = verses.find((v) => v.id === id);
     if (existing) return;

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Capacitor } from "@capacitor/core";
 import TRANSLATIONS from "../data/translations";
+import { logEvent } from "../services/ga";
 
 const AppContext = createContext();
 
@@ -113,6 +114,7 @@ export function AppProvider({ children }) {
     setStudyMode((s) => {
       const next = !s;
       localStorage.setItem("studyMode", next);
+      logEvent("study_mode_toggle", { on: next });
       return next;
     });
   };

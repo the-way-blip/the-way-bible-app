@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { dbGetAll, dbPut, dbDelete, dbGet } from "./useDB";
 import { syncPush, syncDelete } from "../services/supabaseSync";
 import { useAuth } from "../stores/AuthContext";
+import { logEvent } from "../services/ga";
 
 /**
  * Tracks the user's active reading plan + completed days.
@@ -68,6 +69,7 @@ export default function useReadingPlanProgress() {
   }, [user?.id, load]);
 
   const markDayComplete = useCallback(async (planId, dayNum) => {
+    logEvent("plan_day_complete", { plan: planId, day: dayNum });
     const existing = await dbGet("readingPlanProgress", planId);
     if (!existing) return;
     const completedDays = { ...(existing.completedDays || {}) };

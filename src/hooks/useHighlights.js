@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { dbGetByIndex, dbPut, dbDelete } from "./useDB";
 import { syncPush, syncDelete } from "../services/supabaseSync";
 import { useAuth } from "../stores/AuthContext";
+import { logEvent } from "../services/ga";
 
 export default function useHighlights(book, chapter) {
   const [highlights, setHighlights] = useState([]);
@@ -22,6 +23,7 @@ export default function useHighlights(book, chapter) {
   }, [load]);
 
   const addHighlight = async (verseNumber, color) => {
+    logEvent("highlight_add", { color });
     const id = `${book}-${chapter}-${verseNumber}`;
     const existing = highlights.find((h) => h.id === id);
 

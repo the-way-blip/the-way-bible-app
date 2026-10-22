@@ -8,6 +8,9 @@ import { dbGetAll } from "../hooks/useDB";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import FONT_OPTIONS from "../data/fontOptions";
 import useT from "../hooks/useT";
+import { logEvent } from "../services/ga";
+import { Capacitor } from "@capacitor/core";
+import { booksWithStudy, buildStudyDoc, printDoc, saveFile } from "../services/studyExport";
 
 const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 
@@ -544,6 +547,7 @@ function DataManagement({ t }) {
 
   return (
     <div className="space-y-3">
+      <StudyNotesExport />
       <div className="flex gap-2">
         <button
           onClick={handleExport}
@@ -771,6 +775,54 @@ function SettingsSection({ title, children }) {
     <div className="mb-6">
       <h2 className="text-xs font-semibold text-warm-brown-light uppercase tracking-wider mb-3">{title}</h2>
       {children}
+    </div>
+  );
+}
+
+/** Readable export of notes + highlights (print/PDF, or share a file). */
+function StudyNotesExport() {
+  const [books, setBooks] = useState(null);
+  const [book, setBook] = useState("");
+  const [busy, setBusy] = useState(null);
+  useEffect(() => { booksWithStudy().then(setBooks).catch(() => setBooks([])); }, []);
+  if (!books) return null;
+  const run = async (kind) => {
+    setBusy(kind);
+    try {
+      const doc = await buildStudyDoc(book || null);
+      logEvent("notes_export", { method: kind, book: book || "all" });
+      const base = (book || "all-books").toLowerCase().replace(/\s+/g, "-");
+      if (kind === "print") printDoc(doc.html);
+      else if (kind === "text") await saveFile(`theway-notes-${base}.txt`, doc.text, "text/plain");
+      else await saveFile(`theway-notes-${base}.html`, doc.html, "text/html");
+    } finally { setBusy(null); }
+  };
+  const native = Capacitor.isNativePlatform();
+  return (
+    <div className="bg-white border border-cream-dark rounded-xl p-4">
+      <p className="text-sm font-semibold text-warm-brown">Export study notes</p>
+      <p className="text-xs text-warm-brown-light mt-0.5 mb-3">
+        {books.length ? "Your highlighted verses and notes, in Bible order, ready for Sunday school or sermon prep." : "Notes and highlights you add while reading will appear here to export."}
+      </p>
+      {books.length > 0 && (
+        <>
+          <select value={book} onChange={(e) => setBook(e.target.value)} aria-label="Which book to export"
+            className="w-full bg-cream border border-cream-dark rounded-lg px-3 py-2 text-sm text-warm-brown mb-2">
+            <option value="">All books ({books.length})</option>
+            {books.map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
+          <div className="flex gap-2">
+            {!native && (
+              <button type="button" onClick={() => run("print")} disabled={!!busy}
+                className="flex-1 bg-gold text-white rounded-lg py-2 text-sm font-semibold disabled:opacity-50">{busy === "print" ? "Preparing…" : "Print / Save PDF"}</button>
+            )}
+            <button type="button" onClick={() => run("html")} disabled={!!busy}
+              className={`flex-1 rounded-lg py-2 text-sm font-semibold disabled:opacity-50 ${native ? "bg-gold text-white" : "border border-gold/40 text-gold"}`}>{busy === "html" ? "Preparing…" : native ? "Share document" : "Download"}</button>
+            <button type="button" onClick={() => run("text")} disabled={!!busy}
+              className="flex-1 border border-cream-dark text-warm-brown rounded-lg py-2 text-sm disabled:opacity-50">{busy === "text" ? "Preparing…" : "Plain text"}</button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

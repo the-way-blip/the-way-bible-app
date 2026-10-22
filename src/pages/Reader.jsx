@@ -22,6 +22,7 @@ import { warmChapterAudio } from "../services/audioService";
 const ChapterNav = lazy(() => import("../features/reader/ChapterNav"));
 const SidePanel = lazy(() => import("../features/reader/SidePanel"));
 const ChapterTools = lazy(() => import("../features/reader/ChapterTools"));
+const InHistory = lazy(() => import("../features/reader/InHistory"));
 const ShareSheet = lazy(() => import("../components/ShareSheet"));
 const PlaceExplorer = lazy(() => import("../features/reader/PlaceExplorer"));
 const CommentaryTab = lazy(() => import("../features/reader/SidePanel").then((m) => ({ default: m.CommentaryTab })));
@@ -656,6 +657,7 @@ export default function Reader() {
               )}
               {/* Study tools for this chapter */}
               <Suspense fallback={null}>
+                <InHistory book={bookInfo?.name || book} chapter={chapterNum} />
                 <ChapterTools book={book} chapter={chapterNum} />
               </Suspense>
 

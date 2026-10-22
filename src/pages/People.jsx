@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
-import { getPeopleIndex, getPerson, getTimeline, formatYear } from "../services/libraryService";
+import { getPeopleIndex, getPerson, getTimeline, getChrono, formatYear } from "../services/libraryService";
 import DictionaryPeek from "../components/DictionaryPeek";
 import { linkifyRefs } from "../components/RefText";
 
@@ -110,6 +110,8 @@ function Profile({ slug }) {
 
       <DictionaryPeek word={slug === JESUS ? "Christ" : p.name} className="mt-4" />
 
+      <InHistoryPerson slug={slug} name={p.label} />
+
       <section className="mt-5">
         <PersonLinks title="Father" people={p.father} />
         <PersonLinks title="Mother" people={p.mother} />
@@ -147,5 +149,38 @@ function Profile({ slug }) {
       )}
       <p className="text-[10px] text-warm-brown-light/60 mt-8">Data: Theographic Bible Metadata (CC BY-SA 4.0). Dates follow Ussher's traditional chronology and are approximate.</p>
     </article>
+  );
+}
+
+/** Where this person sits in world history (for the ~100 key figures with dated lives or reigns). */
+function InHistoryPerson({ slug, name }) {
+  const [entry, setEntry] = useState(null);
+  useEffect(() => {
+    let live = true;
+    getChrono().then((c) => {
+      const person = c?.people.find(([s]) => s === slug);
+      if (!person || !live) return;
+      const [, , from, to, role] = person;
+      const mid = Math.round((from + to) / 2);
+      const powers = c.world.filter((w) => w.k === "power" && w.s <= mid && w.e >= mid).map((w) => w.t).slice(0, 3);
+      const first = name.split(/[ (]/)[0];
+      const writing = c.books.filter((b) => b.w[0] <= to && b.w[1] >= from)
+        .sort((a, b) => b.a.includes(first) - a.a.includes(first)) // their own books first
+        .map((b) => b.n).slice(0, 5);
+      setEntry({ from, to, role, mid, powers, writing });
+    });
+    return () => { live = false; };
+  }, [slug]);
+  if (!entry) return null;
+  const when = entry.from === entry.to ? formatYear(entry.from) : entry.from <= 0 && entry.to <= 0 ? `${1 - entry.from}–${1 - entry.to} BC` : `${formatYear(entry.from)} – ${formatYear(entry.to)}`;
+  return (
+    <section className="mt-4 rounded-xl border border-cream-dark bg-white px-4 py-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className="text-[10px] uppercase tracking-wider font-semibold text-gold">In history · {entry.from < -1000 ? "c. " : ""}{when}</p>
+        <Link to={`/timeline?y=${entry.mid}&ref=${encodeURIComponent(name)}`} className="text-xs font-medium text-gold hover:underline shrink-0">See the timeline →</Link>
+      </div>
+      {entry.powers.length > 0 && <p className="text-xs text-warm-brown mt-2"><span className="text-warm-brown-light">World powers: </span>{entry.powers.join(" · ")}</p>}
+      {entry.writing.length > 0 && <p className="text-xs text-warm-brown mt-1"><span className="text-warm-brown-light">Scripture being written: </span>{entry.writing.join(", ")}</p>}
+    </section>
   );
 }

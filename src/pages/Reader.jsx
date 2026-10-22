@@ -396,7 +396,7 @@ export default function Reader() {
       <div ref={scrollContainerRef} className="flex-1 min-w-0 overflow-y-auto">
         <div className="max-w-3xl mx-auto">
           {/* Header */}
-          <header className="sticky top-0 bg-cream/95 backdrop-blur-sm z-30 px-4 py-2 flex items-center justify-between gap-2">
+          <header className="@container sticky top-0 bg-cream/95 backdrop-blur-sm z-30 px-4 py-2 flex items-center justify-between gap-2">
             {/* Left: chapter nav */}
             <div className="flex items-center gap-2 min-w-0">
               <button
@@ -404,7 +404,7 @@ export default function Reader() {
                 className="flex items-center gap-1 min-h-[44px] min-w-0 text-left"
                 aria-label={`Navigate — ${displayedChapter.book} chapter ${displayedChapter.chapter}`}
               >
-                <span className="text-base sm:text-xl font-bold text-warm-brown leading-tight truncate">
+                <span className="text-base @lg:text-xl font-bold text-warm-brown leading-tight truncate">
                   {displayedChapter.book} {displayedChapter.chapter}
                 </span>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-3.5 h-3.5 text-warm-brown-light shrink-0">
@@ -412,18 +412,20 @@ export default function Reader() {
                 </svg>
               </button>
               {/* Translation badge — read-only indicator, tap goes to Settings */}
-              <span className="shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-cream-dark text-warm-brown-light select-none">
+              <span className="hidden @sm:inline shrink-0 px-1.5 py-0.5 text-[10px] font-bold rounded bg-cream-dark text-warm-brown-light select-none">
                 {translation}
               </span>
             </div>
 
-            {/* Right: Read/Study + atlas always visible; bookmark, text size and
-                verse numbers live in the Aa options menu so the title keeps its room */}
+            {/* Right side. The header is a container: it sizes to the reader column, which
+                narrows when the study panel is open, not to the window. In a narrow
+                column the atlas, then Listen, move into the Aa menu and the Read/Study
+                pill drops its label, so the chapter title always keeps its room. */}
             <div className="flex items-center gap-1 shrink-0">
               {/* Narrated KJV audio */}
               <button
                 onClick={() => (audio ? audioPlayer.close() : audioPlayer.open(bookInfo?.name || book, chapterNum))}
-                className={`w-[44px] h-[44px] flex items-center justify-center rounded-full transition-colors ${audio ? "bg-gold/10 text-gold" : "text-warm-brown-light hover:text-warm-brown"}`}
+                className={`hidden @xs:flex w-[44px] h-[44px] items-center justify-center rounded-full transition-colors ${audio ? "bg-gold/10 text-gold" : "text-warm-brown-light hover:text-warm-brown"}`}
                 aria-label={audio ? "Close audio" : "Listen to this chapter"}
                 title="Listen (KJV, human-narrated)"
               >
@@ -435,7 +437,8 @@ export default function Reader() {
               {/* Read / Study mode toggle — preserves scroll position */}
               <button
                 onClick={() => toggleStudyMode()}
-                className={`flex items-center gap-1 px-2.5 sm:px-3 min-h-[44px] rounded-full text-xs font-medium transition-colors ${
+                aria-label={studyMode ? t("reader.switchToRead") : t("reader.switchToStudy")}
+                className={`flex items-center gap-1 px-3 min-w-[44px] justify-center min-h-[44px] rounded-full text-xs font-medium transition-colors ${
                   studyMode
                     ? "bg-gold/10 text-gold"
                     : "bg-cream-dark text-warm-brown-light"
@@ -448,14 +451,14 @@ export default function Reader() {
                       <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
                       <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
                     </svg>
-                    {t("reader.readMode")}
+                    <span className="hidden @xs:inline">{t("reader.readMode")}</span>
                   </>
                 ) : (
                   <>
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3.5 h-3.5">
                       <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
-                    {t("reader.studyMode")}
+                    <span className="hidden @xs:inline">{t("reader.studyMode")}</span>
                   </>
                 )}
               </button>
@@ -464,7 +467,7 @@ export default function Reader() {
               {chapterPlaces.length > 0 && (
                 <button
                   onClick={() => openAtlas(chapterPlaces[0])}
-                  className="flex items-center gap-1.5 px-2 sm:pr-2.5 min-h-[44px] rounded-full text-warm-brown-light hover:text-gold transition-colors"
+                  className="hidden @sm:flex items-center gap-1.5 px-2 @xl:pr-2.5 min-h-[44px] rounded-full text-warm-brown-light hover:text-gold transition-colors"
                   title={t("atlas.openTitle", "Explore the geography of this chapter")}
                   aria-label={`${t("atlas.title", "Biblical Atlas")} — ${chapterPlaces.length} ${t("atlas.places", "places")}`}
                 >
@@ -472,7 +475,7 @@ export default function Reader() {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  <span className="hidden sm:inline text-[10px] font-bold bg-gold/10 text-gold rounded-full px-1.5 py-0.5 leading-none">
+                  <span className="hidden @xl:inline text-[10px] font-bold bg-gold/10 text-gold rounded-full px-1.5 py-0.5 leading-none">
                     {chapterPlaces.length}
                   </span>
                 </button>
@@ -507,6 +510,26 @@ export default function Reader() {
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setShowTools(false)} aria-hidden="true" />
                 <div className="absolute right-4 top-full mt-1 w-60 bg-white rounded-2xl border border-cream-dark shadow-xl shadow-warm-brown/10 p-2 z-40 animate-slide-up">
+                  <button
+                    onClick={() => { setShowTools(false); audio ? audioPlayer.close() : audioPlayer.open(bookInfo?.name || book, chapterNum); }}
+                    className="@xs:hidden w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50"
+                  >
+                    <span>{audio ? t("audio.close", "Close audio") : t("audio.listen", "Listen to this chapter")}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
+                      <path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+                    </svg>
+                  </button>
+                  {chapterPlaces.length > 0 && (
+                    <button
+                      onClick={() => { setShowTools(false); openAtlas(chapterPlaces[0]); }}
+                      className="@sm:hidden w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50"
+                    >
+                      <span>{t("atlas.title", "Biblical Atlas")} <span className="text-xs text-warm-brown-light">· {chapterPlaces.length} {t("atlas.places", "places")}</span></span>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+                      </svg>
+                    </button>
+                  )}
                   <button
                     onClick={() => { toggleChapterBookmark(); setShowTools(false); }}
                     className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50"

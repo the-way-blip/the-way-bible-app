@@ -19,6 +19,14 @@ export default function ReadingPlan() {
   const [confirmingReset, setConfirmingReset] = useState(null);
   const showToast = useToast();
 
+  // (Above the early return: hooks must run in the same order every render.)
+  // If a plan no longer exists in code, clean up the stale record
+  useEffect(() => {
+    if (activeRecord && !getPlan(activeRecord.id)) {
+      stopPlan(activeRecord.id);
+    }
+  }, [activeRecord, getPlan, stopPlan]);
+
   if (loading) {
     return (
       <div className="max-w-lg mx-auto px-4 py-12 text-center">
@@ -26,13 +34,6 @@ export default function ReadingPlan() {
       </div>
     );
   }
-
-  // If a plan no longer exists in code, clean up the stale record
-  useEffect(() => {
-    if (activeRecord && !getPlan(activeRecord.id)) {
-      stopPlan(activeRecord.id);
-    }
-  }, [activeRecord, getPlan, stopPlan]);
 
   // If a plan is active, show that plan's daily view
   if (activeRecord) {

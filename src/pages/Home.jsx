@@ -11,6 +11,7 @@ import Logo from "../components/Logo";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import { getSmartDailyVerse } from "../data/dailyVerses";
 import useT from "../hooks/useT";
+import EmailInvite from "../components/EmailInvite";
 
 export default function Home() {
   useDocumentTitle("Home");
@@ -133,6 +134,8 @@ export default function Home() {
       <p className="text-[11px] text-warm-brown-light/50 italic mb-5 leading-relaxed">
         "{headerQuote.text}" — {headerQuote.ref}
       </p>
+
+      {isLoggedIn && <EmailInvite user={user} />}
 
       {/* Streak Calendar */}
       {progress.streak > 0 && (

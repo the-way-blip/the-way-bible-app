@@ -209,10 +209,10 @@ async function ga4(propertyId, w, pathPrefix) {
   const filter = pathPrefix
     ? { dimensionFilter: { filter: { fieldName: "pagePath", stringFilter: { matchType: "BEGINS_WITH", value: pathPrefix } } } }
     : {};
-  const totalsM = ["activeUsers", "newUsers", "sessions", "screenPageViews", "engagementRate", "averageSessionDuration"].map((name) => ({ name }));
+  const totalsM = ["activeUsers", "newUsers", "sessions", "screenPageViews", "engagementRate", "averageSessionDuration", "engagedSessions"].map((name) => ({ name }));
   const requests = [
     { dateRanges: ranges, metrics: totalsM, ...filter },
-    { dateRanges: cur, dimensions: [{ name: "date" }], metrics: [{ name: "activeUsers" }, { name: "sessions" }], orderBys: [{ dimension: { dimensionName: "date" } }], limit: 400, ...filter },
+    { dateRanges: cur, dimensions: [{ name: "date" }], metrics: [{ name: "activeUsers" }, { name: "sessions" }, { name: "engagedSessions" }], orderBys: [{ dimension: { dimensionName: "date" } }], limit: 400, ...filter },
     { dateRanges: cur, dimensions: [{ name: "sessionDefaultChannelGroup" }], metrics: [{ name: "sessions" }], orderBys: [{ metric: { metricName: "sessions" }, desc: true }], limit: 7, ...filter },
     { dateRanges: ranges, dimensions: [{ name: "eventName" }], metrics: [{ name: "eventCount" }], orderBys: [{ metric: { metricName: "eventCount" }, desc: true }], limit: 60, ...filter },
     { dateRanges: cur, dimensions: [{ name: "pagePath" }], metrics: [{ name: "screenPageViews" }], orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }], limit: 8, ...filter },
@@ -226,10 +226,10 @@ async function ga4(propertyId, w, pathPrefix) {
     const which = r.d[r.d.length - 1] === "date_range_1" ? "prev" : "cur";
     totalsM.forEach((m, i) => { t[which][m.name] = r.m[i]; });
   });
-  const dailyMap = {}, dailySess = {};
+  const dailyMap = {}, dailySess = {}, dailyEng = {};
   rowsOf(daily).forEach((r) => {
     const d = `${r.d[0].slice(0, 4)}-${r.d[0].slice(4, 6)}-${r.d[0].slice(6, 8)}`;
-    dailyMap[d] = r.m[0]; dailySess[d] = r.m[1];
+    dailyMap[d] = r.m[0]; dailySess[d] = r.m[1]; dailyEng[d] = r.m[2];
   });
   const events = {};
   rowsOf(ev).forEach((r) => {
@@ -239,7 +239,7 @@ async function ga4(propertyId, w, pathPrefix) {
   });
   return {
     totals: t.cur, prev: t.prev,
-    daily: fillDays(w, dailyMap).map((x) => ({ ...x, sessions: dailySess[x.date] || 0 })),
+    daily: fillDays(w, dailyMap).map((x) => ({ ...x, sessions: dailySess[x.date] || 0, engaged: dailyEng[x.date] || 0 })),
     channels: rowsOf(chan).map((r) => ({ name: r.d[0], sessions: r.m[0] })),
     events,
     pages: rowsOf(pages).map((r) => ({ path: r.d[0], views: r.m[0] })),

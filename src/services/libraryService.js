@@ -91,6 +91,12 @@ export async function getDevotional(id, key = dayKey()) {
   return m ? { morning: strip(m[1]), evening: m[3].trim() } : { morning: strip(text), evening: "" };
 }
 
+// ── Hymns & poems ───────────────────────────────────────────────────────────
+// Built by scripts/build-hymns.mjs (1920 Army and Navy Hymnal, checked against
+// the scans, + Open Hymnal) and scripts/build-poems.mjs.
+export const getHymns = () => getJSON("/data/hymns/hymns.json").then((h) => h || []);
+export const getPoems = () => getJSON("/data/poems/poems.json").then((p) => p || []);
+
 // ── Library ──────────────────────────────────────────────────────────────────
 export const LIBRARY = [
   { group: "From TheWay", books: [

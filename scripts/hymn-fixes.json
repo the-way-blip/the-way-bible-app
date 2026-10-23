@@ -1,0 +1,1832 @@
+[
+ {
+  "number": 10,
+  "where": "v2 l1",
+  "from": "Tho' destruction walk a round us,",
+  "to": "Tho' destruction walk around us,",
+  "why": "scan prints 'around'"
+ },
+ {
+  "number": 10,
+  "where": "v3 l3",
+  "from": "Thou art he who, never Weary,",
+  "to": "Thou art He who, never weary,",
+  "why": "scan prints 'He' and lowercase 'weary'"
+ },
+ {
+  "number": 11,
+  "where": "v2 l1",
+  "from": "Thou, whose all pervading eye",
+  "to": "Thou, whose all-pervading eye",
+  "why": "scan prints 'all-pervading'"
+ },
+ {
+  "number": 12,
+  "where": "title",
+  "from": "12",
+  "to": "Sun of My Soul",
+  "why": "scan title"
+ },
+ {
+  "number": 13,
+  "where": "v2 l4",
+  "from": "May our eyelids close.",
+  "to": "May our eyelids close,",
+  "why": "scan ends line with comma"
+ },
+ {
+  "number": 14,
+  "where": "restructure",
+  "verses": [
+   [
+    "Lord, dismiss us with thy blessing,",
+    "Fill our hearts with joy and peace;",
+    "Let us each, thy love possessing,",
+    "Triumph in redeeming grace;",
+    "O refresh us, O refresh us,",
+    "Trav'ling thro' this wilderness."
+   ],
+   [
+    "Thanks we give and adoration",
+    "For thy Gospel's joyful sound;",
+    "May the fruits of thy salvation",
+    "In our hearts and lives abound;",
+    "Ever faithful, Ever faithful",
+    "To the truth may we be found."
+   ]
+  ],
+  "refrain": null,
+  "why": "second-system row 1 ('O refresh us...') belongs to v1, row 2 ('Ever faithful...') to v2; v2 was truncated with '&c.'; comma after 'each'; scan misprints 'out hearts' for 'our hearts'"
+ },
+ {
+  "number": 17,
+  "where": "title",
+  "from": "17",
+  "to": "Come, We Who Love the Lord",
+  "why": "scan title"
+ },
+ {
+  "number": 17,
+  "where": "v1 l3",
+  "from": "Join in a song of sweet acccord,",
+  "to": "Join in a song of sweet accord,",
+  "why": "scan 'accord'"
+ },
+ {
+  "number": 17,
+  "where": "v1 l4",
+  "from": "And thus surrond the throne.",
+  "to": "And thus surround the throne.",
+  "why": "scan 'surround'"
+ },
+ {
+  "number": 17,
+  "where": "v2 l2",
+  "from": "Who never knew our god;",
+  "to": "Who never knew our God;",
+  "why": "scan capital 'God'"
+ },
+ {
+  "number": 17,
+  "where": "v2 l4",
+  "from": "Should speak thier joys abroad",
+  "to": "Should speak their joys abroad.",
+  "why": "scan 'their' and period"
+ },
+ {
+  "number": 17,
+  "where": "v5 l3",
+  "from": "We're marching thro' Emanuael's ground",
+  "to": "We're marching thro' Emmanuel's ground",
+  "why": "scan 'Em-man-uel's'"
+ },
+ {
+  "number": 18,
+  "where": "title",
+  "from": "18",
+  "to": "From All That Dwell Below the Skies",
+  "why": "scan title"
+ },
+ {
+  "number": 18,
+  "where": "restructure",
+  "verses": [
+   [
+    "From all that dwell below the skies,",
+    "Let the Creator's praise arise:",
+    "Let the Redeemer's name be sung",
+    "Thro' every land, by every tongue."
+   ],
+   [
+    "Eternal are thy mercies, Lord;",
+    "Eternal truth attends thy word:",
+    "Thy praise shall sound from shore to shore",
+    "Till suns shall rise and set no more."
+   ]
+  ],
+  "refrain": null,
+  "why": "drop 'Amen' line; scan 'Creator's ... arise:', 'land', 'attends', 'suns'"
+ },
+ {
+  "number": 19,
+  "where": "title",
+  "from": "Prase Him! Praise Him",
+  "to": "Praise Him! Praise Him",
+  "why": "scan title"
+ },
+ {
+  "number": 19,
+  "where": "author",
+  "from": "Fanny J. Crosby, 1820–",
+  "to": "Fanny J. Crosby",
+  "why": "scan 'FANNY J. CROSBY, 1820-1915'"
+ },
+ {
+  "number": 19,
+  "where": "year",
+  "from": "1915",
+  "to": "1820-1915",
+  "why": "scan 'FANNY J. CROSBY, 1820-1915'"
+ },
+ {
+  "number": 19,
+  "where": "v1 l2",
+  "from": "Sing O earth—his wonderful love Proclaim.",
+  "to": "Sing, O earth—his wonderful love proclaim!",
+  "why": "scan 'Sing, O earth—... proclaim!'"
+ },
+ {
+  "number": 19,
+  "where": "v1 l3",
+  "from": "Hail him! Hail him! highest angels in glory;",
+  "to": "Hail him! hail him! highest archangels in glory;",
+  "why": "scan 'hail him! highest archangels'"
+ },
+ {
+  "number": 19,
+  "where": "v1 l5",
+  "from": "Like a shepherd Jesus will guard his children,",
+  "to": "Like a shepherd, Jesus will guard his children,",
+  "why": "scan comma after 'shepherd'"
+ },
+ {
+  "number": 19,
+  "where": "v2 l4",
+  "from": "Hail him! hail him! Jesus, the crucified,",
+  "to": "Hail him! hail him! Jesus, the Crucified,",
+  "why": "scan 'Crucified'"
+ },
+ {
+  "number": 19,
+  "where": "v2 l6",
+  "from": "Love unbounded, wonderful deep and strong;",
+  "to": "Love unbounded, wonderful, deep and strong;",
+  "why": "scan comma after 'wonderful'"
+ },
+ {
+  "number": 19,
+  "where": "v3 l3",
+  "from": "Jesus Saviour reigneth forever and ever:",
+  "to": "Jesus, Saviour, reigneth forever and ever:",
+  "why": "scan 'Jesus, Saviour,'"
+ },
+ {
+  "number": 19,
+  "where": "v3 l4",
+  "from": "Crown him! Crown him! Prophet, and Priest, and King!",
+  "to": "Crown him! crown him! Prophet, and Priest, and King!",
+  "why": "scan lowercase second 'crown'"
+ },
+ {
+  "number": 20,
+  "where": "title",
+  "from": "20",
+  "to": "Come, Thou Almighty King",
+  "why": "scan title"
+ },
+ {
+  "number": 20,
+  "where": "v2 l1",
+  "from": "Come thou incarnate Word,",
+  "to": "Come, thou incarnate Word,",
+  "why": "scan comma after 'Come'"
+ },
+ {
+  "number": 20,
+  "where": "v2 l2",
+  "from": "Gird us on thy mighty sword,",
+  "to": "Gird on thy mighty sword,",
+  "why": "scan has no 'us'"
+ },
+ {
+  "number": 20,
+  "where": "v2 l3",
+  "from": "Our Prayer attend:",
+  "to": "Our prayer attend:",
+  "why": "scan lowercase 'prayer'"
+ },
+ {
+  "number": 20,
+  "where": "v4 l1",
+  "from": "To thee, great One in Three,",
+  "to": "To thee, great One in three,",
+  "why": "scan lowercase 'three'"
+ },
+ {
+  "number": 21,
+  "where": "v2 l2",
+  "from": "Whose rob is the light, whose canopy space;",
+  "to": "Whose robe is the light, whose canopy space;",
+  "why": "scan 'robe'"
+ },
+ {
+  "number": 21,
+  "where": "v3 l4",
+  "from": "And sweetly distils in the dew and rain.",
+  "to": "And sweetly distils in the dew and the rain.",
+  "why": "scan 'the dew and the rain'"
+ },
+ {
+  "number": 22,
+  "where": "title",
+  "from": "22",
+  "to": "There's a Wideness in God's Mercy",
+  "why": "scan title"
+ },
+ {
+  "number": 22,
+  "where": "v1 l4",
+  "from": "Which is more than liberty",
+  "to": "Which is more than liberty.",
+  "why": "scan period"
+ },
+ {
+  "number": 22,
+  "where": "v2 l4",
+  "from": "In the sweetness of our Lord",
+  "to": "In the sweetness of our Lord.",
+  "why": "scan period"
+ },
+ {
+  "number": 22,
+  "where": "v3 l4",
+  "from": "Is most wonderfuly kind",
+  "to": "Is most wonderfully kind.",
+  "why": "scan 'wonderfully' and period"
+ },
+ {
+  "number": 23,
+  "where": "title",
+  "from": "23",
+  "to": "The King of Love My Shepherd Is",
+  "why": "scan title"
+ },
+ {
+  "number": 23,
+  "where": "v1 l2",
+  "from": "Whose good ness faileth never;",
+  "to": "Whose goodness faileth never;",
+  "why": "split word 'good ness'"
+ },
+ {
+  "number": 23,
+  "where": "v1 l4",
+  "from": "And he is mine forev er.",
+  "to": "And he is mine forever.",
+  "why": "split word 'forev er'"
+ },
+ {
+  "number": 23,
+  "where": "v3 l1",
+  "from": "Per verse and foolish oft I strayed,",
+  "to": "Perverse and foolish oft I strayed,",
+  "why": "split word 'Per verse'"
+ },
+ {
+  "number": 23,
+  "where": "v4 l2",
+  "from": "With thee, dear Lord, be side me;",
+  "to": "With thee, dear Lord, beside me;",
+  "why": "split word 'be side'"
+ },
+ {
+  "number": 24,
+  "where": "v1 l1",
+  "from": "The Lord is my Shepherd; no want shall I Know.",
+  "to": "The Lord is my Shepherd; no want shall I know.",
+  "why": "scan lowercase 'know'"
+ },
+ {
+  "number": 24,
+  "where": "v1 l2",
+  "from": "I feed in green pastures, safe folded I rest",
+  "to": "I feed in green pastures, safe folded I rest.",
+  "why": "scan period"
+ },
+ {
+  "number": 24,
+  "where": "v2 l1",
+  "from": "Thro' valley and shadow of death though I stray",
+  "to": "Thro' valley and shadow of death though I stray,",
+  "why": "scan comma"
+ },
+ {
+  "number": 24,
+  "where": "v3 l3",
+  "from": "I seek by the path which my forefathers trod,",
+  "to": "I seek, by the path which my forefathers trod,",
+  "why": "scan comma after 'seek'"
+ },
+ {
+  "number": 24,
+  "where": "v3 l4",
+  "from": "Thro' lands of thier sojourn, thy kingdom of love,",
+  "to": "Thro' lands of their sojourn, thy kingdom of love,",
+  "why": "scan 'their'"
+ },
+ {
+  "number": 24,
+  "where": "v3 l5",
+  "from": "Thro' lands of thier sojourn, thy kingdom of love.",
+  "to": "Thro' lands of their sojourn, thy kingdom of love.",
+  "why": "scan 'their'"
+ },
+ {
+  "number": 25,
+  "where": "title",
+  "from": "25",
+  "to": "Far Out on the Desolate Billow",
+  "why": "scan title"
+ },
+ {
+  "number": 25,
+  "where": "author",
+  "from": "Rossiter W. Raymond, 1840–",
+  "to": "Rossiter W. Raymond",
+  "why": "scan 'ROSSITER W. RAYMOND, 1840-1918'"
+ },
+ {
+  "number": 25,
+  "where": "year",
+  "from": "1918",
+  "to": "1840-1918",
+  "why": "scan 'ROSSITER W. RAYMOND, 1840-1918'"
+ },
+ {
+  "number": 25,
+  "where": "v2 l1",
+  "from": "Far down in the earth's dark bossom",
+  "to": "Far down in the earth's dark bosom",
+  "why": "scan 'bosom'"
+ },
+ {
+  "number": 25,
+  "where": "v4 l1",
+  "from": "Lord, grant as we life's ocean,",
+  "to": "Lord, grant as we sail life's ocean,",
+  "why": "scan has 'sail'"
+ },
+ {
+  "number": 26,
+  "where": "restructure",
+  "verses": [
+   [
+    "Be not dismayed whate'er betide, God will take care of you;",
+    "Beneath his wings of love abide, God will take care of you."
+   ],
+   [
+    "Thro' days of toil when heart doth fail, God will take care of you;",
+    "When dangers fierce your path assail, God will take care of you."
+   ],
+   [
+    "All you may need he will provide, God will take care of you;",
+    "Nothing you ask will be denied, God will take care of you."
+   ],
+   [
+    "No matter what may be the test, God will take care of you;",
+    "Lean, weary one, upon his breast, God will take care of you."
+   ]
+  ],
+  "refrain": [
+   "God will take care of you, Through every day, O'er all the way,",
+   "He will take care of you, God will take care of you."
+  ],
+  "why": "remove stray 'God will take care of you, &c.' lines from v2-v4 (refrain is separate); scan 'whate'er', 'you.' ending second lines, 'your path' (no 'upon'), 'denied', 'Lean, weary one,'"
+ },
+ {
+  "number": 27,
+  "where": "title",
+  "from": "27",
+  "to": "Break Thou the Bread of Life",
+  "why": "scan title"
+ },
+ {
+  "number": 27,
+  "where": "v1 l1",
+  "from": "Break thou the bread of life, Dear lord to me,",
+  "to": "Break thou the bread of life, Dear Lord, to me,",
+  "why": "scan 'Dear Lord, to me,'"
+ },
+ {
+  "number": 27,
+  "where": "v2 l2",
+  "from": "As thou didst bless the bread by Galilee;",
+  "to": "As thou didst bless the bread By Galilee;",
+  "why": "scan capital 'By'"
+ },
+ {
+  "number": 27,
+  "where": "v2 l4",
+  "from": "And I shall find my peace, My AllinAll.",
+  "to": "And I shall find my peace, My All-in-All.",
+  "why": "scan 'All-in-All'"
+ },
+ {
+  "number": 28,
+  "where": "author",
+  "from": "M. M. Wells, 1815–",
+  "to": "M. M. Wells",
+  "why": "scan 'M. M. WELLS, 1815-1858'"
+ },
+ {
+  "number": 28,
+  "where": "year",
+  "from": "1858",
+  "to": "1815-1858",
+  "why": "scan 'M. M. WELLS, 1815-1858'"
+ },
+ {
+  "number": 28,
+  "where": "v1 l3",
+  "from": "Gently lead use by the hand,",
+  "to": "Gently lead us by the hand,",
+  "why": "scan 'us'"
+ },
+ {
+  "number": 28,
+  "where": "v1 l8",
+  "from": "'Wanderer come; Follow Me, I'll Guide thee home.'",
+  "to": "'Wanderer come; Follow Me, I'll guide thee home.'",
+  "why": "scan lowercase 'guide'"
+ },
+ {
+  "number": 28,
+  "where": "v2 l8",
+  "from": "'Wanderer come; Follow Me, I'll Guide thee home.'",
+  "to": "'Wanderer come; Follow Me, I'll guide thee home.'",
+  "why": "scan lowercase 'guide'"
+ },
+ {
+  "number": 28,
+  "where": "v3 l8",
+  "from": "'Wanderer come; Follow Me, I'll Guide thee home.'",
+  "to": "'Wanderer come; Follow Me, I'll guide thee home.'",
+  "why": "scan lowercase 'guide'"
+ },
+ {
+  "number": 28,
+  "where": "v2 l6",
+  "from": "Hearts grow faint, and hopes give o'er",
+  "to": "Hearts grow faint, and hopes give o'er,",
+  "why": "scan comma"
+ },
+ {
+  "number": 28,
+  "where": "v2 l7",
+  "from": "Whispering softly,",
+  "to": "Whisper softly,",
+  "why": "scan v2 'Whis-per soft-ly'"
+ },
+ {
+  "number": 28,
+  "where": "v3 l4",
+  "from": "Wond'ring if our name are there;",
+  "to": "Wond'ring if our names are there;",
+  "why": "scan 'names'"
+ },
+ {
+  "number": 28,
+  "where": "v3 l7",
+  "from": "Whispering softly,",
+  "to": "Whisper softly,",
+  "why": "scan v3 'Whis-per soft-ly'"
+ },
+ {
+  "number": 30,
+  "where": "v2 l2",
+  "from": "Cleanse this guity heart of mine;",
+  "to": "Cleanse this guilty heart of mine;",
+  "why": "scan 'guilty'"
+ },
+ {
+  "number": 30,
+  "where": "v2 l4",
+  "from": "Held dominion o'er my soul,",
+  "to": "Held dominion o'er my soul.",
+  "why": "scan period"
+ },
+ {
+  "number": 30,
+  "where": "v3 l1",
+  "from": "Holy Ghost! with joy divine",
+  "to": "Holy Ghost! with joy divine,",
+  "why": "scan comma"
+ },
+ {
+  "number": 30,
+  "where": "v3 l2",
+  "from": "saddened heart of mine;",
+  "to": "Cheer this saddened heart of mine;",
+  "why": "scan 'Cheer this' missing"
+ },
+ {
+  "number": 30,
+  "where": "v3 l4",
+  "from": "Heal my wounded bleeding heart,",
+  "to": "Heal my wounded, bleeding heart.",
+  "why": "scan comma after 'wounded', period"
+ },
+ {
+  "number": 30,
+  "where": "v4 l4",
+  "from": "Reign supremeand reign alone.",
+  "to": "Reign supreme—and reign alone.",
+  "why": "scan 'supreme—and'"
+ },
+ {
+  "number": 31,
+  "where": "title",
+  "from": "31",
+  "to": "Joy to the World! the Lord Is Come",
+  "why": "scan title"
+ },
+ {
+  "number": 31,
+  "where": "restructure",
+  "verses": [
+   [
+    "Joy to the world! the Lord is come;",
+    "Let earth receive her King;",
+    "Let every heart prepare him room,",
+    "And heaven and nature sing,",
+    "And heaven and nature sing,",
+    "And heaven, and heaven and nature sing."
+   ],
+   [
+    "Joy to the world! the Saviour reigns;",
+    "Let men their songs employ;",
+    "While fields and floods, rocks, hills and plains",
+    "Repeat the sounding joy,",
+    "Repeat the sounding joy,",
+    "Repeat, repeat the sounding joy."
+   ],
+   [
+    "He rules the world with truth and grace,",
+    "And makes the nations prove",
+    "The glories of his righteousness,",
+    "And wonders of his love,",
+    "And wonders of his love,",
+    "And wonders, and wonders of his love."
+   ]
+  ],
+  "refrain": null,
+  "why": "v2 l3 was wrongly split in two; scan 'Lord', 'employ;', v1 last line 'And heaven, and heaven and nature sing.', v3 l5 comma"
+ },
+ {
+  "number": 32,
+  "where": "v1 l1",
+  "from": "Hark! The herald angels sing,",
+  "to": "Hark! the herald angels sing,",
+  "why": "scan lowercase 'the'"
+ },
+ {
+  "number": 32,
+  "where": "v1 l3",
+  "from": "Peace on Earth, and mercy mild,",
+  "to": "Peace on earth, and mercy mild,",
+  "why": "scan lowercase 'earth'"
+ },
+ {
+  "number": 32,
+  "where": "v1 l5",
+  "from": "Joyful, all ye nations rise,",
+  "to": "Joyful, all ye nations, rise,",
+  "why": "scan comma after 'nations'"
+ },
+ {
+  "number": 32,
+  "where": "v1 l10",
+  "from": "'Glory to the new born king!'",
+  "to": "'Glory to the new-born King!'",
+  "why": "scan 'new-born King'"
+ },
+ {
+  "number": 32,
+  "where": "v2 l10",
+  "from": "'Glory to the new born king!'",
+  "to": "'Glory to the new-born King!'",
+  "why": "scan 'new-born King'"
+ },
+ {
+  "number": 32,
+  "where": "v3 l10",
+  "from": "'Glory to the new born king!'",
+  "to": "'Glory to the new-born King!'",
+  "why": "scan 'new-born King'"
+ },
+ {
+  "number": 32,
+  "where": "v2 l8",
+  "from": "Jesus, Our Emmanuel!",
+  "to": "Jesus, our Emmanuel!",
+  "why": "scan lowercase 'our'"
+ },
+ {
+  "number": 32,
+  "where": "v3 l1",
+  "from": "Hail, the heav'n born Prince of Peace!",
+  "to": "Hail, the heav'n-born Prince of Peace!",
+  "why": "scan 'heav'n-born'"
+ },
+ {
+  "number": 32,
+  "where": "v3 l2",
+  "from": "Hail the sun of Righteousness!",
+  "to": "Hail, the Sun of Righteousness!",
+  "why": "scan 'Hail, the Sun'"
+ },
+ {
+  "number": 32,
+  "where": "v3 l6",
+  "from": "Born that no more may die,",
+  "to": "Born that man no more may die,",
+  "why": "scan has 'man'"
+ },
+ {
+  "number": 33,
+  "where": "title",
+  "from": "33",
+  "to": "It Came Upon the Midnight Clear",
+  "why": "scan title"
+ },
+ {
+  "number": 33,
+  "where": "v1 l5",
+  "from": "Peace on the earth,goodwill to men,",
+  "to": "'Peace on the earth, good-will to men,",
+  "why": "scan opening quote, 'good-will'"
+ },
+ {
+  "number": 33,
+  "where": "v1 l6",
+  "from": "From heaven's allgracious King;",
+  "to": "From heaven's all-gracious King;'",
+  "why": "scan 'all-gracious King;'' with closing quote"
+ },
+ {
+  "number": 33,
+  "where": "v3 l4",
+  "from": "With painful steps and slow,",
+  "to": "With painful steps and slow,—",
+  "why": "scan 'slow,—'"
+ },
+ {
+  "number": 33,
+  "where": "v3 l5",
+  "from": "Look now, for glad and golden nours",
+  "to": "Look now, for glad and golden hours",
+  "why": "scan 'hours'"
+ },
+ {
+  "number": 33,
+  "where": "v4 l2",
+  "from": "By prophetbards foretold,",
+  "to": "By prophet-bards foretold,",
+  "why": "scan 'prophet-bards'"
+ },
+ {
+  "number": 33,
+  "where": "v4 l3",
+  "from": "When with the evercircling years",
+  "to": "When with the ever-circling years",
+  "why": "scan 'ever-circling'"
+ },
+ {
+  "number": 34,
+  "where": "restructure",
+  "verses": [
+   [
+    "Angels, from the realms of glory,",
+    "Wing your flight o'er all the earth;",
+    "Ye who sang creation's story,",
+    "Now proclaim Messiah's birth:"
+   ],
+   [
+    "Shepherds, in the fields abiding,",
+    "Watching o'er your flocks by night,",
+    "God with man is now residing,",
+    "Yonder shines the infant light;"
+   ],
+   [
+    "Sages, leave your contemplations,",
+    "Brighter visions beam afar;",
+    "Seek the great Desire of nations,",
+    "Ye have seen his natal star:"
+   ],
+   [
+    "Saints before the altar bending,",
+    "Watching long in hope and fear,",
+    "Suddenly the Lord, descending,",
+    "In his temple shall appear:"
+   ]
+  ],
+  "refrain": [
+   "Come and worship,",
+   "Come and worship,",
+   "Worship Christ, the new-born King."
+  ],
+  "why": "v4 was garbled with v3 text and had 5 lines; scan v2 l1 comma, v3 l3 comma, refrain l2 comma, 'new-born'"
+ },
+ {
+  "number": 35,
+  "where": "title",
+  "from": "35",
+  "to": "O Little Town of Bethlehem",
+  "why": "scan title"
+ },
+ {
+  "number": 35,
+  "where": "v1 l5",
+  "from": "Yet in thy dark streets shineth,",
+  "to": "Yet in thy dark streets shineth",
+  "why": "scan no comma"
+ },
+ {
+  "number": 35,
+  "where": "v2 l5",
+  "from": "O morning stars, together,",
+  "to": "O morning stars, together",
+  "why": "scan no comma"
+ },
+ {
+  "number": 35,
+  "where": "v2 l8",
+  "from": "And peace _to men on earth!",
+  "to": "And peace to men on earth!",
+  "why": "stray underscore"
+ },
+ {
+  "number": 35,
+  "where": "v3 l2",
+  "from": "The Wondorus gift is given!",
+  "to": "The wondrous gift is given!",
+  "why": "scan 'wondrous'"
+ },
+ {
+  "number": 35,
+  "where": "v3 l5",
+  "from": "No ear may hear his com ing,",
+  "to": "No ear may hear his coming,",
+  "why": "split word 'com ing'"
+ },
+ {
+  "number": 35,
+  "where": "v3 l7",
+  "from": "Where meek souls will receive him, stil",
+  "to": "Where meek souls will receive him, still",
+  "why": "scan 'still'"
+ },
+ {
+  "number": 37,
+  "where": "title",
+  "from": "37",
+  "to": "Silent Night, Holy Night",
+  "why": "scan title"
+ },
+ {
+  "number": 37,
+  "where": "v2 l2",
+  "from": "Darkness, flies and all is light;",
+  "to": "Darkness flies, and all is light;",
+  "why": "scan comma placement 'Darkness flies, and'"
+ },
+ {
+  "number": 39,
+  "where": "title",
+  "from": "39",
+  "to": "In the Lonely Midnight",
+  "why": "scan title"
+ },
+ {
+  "number": 39,
+  "where": "author",
+  "from": "Theodore Chickering Willians, 1855–",
+  "to": "Theodore Chickering Williams",
+  "why": "scan 'THEODORE CHICKERING WILLIAMS, 1855-1915'"
+ },
+ {
+  "number": 39,
+  "where": "year",
+  "from": "1915",
+  "to": "1855-1915",
+  "why": "scan 'THEODORE CHICKERING WILLIAMS, 1855-1915'"
+ },
+ {
+  "number": 39,
+  "where": "v1 l4",
+  "from": "Singing, 'Peace, goodwill.'",
+  "to": "Singing, 'Peace, good-will.'",
+  "why": "scan 'good-will' (as in 33, 50)"
+ },
+ {
+  "number": 39,
+  "where": "v1 l6",
+  "from": "To the angels' song",
+  "to": "To the angels' song,",
+  "why": "scan comma"
+ },
+ {
+  "number": 39,
+  "where": "v3 l8",
+  "from": "Christ your Kings is born.",
+  "to": "Christ your King is born.",
+  "why": "scan 'King'"
+ },
+ {
+  "number": 44,
+  "where": "title",
+  "from": "44",
+  "to": "Away in a Manger",
+  "why": "scan title"
+ },
+ {
+  "number": 44,
+  "where": "author",
+  "from": "Martin Luther, 1483–",
+  "to": "Martin Luther",
+  "why": "scan 'MARTIN LUTHER, 1483-1546'"
+ },
+ {
+  "number": 44,
+  "where": "year",
+  "from": "1546",
+  "to": "1483-1546",
+  "why": "scan 'MARTIN LUTHER, 1483-1546'"
+ },
+ {
+  "number": 44,
+  "where": "v1 l8",
+  "from": "Asleep in the hay.",
+  "to": "Asleep on the hay.",
+  "why": "scan 'on the hay'"
+ },
+ {
+  "number": 50,
+  "where": "v1 l4",
+  "from": "Of peace on earth, goodwill to men.",
+  "to": "Of peace on earth, good-will to men.",
+  "why": "scan prints 'good-will'"
+ },
+ {
+  "number": 50,
+  "where": "v2 l4",
+  "from": "Of peace on earth, goodwill to men.",
+  "to": "Of peace on earth, good-will to men.",
+  "why": "scan prints 'good-will'"
+ },
+ {
+  "number": 50,
+  "where": "v3 l4",
+  "from": "Of peace on earth, goodwill to men.'",
+  "to": "Of peace on earth, good-will to men.'",
+  "why": "scan prints 'good-will'"
+ },
+ {
+  "number": 50,
+  "where": "v4 l4",
+  "from": "With peace on earth, goodwill to men:'",
+  "to": "With peace on earth, good-will to men:'",
+  "why": "scan prints 'good-will'"
+ },
+ {
+  "number": 50,
+  "where": "v5 l4",
+  "from": "Of peace on earth, goodwill to men!",
+  "to": "Of peace on earth, good-will to men!",
+  "why": "scan prints 'good-will'"
+ },
+ {
+  "number": 61,
+  "where": "v3 l2",
+  "from": "Light and love up on my way,",
+  "to": "Light and love upon my way,",
+  "why": "split word 'up on'"
+ },
+ {
+  "number": 73,
+  "where": "title",
+  "from": "Lord, I  Hear of Showers of Blessing",
+  "to": "Lord, I Hear of Showers of Blessing",
+  "why": "double space in title"
+ },
+ {
+  "number": 73,
+  "where": "v1 l2",
+  "from": "Thou art scatt'ring full and free,",
+  "to": "Thou art scatt'ring full and free,—",
+  "why": "scan 'free,—'"
+ },
+ {
+  "number": 73,
+  "where": "v2 l1",
+  "from": "Pass me not, gracious Father,",
+  "to": "Pass me not, O gracious Father,",
+  "why": "scan has 'O'"
+ },
+ {
+  "number": 73,
+  "where": "v3 l1",
+  "from": "Pass me not, tender Saviour,",
+  "to": "Pass me not, O tender Saviour,",
+  "why": "scan has 'O'"
+ },
+ {
+  "number": 73,
+  "where": "v2 l5",
+  "from": "Even me, Even me,",
+  "to": "Even me, even me,",
+  "why": "scan refrain 'Even me, even me,'"
+ },
+ {
+  "number": 73,
+  "where": "v3 l5",
+  "from": "Even me, Even me,",
+  "to": "Even me, even me,",
+  "why": "scan refrain 'Even me, even me,'"
+ },
+ {
+  "number": 73,
+  "where": "v4 l5",
+  "from": "Even me, Even me,",
+  "to": "Even me, even me,",
+  "why": "scan refrain 'Even me, even me,'"
+ },
+ {
+  "number": 74,
+  "where": "restructure",
+  "verses": [
+   [
+    "I can hear my Saviour calling,",
+    "I can hear my Saviour calling,",
+    "I can hear my Saviour calling,",
+    "'Take thy cross and follow Me.'"
+   ],
+   [
+    "I'll go with him thro' the garden,",
+    "I'll go with him thro' the garden,",
+    "I'll go with him thro' the garden,",
+    "I'll go with him all the way."
+   ],
+   [
+    "He will give me grace and glory,",
+    "He will give me grace and glory,",
+    "He will give me grace and glory,",
+    "And go with me all the way."
+   ]
+  ],
+  "refrain": [
+   "Where he leads me I will follow,",
+   "Where he leads me I will follow,",
+   "Where he leads me I will follow,",
+   "I'll go with him all the way."
+  ],
+  "why": "scan has 3 verses; 'Where he leads me' is printed as REF., not v4"
+ },
+ {
+  "number": 75,
+  "where": "title",
+  "from": "75",
+  "to": "God Calling Yet",
+  "why": "scan title"
+ },
+ {
+  "number": 75,
+  "where": "author",
+  "from": "Translated by Jane Borthwick",
+  "to": "",
+  "why": "scan prints only 'Translated by JANE BORTHWICK'"
+ },
+ {
+  "number": 75,
+  "where": "translator",
+  "from": null,
+  "to": "Jane Borthwick",
+  "why": "scan 'Translated by JANE BORTHWICK'"
+ },
+ {
+  "number": 75,
+  "where": "v4 l2",
+  "from": "My heart I yield without despise,",
+  "to": "My heart I yield without delay:",
+  "why": "scan 'without delay:'"
+ },
+ {
+  "number": 76,
+  "where": "title",
+  "from": "76",
+  "to": "Just As I Am, Without One Plea",
+  "why": "title was the hymn number; scan title"
+ },
+ {
+  "number": 76,
+  "where": "v1 l2",
+  "from": "But that thy blood was shed for me",
+  "to": "But that thy blood was shed for me,",
+  "why": "scan has comma after 'me'"
+ },
+ {
+  "number": 76,
+  "where": "v2 l2",
+  "from": "With many a conflict many a doubt,",
+  "to": "With many a conflict, many a doubt,",
+  "why": "scan has comma after 'conflict'"
+ },
+ {
+  "number": 77,
+  "where": "v1 l1",
+  "from": "I heard the voice of Jesus Say,—",
+  "to": "I heard the voice of Jesus say,—",
+  "why": "scan prints lowercase 'say'"
+ },
+ {
+  "number": 77,
+  "where": "v2 l3",
+  "from": "I found him in a resting place,",
+  "to": "I found in him a resting-place,",
+  "why": "scan prints 'I found in him a resting-place'"
+ },
+ {
+  "number": 77,
+  "where": "v3 l4",
+  "from": "Stoop down and drink, and live!'",
+  "to": "Stoop down, and drink, and live!'",
+  "why": "scan has comma after 'down'"
+ },
+ {
+  "number": 77,
+  "where": "v4 l2",
+  "from": "Of that life giving stream;",
+  "to": "Of that life-giving stream;",
+  "why": "scan prints 'life-giving' (compound)"
+ },
+ {
+  "number": 77,
+  "where": "v5 l2",
+  "from": "'I am this dark worlds light;",
+  "to": "'I am this dark world's light;",
+  "why": "scan prints 'world's'"
+ },
+ {
+  "number": 77,
+  "where": "v6 l4",
+  "from": "Till travelling days are done.",
+  "to": "Till traveling days are done.",
+  "why": "scan prints 'traveling' (single l)"
+ },
+ {
+  "number": 79,
+  "where": "restructure",
+  "verses": [
+   [
+    "'Come unto me, ye weary,",
+    "And I will give you rest.'",
+    "O blessed voice of Jesus",
+    "Which comes to hearts oppressed!",
+    "Which comes to hearts oppressed!",
+    "It tells of benediction,",
+    "Of pardon, grace and peace,",
+    "Of joy that hath no ending,",
+    "Of love which cannot cease;",
+    "Of joy that hath no ending,",
+    "Of love, of love which cannot cease."
+   ],
+   [
+    "'Come unto me, ye wanderers,",
+    "And I will give you light.'",
+    "O loving voice of Jesus",
+    "Which comes to cheer the night!",
+    "Which comes to cheer the night!",
+    "Our hearts were filled with sadness,",
+    "And we had lost our way;",
+    "But morning brings us gladness,",
+    "And songs, the break of day.",
+    "But morning brings us gladness",
+    "And songs, and songs, the break of day."
+   ],
+   [
+    "'Come unto me, ye fainting,",
+    "And I will give you life.'",
+    "O cheering voice of Jesus",
+    "Which comes to aid our strife!",
+    "Which comes to aid our strife!",
+    "The foe is stern and eager,",
+    "The fight is fierce and long;",
+    "But thou hast made us mighty,",
+    "And stronger than the strong.",
+    "But thou hast made us mighty",
+    "And stronger, and stronger than the strong."
+   ],
+   [
+    "'And whosoever cometh,",
+    "I will not cast him out.'",
+    "O welcome voice of Jesus,",
+    "Which drives away our doubt!",
+    "Which drives away our doubt!",
+    "Which calls us, very sinners,",
+    "Unworthy though we be",
+    "Of love so free and boundless,",
+    "To come, dear Lord, to thee.",
+    "Of love so free and boundless",
+    "To come, to come, dear Lord, to thee."
+   ]
+  ],
+  "refrain": null,
+  "why": "11-line verses per scan (pp.101-102): 'repeat' marker replaced by the printed repeated line; v1 missing repeated 'Of joy that hath no ending,'; v4 l6/l7 merged; many word errors fixed: rest.' / light.' / life.' punctuation, Joy->joy, 'bring'->'brings', 'foes'->'foe', 'Whosever'->'whosoever', 'Welcome vice'->'welcome voice', 'drive'->'drives', 'thou'->'though', 'love, Of love,'->'love, of love'"
+ },
+ {
+  "number": 80,
+  "where": "title",
+  "from": "80",
+  "to": "Jesus Calls Us, O'er the Tumult",
+  "why": "title was the hymn number; scan title"
+ },
+ {
+  "number": 80,
+  "where": "v2 l2",
+  "from": "Of the vain world's golden store",
+  "to": "Of the vain world's golden store,",
+  "why": "scan has comma after 'store'"
+ },
+ {
+  "number": 80,
+  "where": "v3 l4",
+  "from": "'Christian, love more than these.'",
+  "to": "'Christian, love me more than these.'",
+  "why": "scan prints 'love me more' (input dropped 'me')"
+ },
+ {
+  "number": 80,
+  "where": "v4 l1",
+  "from": "Jesus calls us by thy mercies,",
+  "to": "Jesus calls us: by thy mercies,",
+  "why": "scan has colon after 'us'"
+ },
+ {
+  "number": 80,
+  "where": "v4 l2",
+  "from": "Saviour may we hear thy call,",
+  "to": "Saviour, may we hear thy call,",
+  "why": "scan has comma after 'Saviour'"
+ },
+ {
+  "number": 81,
+  "where": "restructure",
+  "verses": [
+   [
+    "Out of my bondage, sorrow and night,",
+    "Jesus, I come, Jesus, I come;",
+    "Into thy freedom, gladness and light,",
+    "Jesus, I come to thee;",
+    "Out of my sickness into thy health,",
+    "Out of my want and into thy wealth,",
+    "Out of my sin and into thyself,",
+    "Jesus, I come to thee."
+   ],
+   [
+    "Out of my shameful failure and loss,",
+    "Jesus, I come, Jesus, I come;",
+    "Into the glorious gain of thy cross,",
+    "Jesus, I come to thee;",
+    "Out of earth's sorrows into thy balm,",
+    "Out of life's storms and into thy calm,",
+    "Out of distress to jubilant psalm,",
+    "Jesus, I come to thee."
+   ],
+   [
+    "Out of unrest and arrogant pride,",
+    "Jesus, I come, Jesus, I come;",
+    "Into thy blessed will to abide,",
+    "Jesus, I come to thee;",
+    "Out of myself to dwell in thy love,",
+    "Out of despair into raptures above,",
+    "Upwards for aye on wings like a dove,",
+    "Jesus, I come to thee."
+   ]
+  ],
+  "refrain": null,
+  "why": "v2 missing 2 lines ('Jesus, I come to thee;' x2) and v3 missing l4; v2/v3 l1 missing 'Out'; 'Into thy glorious gain' -> 'Into the glorious gain'; 'I Come' -> 'I come'; missing commas per scan"
+ },
+ {
+  "number": 82,
+  "where": "title",
+  "from": "82",
+  "to": "Arise, My Soul, Arise",
+  "why": "title was the hymn number; scan title"
+ },
+ {
+  "number": 82,
+  "where": "restructure",
+  "verses": [
+   [
+    "Arise, my soul, arise!",
+    "Shake off thy guilty fears;",
+    "The bleeding Sacrifice",
+    "In my behalf appears;",
+    "Before the throne my Surety stands,",
+    "Before the throne my Surety stands;",
+    "My name is written on his hands."
+   ],
+   [
+    "He ever lives above,",
+    "For me to intercede,",
+    "His all-redeeming love,",
+    "His precious blood to plead;",
+    "His blood atoned for all our race,",
+    "His blood atoned for all our race,",
+    "And sprinkled now the throne of grace."
+   ],
+   [
+    "My God is reconciled;",
+    "His pardoning voice I hear;",
+    "He owns me for his child;",
+    "I can no longer fear;",
+    "With confidence I now draw nigh,",
+    "With confidence I now draw nigh,",
+    "And Father, Abba, Father, cry."
+   ]
+  ],
+  "refrain": null,
+  "why": "v2 missing the repeated line 'His blood atoned for all our race,' (scan prints it twice like v1/v3); 'all redeeming' -> 'all-redeeming' (compound)"
+ },
+ {
+  "number": 83,
+  "where": "title",
+  "from": "From Every Stormy Wind that Blows",
+  "to": "From Every Stormy Wind That Blows",
+  "why": "scan title capitalizes 'That'"
+ },
+ {
+  "number": 83,
+  "where": "v4 l3",
+  "from": "And heaven comes down,our souls to greet,",
+  "to": "And heaven comes down, our souls to greet,",
+  "why": "missing space after comma"
+ },
+ {
+  "number": 85,
+  "where": "title",
+  "from": "85",
+  "to": "Sweet Hour of Prayer",
+  "why": "title was the hymn number; scan title"
+ },
+ {
+  "number": 85,
+  "where": "v1 l6",
+  "from": "My soul has found relief;",
+  "to": "My soul has often found relief;",
+  "why": "scan prints 'has often found' (input dropped 'often')"
+ },
+ {
+  "number": 85,
+  "where": "v1 l8",
+  "from": "by thy return, sweet hour of prayer!",
+  "to": "By thy return, sweet hour of prayer!",
+  "why": "scan capitalizes 'By'"
+ },
+ {
+  "number": 85,
+  "where": "v2 l8",
+  "from": "And wait for thee, sweet hour of prayerl",
+  "to": "And wait for thee, sweet hour of prayer!",
+  "why": "OCR 'prayerl' -> 'prayer!'"
+ },
+ {
+  "number": 85,
+  "where": "v3 l8",
+  "from": "Farewell, farewell.sweet hour of prayer!",
+  "to": "Farewell, farewell, sweet hour of prayer!",
+  "why": "missing space after comma"
+ },
+ {
+  "number": 86,
+  "where": "v2 l1",
+  "from": "Knowing thy love, on the we call,",
+  "to": "Knowing thy love, on thee we call,",
+  "why": "scan prints 'thee' (input 'the')"
+ },
+ {
+  "number": 86,
+  "where": "refrain l4",
+  "from": "Send them, Lord we pray.",
+  "to": "Send them, Lord, we pray.",
+  "why": "scan has comma after 'Lord'"
+ },
+ {
+  "number": 87,
+  "where": "title",
+  "from": "87",
+  "to": "Nearer, My God, to Thee",
+  "why": "title was the hymn number; scan title"
+ },
+ {
+  "number": 87,
+  "where": "v1 l1",
+  "from": "Nearer, my God to thee, Nearer to thee;",
+  "to": "Nearer, my God, to thee, Nearer to thee;",
+  "why": "scan has comma after 'God'"
+ },
+ {
+  "number": 87,
+  "where": "v1 l3",
+  "from": "Still all my song shall be, Nearer, my God to thee,",
+  "to": "Still all my song shall be, Nearer, my God, to thee,",
+  "why": "scan has comma after 'God'"
+ },
+ {
+  "number": 87,
+  "where": "v1 l4",
+  "from": "Nearer, my God to thee, nearer to thee!",
+  "to": "Nearer, my God, to thee, Nearer to thee!",
+  "why": "scan: comma after 'God', capital 'Nearer'"
+ },
+ {
+  "number": 87,
+  "where": "v2 l3",
+  "from": "Yet in my dream I'd be, Nearer, my God to thee,",
+  "to": "Yet in my dreams I'd be, Nearer, my God, to thee,",
+  "why": "scan has comma after 'God' and prints 'dreams'"
+ },
+ {
+  "number": 87,
+  "where": "v2 l4",
+  "from": "Nearer, my God to thee, nearer to thee!",
+  "to": "Nearer, my God, to thee, Nearer to thee!",
+  "why": "scan: comma after 'God', capital 'Nearer'"
+ },
+ {
+  "number": 87,
+  "where": "v3 l1",
+  "from": "There let the way appear Step unto heaven;",
+  "to": "There let the way appear Steps unto heaven;",
+  "why": "scan prints 'Steps'"
+ },
+ {
+  "number": 87,
+  "where": "v3 l3",
+  "from": "Angels to beckon me, Nearer, my God to thee,",
+  "to": "Angels to beckon me, Nearer, my God, to thee,",
+  "why": "scan has comma after 'God'"
+ },
+ {
+  "number": 87,
+  "where": "v3 l4",
+  "from": "Nearer, my God to thee, nearer to thee!",
+  "to": "Nearer, my God, to thee, Nearer to thee!",
+  "why": "scan: comma after 'God', capital 'Nearer'"
+ },
+ {
+  "number": 87,
+  "where": "v4 l3",
+  "from": "So by my woes to be Nearer, my God to thee,",
+  "to": "So by my woes to be Nearer, my God, to thee,",
+  "why": "scan has comma after 'God'"
+ },
+ {
+  "number": 87,
+  "where": "v4 l4",
+  "from": "Nearer, my God to thee, nearer to thee!",
+  "to": "Nearer, my God, to thee, Nearer to thee!",
+  "why": "scan: comma after 'God', capital 'Nearer'"
+ },
+ {
+  "number": 87,
+  "where": "v5 l1",
+  "from": "Or if on joyful wing cleaving the sky,",
+  "to": "Or if on joyful wing Cleaving the sky,",
+  "why": "scan capitalizes 'Cleaving'"
+ },
+ {
+  "number": 87,
+  "where": "v5 l3",
+  "from": "Still all my song shall be, Nearer, my God to thee,",
+  "to": "Still all my song shall be, Nearer, my God, to thee,",
+  "why": "scan has comma after 'God'"
+ },
+ {
+  "number": 87,
+  "where": "v5 l4",
+  "from": "Nearer, my God to thee, nearer to thee!",
+  "to": "Nearer, my God, to thee, Nearer to thee!",
+  "why": "scan: comma after 'God', capital 'Nearer'"
+ },
+ {
+  "number": 88,
+  "where": "restructure",
+  "verses": [
+   [
+    "Lord, for tomorrow and its needs",
+    "I do not pray;",
+    "Keep me, O God, from stain of sin,",
+    "Just for today.",
+    "Just for today,",
+    "Just for today,",
+    "Keep me, O God, from stain of sin,",
+    "Just for today."
+   ],
+   [
+    "Let me both diligently work",
+    "And duly pray;",
+    "Let me be kind in word and deed,",
+    "Just for today.",
+    "Just for today,",
+    "Just for today,",
+    "Let me be kind in word and deed,",
+    "Just for today."
+   ],
+   [
+    "Let me no wrong or idle word",
+    "Unthinking say;",
+    "Set thou a seal upon my lips,",
+    "Just for today.",
+    "Just for today,",
+    "Just for today,",
+    "Set thou a seal upon my lips,",
+    "Just for today."
+   ],
+   [
+    "So, for tomorrow and its needs",
+    "I do not pray;",
+    "But keep me, guide me, love me, Lord,",
+    "Just for today.",
+    "Just for today,",
+    "Just for today,",
+    "But keep me, guide me, love me, Lord,",
+    "Just for today."
+   ]
+  ],
+  "refrain": null,
+  "why": "refrain section prints 'Just for today, Just for today,' (two lines) before the repeated line; input had only one; also 'But Keep me, guide me, love me Lord,!' -> 'But keep me, guide me, love me, Lord,' (stray mark in scan) and final period"
+ },
+ {
+  "number": 91,
+  "where": "v3 l3",
+  "from": "When I soar to worlds unknown",
+  "to": "When I soar to worlds unknown,",
+  "why": "scan has comma after 'unknown'"
+ },
+ {
+  "number": 95,
+  "where": "v1 l3",
+  "from": "Bread of heaven, Feed me till I want no more,",
+  "to": "Bread of heaven, Feed me till I want no more.",
+  "why": "scan has period"
+ },
+ {
+  "number": 95,
+  "where": "v2 l3",
+  "from": "Strong Deliverer, Be thou still my strength and shield,",
+  "to": "Strong Deliverer, Be thou still my strength and shield.",
+  "why": "scan has period"
+ },
+ {
+  "number": 95,
+  "where": "v3 l4",
+  "from": "Songs of praises I will ever give to the.",
+  "to": "Songs of praises I will ever give to thee.",
+  "why": "scan misprints 'the.'; correct word 'thee'"
+ },
+ {
+  "number": 109,
+  "where": "v1 l1",
+  "from": "Truehearted, wholehearted, faithful and loyal,",
+  "to": "True-hearted, whole-hearted, faithful and loyal,",
+  "why": "scan prints hyphenated compounds 'True-hearted, whole-hearted'"
+ },
+ {
+  "number": 109,
+  "where": "v2 l1",
+  "from": "Truehearted, wholehearted, fullest allegiance",
+  "to": "True-hearted, whole-hearted, fullest allegiance",
+  "why": "scan prints hyphenated compounds 'True-hearted, whole-hearted'"
+ },
+ {
+  "number": 109,
+  "where": "v3 l1",
+  "from": "Truehearted, wholehearted, Saviour all-glorious!",
+  "to": "True-hearted, whole-hearted, Saviour all-glorious!",
+  "why": "scan prints hyphenated compounds 'True-hearted, whole-hearted'"
+ },
+ {
+  "number": 118,
+  "where": "restructure",
+  "verses": [
+   [
+    "Yield not to temptation, for yielding is sin,",
+    "Each victory will help you some other to win;",
+    "Fight manfully onward, dark passions subdue,",
+    "Look ever to Jesus—He will carry you through."
+   ],
+   [
+    "Shun evil companions, bad language disdain,",
+    "God's Name hold in reverence, nor take it in vain;",
+    "Be thoughtful and earnest, kindhearted and true,",
+    "Look ever to Jesus—He will carry you through."
+   ],
+   [
+    "To him that o'ercometh God giveth a crown,",
+    "Through faith we shall conquer, though often cast down;",
+    "He who is our Saviour, our strength will renew;",
+    "Look ever to Jesus—He will carry you through."
+   ]
+  ],
+  "refrain": [
+   "Ask the Saviour to help you,",
+   "Comfort, strengthen, and keep you;",
+   "He is willing to aid you,",
+   "He will carry you through."
+  ],
+  "why": "refrain l3 held two printed lines; split to match l1/l2 splitting"
+ },
+ {
+  "number": 119,
+  "where": "v1 l1",
+  "from": "In the hour of trial, Jesus, plead for me,",
+  "to": "In the hour of trial, Jesus plead for me,",
+  "why": "scan has no comma after 'Jesus'"
+ },
+ {
+  "number": 128,
+  "where": "restructure",
+  "verses": [
+   [
+    "We come in the might of the Lord of light,",
+    "With armor bright to meet him;",
+    "And we put to flight the armies of night,",
+    "That the sons of the day may greet him, The sons of day may greet him."
+   ],
+   [
+    "Our sword is the Spirit of God on high,",
+    "Our helmet is his salvation,",
+    "Our banner, the cross of Calvary,",
+    "Our watchword, the Incarnation, Our watchword, the Incarnation."
+   ],
+   [
+    "And the choir of angels with song awaits",
+    "Our march to the golden Zion,",
+    "For our Captain has broken the brazen gates,",
+    "And burst the bars of iron, And burst the bars of iron."
+   ],
+   [
+    "Then onward we march, our arms to prove,",
+    "With the banner of Christ before us,",
+    "With his eye of love looking down from above,",
+    "And his holy arm spread o'er us, His holy arm spread o'er us."
+   ]
+  ],
+  "refrain": [
+   "We march, we march to victory,",
+   "With the cross of the Lord before us,",
+   "With his loving eye looking down from the sky,",
+   "And his holy arm spread o'er us, his holy arm spread o'er us."
+  ],
+  "why": "v1 l1, v2 l1 and refrain l1 each merged two printed lines (v1/v2 had 3 lines vs 4 in v3/v4); split to match. Words unchanged."
+ },
+ {
+  "number": 134,
+  "where": "restructure",
+  "verses": [
+   [
+    "Awake, my soul, stretch every nerve,",
+    "And press with vigor on!",
+    "A heavenly race demands thy zeal,",
+    "And an immortal crown, And an immortal crown."
+   ],
+   [
+    "A cloud of witnesses around",
+    "Hold thee in full survey;",
+    "Forget the steps already trod,",
+    "And onward urge thy way, And onward urge thy way."
+   ],
+   [
+    "'Tis God's all-animating voice",
+    "That calls thee from on high;",
+    "'Tis his own hand presents the prize",
+    "To thine aspiring eye, To thine aspiring eye."
+   ],
+   [
+    "Blest Saviour, introduced by thee,",
+    "Have I my race begun;",
+    "And, crowned with victory, at thy feet",
+    "I'll lay my honors down, I'll lay my honors down."
+   ]
+  ],
+  "refrain": null,
+  "why": "l1 of each verse merged two printed lines, and v3 broke lines differently from v1/v2/v4 (repeat split off, l2 merged); normalized to 4 lines per verse (C.M.) with the repeat kept on the last line. Words unchanged."
+ },
+ {
+  "number": 143,
+  "where": "v4 l3",
+  "from": "Renew their hearts with Christlike faith,",
+  "to": "Renew their hearts with Christ-like faith,",
+  "why": "scan prints 'Christ-like' (hyphenated, in stanza text below music)"
+ },
+ {
+  "number": 149,
+  "where": "v4 l3",
+  "from": "O God,protect the men that fly",
+  "to": "O God, protect the men that fly",
+  "why": "missing space after comma; scan prints 'God, protect'"
+ },
+ {
+  "number": 151,
+  "where": "v2 l1",
+  "from": "I have seen him in the watch-fires of a hundred circling camps",
+  "to": "I have seen him in the watch-fires of a hundred circling camps;",
+  "why": "scan prints semicolon after 'camps'"
+ },
+ {
+  "number": 151,
+  "where": "v3 l1",
+  "from": "He has sounded forth the trumpet that shall nev er call retreat;",
+  "to": "He has sounded forth the trumpet that shall never call retreat;",
+  "why": "'nev er' is a split word; scan 'nev - er' = 'never'"
+ },
+ {
+  "number": 159,
+  "where": "author",
+  "from": "Charles T. Brooks",
+  "to": "Charles T. Brooks; John S. Dwight",
+  "why": "scan credits two writers at bottom right: 'CHARLES T. BROOKS, 1833 / JOHN S. DWIGHT, 1844'"
+ },
+ {
+  "number": 159,
+  "where": "year",
+  "from": "1833",
+  "to": "1833; 1844",
+  "why": "years printed beside each writer: Brooks 1833, Dwight 1844"
+ },
+ {
+  "number": 170,
+  "where": "v3 l1",
+  "from": "We share our mutal woes;",
+  "to": "We share our mutual woes;",
+  "why": "scan prints 'mutual'"
+ },
+ {
+  "number": 175,
+  "where": "title",
+  "from": "175",
+  "to": "Glorious Things of Thee are Spoken",
+  "why": "title missing; scan prints 'Glorious Things of Thee are Spoken'"
+ },
+ {
+  "number": 175,
+  "where": "v1 l4",
+  "from": "Form'd thee for his own abode;",
+  "to": "Form'd thee for his own abode:",
+  "why": "scan prints colon after 'abode'"
+ },
+ {
+  "number": 175,
+  "where": "v2 l4",
+  "from": "And all fear of want remove;",
+  "to": "And all fear of want remove:",
+  "why": "scan prints colon after 'remove'"
+ },
+ {
+  "number": 175,
+  "where": "v2 l7",
+  "from": "Grace, which, like the Lord the giver,",
+  "to": "Grace which, like the Lord the giver,",
+  "why": "scan prints no comma after 'Grace'"
+ },
+ {
+  "number": 175,
+  "where": "v3 l6",
+  "from": "Zion city of our God;",
+  "to": "Zion, city of our God;",
+  "why": "scan prints comma after 'Zion'"
+ },
+ {
+  "number": 175,
+  "where": "v3 l7",
+  "from": "He, whose word cannot be broken,",
+  "to": "He whose word cannot be broken",
+  "why": "scan prints no commas in this repeat line"
+ },
+ {
+  "number": 192,
+  "where": "v1 l3",
+  "from": "'Tho' your sins be as scarlet, Tho' your sins be as scarlet,",
+  "to": "'Tho' your sins be as scarlet, Tho' your sins be as scarlet.",
+  "why": "scan prints period after second 'scarlet'"
+ },
+ {
+  "number": 200,
+  "where": "refrain l1",
+  "from": "In the cross, in the cross Be my glory forever;",
+  "to": "In the cross, in the cross Be my glory ever;",
+  "why": "scan prints 'glory ever', not 'forever'"
+ },
+ {
+  "number": 217,
+  "where": "v1 l1",
+  "from": "Throw out the LifeLine across the dark wave,",
+  "to": "Throw out the Life-Line across the dark wave,",
+  "why": "scan prints hyphenated compound 'Life-Line'"
+ },
+ {
+  "number": 217,
+  "where": "v1 l4",
+  "from": "Will throw out the LifeLine, his peril to share?",
+  "to": "Will throw out the Life-Line, his peril to share?",
+  "why": "scan prints hyphenated compound 'Life-Line'"
+ },
+ {
+  "number": 217,
+  "where": "v2 l1",
+  "from": "Throw out the LifeLine with hand quick and strong:",
+  "to": "Throw out the Life-Line with hand quick and strong:",
+  "why": "scan prints hyphenated compound 'Life-Line'"
+ },
+ {
+  "number": 217,
+  "where": "v3 l1",
+  "from": "Throw out the LifeLine to danger-fraught men,",
+  "to": "Throw out the Life-Line to danger-fraught men,",
+  "why": "scan prints hyphenated compound 'Life-Line'"
+ },
+ {
+  "number": 217,
+  "where": "v4 l4",
+  "from": "But throw out the LifeLine and save them today.",
+  "to": "But throw out the Life-Line and save them today.",
+  "why": "scan prints hyphenated compound 'Life-Line'"
+ },
+ {
+  "number": 217,
+  "where": "refrain l1",
+  "from": "Throw out the LifeLine! Throw out the LifeLine!",
+  "to": "Throw out the Life-Line! Throw out the Life-Line!",
+  "why": "scan prints hyphenated compound 'Life-Line'"
+ },
+ {
+  "number": 217,
+  "where": "refrain l3",
+  "from": "Throw out the LifeLine! Throw out the LifeLine!",
+  "to": "Throw out the Life-Line! Throw out the Life-Line!",
+  "why": "scan prints hyphenated compound 'Life-Line'"
+ },
+ {
+  "number": 217,
+  "where": "v2 l4",
+  "from": "And out with the LifeBoat! away, then, away!",
+  "to": "And out with the Life-Boat! away, then, away!",
+  "why": "scan prints hyphenated compound 'Life-Boat'"
+ },
+ {
+  "number": 220,
+  "where": "v1 l4",
+  "from": "Safe within the lifeboat, sailor, pull for the shore!",
+  "to": "Safe within the life-boat, sailor, pull for the shore!",
+  "why": "scan prints hyphenated compound 'life-boat' (cf. tune name LIFE-BOAT)"
+ },
+ {
+  "number": 220,
+  "where": "v2 l1",
+  "from": "Trust in the lifeboat, sailor; all else will fail,",
+  "to": "Trust in the life-boat, sailor; all else will fail,",
+  "why": "scan prints hyphenated compound 'life-boat' (cf. tune name LIFE-BOAT)"
+ },
+ {
+  "number": 220,
+  "where": "v3 l3",
+  "from": "Safe in the lifeboat, sailor, sing evermore—",
+  "to": "Safe in the life-boat, sailor, sing evermore—",
+  "why": "scan prints hyphenated compound 'life-boat' (cf. tune name LIFE-BOAT)"
+ },
+ {
+  "number": 220,
+  "where": "refrain l3",
+  "from": "Safe in the lifeboat, sailor, cling to self no more!",
+  "to": "Safe in the life-boat, sailor, cling to self no more!",
+  "why": "scan prints hyphenated compound 'life-boat' (cf. tune name LIFE-BOAT)"
+ },
+ {
+  "number": 187,
+  "where": "title",
+  "from": "Some Day the Silver Chord",
+  "to": "Some Day the Silver Cord",
+  "why": "transcription slip: the hymn prints \"Some day the silver cord will break\" (Eccl 12:6)"
+ }
+]

@@ -27,7 +27,14 @@ function Shelf() {
       <Link to="/devotional" className="flex items-center justify-between bg-gold/10 border border-gold/20 rounded-2xl px-4 py-3 mb-6">
         <div>
           <p className="text-[10px] font-medium text-gold uppercase tracking-wider">Daily devotionals</p>
-          <p className="text-sm font-semibold text-warm-brown">Spurgeon's Morning and Evening · Daily Light</p>
+          <p className="text-sm font-semibold text-warm-brown">Morning and Evening · Daily Light · Faith's Checkbook</p>
+        </div>
+        <span className="text-gold">›</span>
+      </Link>
+      <Link to="/hymns" className="flex items-center justify-between bg-white border border-cream-dark rounded-2xl px-4 py-3 -mt-3 mb-6 hover:border-gold/30">
+        <div>
+          <p className="text-[10px] font-medium text-gold uppercase tracking-wider">Hymns &amp; poems</p>
+          <p className="text-sm font-semibold text-warm-brown">Hymns of the faith and classic Christian poetry</p>
         </div>
         <span className="text-gold">›</span>
       </Link>

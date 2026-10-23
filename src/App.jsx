@@ -30,6 +30,7 @@ const PrayerList = lazy(() => import("./pages/PrayerList"));
 const Topics = lazy(() => import("./pages/Topics"));
 const Dictionary = lazy(() => import("./pages/Dictionary"));
 const Devotional = lazy(() => import("./pages/Devotional"));
+const Hymns = lazy(() => import("./pages/Hymns"));
 const Library = lazy(() => import("./pages/Library"));
 const StudyGuide = lazy(() => import("./pages/StudyGuide"));
 const People = lazy(() => import("./pages/People"));
@@ -132,6 +133,10 @@ export default function App() {
                   <Route path="/dictionary" element={<Dictionary />} />
                   <Route path="/dictionary/:term" element={<Dictionary />} />
                   <Route path="/devotional" element={<Devotional />} />
+                  <Route path="/hymns" element={<Hymns />} />
+                  <Route path="/hymns/:id" element={<Hymns />} />
+                  <Route path="/poems" element={<Hymns />} />
+                  <Route path="/poems/:id" element={<Hymns />} />
                   <Route path="/how-to-study-the-bible" element={<StudyGuide />} />
                   <Route path="/people" element={<People />} />
                   <Route path="/people/:slug" element={<People />} />

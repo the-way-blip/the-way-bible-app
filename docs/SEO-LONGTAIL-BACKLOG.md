@@ -261,6 +261,28 @@ Also wrote the eight missing meanings behind these queries — Jonah 1:17,
 and Psalm 121:1. The meanings are the only original writing on a verse page and
 the part an assistant quotes, and the most-searched verses on the site had none.
 
+### The sixth wave, same day
+
+Built the forty-six named entities the backlog had been holding, each with its
+lead verse set from the start: the eleven minor prophets as people rather than
+as books, twenty-one people the earlier waves skipped (Rebekah, Esau, Absalom,
+Bathsheba, Nebuchadnezzar, Belshazzar, Methuselah, Balaam, Mephibosheth, Joseph
+of Arimathaea, Jephthah, Korah, Eli, Jesse, Joab, Ahab, Caiaphas, Herod the
+Great, Simon of Cyrene, Silas, Titus) and fourteen titles of Christ. Topics 443
+to 489, all 5,739 references resolve, every lead verified to render.
+
+Each one also carries an intro, which the snippet work made more valuable than
+it looked: the intro is the first half of the meta description, so it is what a
+searcher reads under the title.
+
+Deliberately not attempted: the position 22-40 group below. They are indexed —
+21.3K pages are — and all fifty of the most-searched verses already carry an
+original meaning, eight of them as range entries. Indexed, complete, and still
+at 35 means the gap is domain authority against Bible Gateway, Bible Hub,
+Bible.com and King James Bible Online on exactly their content. That is a
+backlink problem, which is what the church directory is for, and not something
+more pages will fix.
+
 Still open from this table: the verse, chapter and book pages at position 22 to
 40 (psalm 121, proverbs 3:5-6, isaiah 41:10, ephesians). Those are a ranking
 problem rather than a snippet problem and need separate work.

@@ -1,7 +1,7 @@
 import process from "node:process";
 import { rateLimit, checkOrigin } from "./_rateLimit.js";
 
-import { devotionalPayload } from "./_devotionalConsent.js";
+import { signupPayload } from "./_signupPayload.js";
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -19,8 +19,8 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: "Too many requests" });
   }
 
-  const payload = devotionalPayload(req.body);
-  if (!payload) return res.status(400).json({ error: "An explicit devotional subscription is required" });
+  const payload = signupPayload(req.body);
+  if (!payload) return res.status(400).json({ error: "A sign-up with a valid email is required" });
   const webhookUrl = process.env.GHL_WEBHOOK_URL;
   if (!webhookUrl) return res.status(200).json({ ok: true });
   try {

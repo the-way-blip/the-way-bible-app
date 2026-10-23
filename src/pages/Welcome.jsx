@@ -423,8 +423,9 @@ function FinalCTA() {
               onChange={(e) => setSubscribe(e.target.checked)}
               className="w-4 h-4 rounded border-2 border-cream-dark dark:border-[#5a5a5a] text-gold focus:ring-gold/30 accent-gold"
             />
-            Send me devotional emails (optional)
+            Also send me the daily devotional email (optional)
           </label>
+          <p className="text-xs text-warm-brown-light/80 dark:text-[#a89578] -mt-1 text-left">We'll email you a short welcome series on getting the most from the app. Unsubscribe anytime.</p>
           {error && <p role="alert" className="text-sm text-red-500 text-center">{error}</p>}
           <button
             type="submit"

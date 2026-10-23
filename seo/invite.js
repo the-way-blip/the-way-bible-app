@@ -3,8 +3,9 @@
  *
  * What it is: one email field and a link to the iOS app, shown once, after the
  * reader has actually read something. It posts to /api/ghl, the same endpoint
- * and the same consent shape the app itself uses — see api/_devotionalConsent.js,
- * which allowlists the payload and requires subscribeToDevo to be explicitly true.
+ * and the same payload the app itself uses — see api/_signupPayload.js, which
+ * allowlists the fields. It sends subscribeToDevo: true, since this form is a
+ * request for the daily verse email.
  * Nothing new is collected and nothing new is stored here.
  *
  * Why it is built the way it is, rather than as a normal modal:

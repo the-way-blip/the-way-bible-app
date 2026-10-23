@@ -202,8 +202,9 @@ export default function Login() {
                 onChange={(e) => setSubscribeToDevo(e.target.checked)}
                 className="w-4 h-4 rounded border-cream-dark text-gold focus:ring-gold/30"
               />
-              <span className="text-xs text-warm-brown-light">Send me devotional emails (optional)</span>
+              <span className="text-xs text-warm-brown-light">Also send me the daily devotional email (optional)</span>
             </label>
+            <p className="text-[11px] text-warm-brown-light/80 leading-snug">We'll email you a short welcome series on getting the most from the app. Unsubscribe anytime.</p>
 
           </div>
         )}

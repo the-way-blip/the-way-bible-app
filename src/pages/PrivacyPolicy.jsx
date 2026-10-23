@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-warm-brown mb-6">Privacy Policy</h1>
-      <p className="text-xs text-warm-brown-light mb-6">Last updated: September 30, 2026</p>
+      <p className="text-xs text-warm-brown-light mb-6">Last updated: October 22, 2026</p>
 
       <div className="space-y-6 text-sm text-warm-brown leading-relaxed">
         <Section title="Overview">
@@ -53,7 +53,7 @@ export default function PrivacyPolicy() {
           <ul className="list-disc pl-5 space-y-1">
             <li><strong>Supabase</strong> — authentication and data storage (if you create an account). Your email, name, profile preferences, highlights, notes, journal entries, memory verses, and reading progress are stored on Supabase servers with encryption at rest.</li>
             <li><strong>Resend</strong> — transactional email delivery. Used to send account confirmation and password reset emails to the address you sign up with.</li>
-            <li><strong>GoHighLevel (CRM)</strong> — if you explicitly select devotional emails, we send your email, optional name, and subscription preference. This version does not send prayer text, onboarding answers, or reading milestones to the CRM. Earlier versions sent signup details and activity information, including prayer request text. Contact us to request removal of previously shared data.</li>
+            <li><strong>GoHighLevel (CRM)</strong> — when you create an account, we send your email, optional name, and whether you chose the daily devotional email, so we can send a short welcome series and, if you chose it, the devotional. This version does not send prayer text, onboarding answers, or reading milestones to the CRM. Earlier versions sent signup details and activity information, including prayer request text. Contact us to request removal of previously shared data.</li>
             <li><strong>Bible API</strong> — KJV Bible text retrieval. Requests include the requested passage and network information such as your IP address.</li>
             <li><strong>Anthropic (Claude)</strong> — AI-powered word study generation. Verse text is sent for analysis; no account information is included in those requests.</li>
             <li><strong>Vercel</strong> — app hosting and serverless functions.</li>
@@ -66,8 +66,9 @@ export default function PrivacyPolicy() {
 
         <Section title="Marketing & Email Communications">
           <p>
-            If you choose devotional emails during signup, you will receive periodic
-            emails from TheWay Bible App. You can unsubscribe at any time using the link at the bottom
+            When you create an account, you will receive a short series of welcome emails
+            about using TheWay Bible App. If you also choose the daily devotional email during
+            signup, you will receive it each day. You can unsubscribe at any time using the link at the bottom
             of any email, or by replying to ask us to remove you. Unsubscribing will not
             affect your ability to use the app.
           </p>

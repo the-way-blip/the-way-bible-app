@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { requestedVerse } from '../src/utils/verseLink.js';
 import { firstMeaningfulText, translationList } from '../src/utils/lexiconText.js';
-import { devotionalPayload } from '../api/_devotionalConsent.js';
+import { signupPayload } from '../api/_signupPayload.js';
 import { submitSignUp } from '../src/services/ghlService.js';
 
 const verses = Array.from({ length: 36 }, (_, i) => ({ verse: i + 1 }));
@@ -26,29 +26,33 @@ test('verified G25 and Nicodemus definitions are corrected in shipped data', asy
   assert.match(data.G25.strongs_def, /to love/);
   assert.match(data.G3530.strongs_def, /an Israelite/);
 });
-test('CRM requires explicit consent and rejects private activity events', () => {
-  for (const type of ['prayer-request', 'onboarding-complete', 'reading-milestone']) assert.equal(devotionalPayload({type, email: 'test@example.com', subscribeToDevo: true}), null);
-  for (const subscribeToDevo of [false, undefined, 'true', 1]) assert.equal(devotionalPayload({type:'sign-up', email:'test@example.com', subscribeToDevo}), null);
-  assert.equal(devotionalPayload(null), null);
-  assert.equal(devotionalPayload({type:'sign-up',email:'invalid',subscribeToDevo:true}), null);
-  const payload = devotionalPayload({ type:'sign-up', email:'test@example.com', name:'Test Reader', subscribeToDevo:true, prayer_details:'private', city:'private', tags:['injected'], source:'spoofed' });
+test('CRM gets every sign-up, tags the devotional only with consent, and rejects private activity events', () => {
+  for (const type of ['prayer-request', 'onboarding-complete', 'reading-milestone']) assert.equal(signupPayload({type, email: 'test@example.com', subscribeToDevo: true}), null);
+  assert.equal(signupPayload(null), null);
+  assert.equal(signupPayload({type:'sign-up',email:'invalid',subscribeToDevo:true}), null);
+  for (const subscribeToDevo of [false, undefined, 'true', 1]) {
+    const p = signupPayload({type:'sign-up', email:'test@example.com', subscribeToDevo});
+    assert.equal(p.subscribeToDevo, false);
+    assert.deepEqual(p.tags, ['scripture-app-user']);
+  }
+  const payload = signupPayload({ type:'sign-up', email:'test@example.com', name:'Test Reader', subscribeToDevo:true, prayer_details:'private', city:'private', tags:['injected'], source:'spoofed' });
   assert.deepEqual(Object.keys(payload).sort(), ['source','type','email','first_name','last_name','subscribeToDevo','tags'].sort());
   assert.equal(payload.source, 'The Way App');
   assert.equal(payload.first_name, 'Test');
   assert.deepEqual(payload.tags, ['scripture-app-user','daily-devotional']);
 });
-test('signup makes no marketing request without consent; opted-in request excludes private fields', async () => {
+test('every sign-up reaches the CRM without private fields', async () => {
   const original = global.fetch;
   const calls = [];
   global.fetch = async (...args) => { calls.push(args); return {ok:true}; };
   try {
     await submitSignUp({email:'test@example.com'});
-    await submitSignUp({email:'test@example.com',subscribeToDevo:false});
-    assert.equal(calls.length, 0);
     await submitSignUp({email:'test@example.com',name:'Test',subscribeToDevo:true,phone:'private'});
-    assert.equal(calls.length, 1);
+    assert.equal(calls.length, 2);
     assert.equal(calls[0][0], '/api/ghl');
-    assert.equal(JSON.parse(calls[0][1].body).phone, undefined);
+    assert.equal(JSON.parse(calls[0][1].body).subscribeToDevo, false);
+    assert.equal(JSON.parse(calls[1][1].body).subscribeToDevo, true);
+    assert.equal(JSON.parse(calls[1][1].body).phone, undefined);
   } finally { global.fetch = original; }
 });
 

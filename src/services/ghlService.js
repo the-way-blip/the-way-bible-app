@@ -1,13 +1,15 @@
-/** Only explicitly requested devotional subscriptions go to the marketing service. */
+/**
+ * Every new account is added to the CRM for the welcome series; the daily
+ * devotional email only goes to people who tick the box (see api/_signupPayload.js).
+ */
 export async function submitSignUp({ email, name, subscribeToDevo = false }) {
-  if (subscribeToDevo !== true) return;
   try {
     await fetch("/api/ghl", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type: "sign-up", email, name, subscribeToDevo: true }),
+      body: JSON.stringify({ type: "sign-up", email, name, subscribeToDevo: subscribeToDevo === true }),
     });
   } catch {
-    // Account creation remains independent of the optional email subscription.
+    // Account creation never depends on the CRM.
   }
 }

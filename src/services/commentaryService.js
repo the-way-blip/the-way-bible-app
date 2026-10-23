@@ -21,6 +21,7 @@ export const COMMENTARIES = [
   { id: "spurgeon-treasury-of-david",      name: "Spurgeon — Treasury of David",   short: "TOD",  date: "1869–1885", style: "The classic devotional work on the Psalms", source: "local" },
   { id: "keil-delitzsch",                  name: "Keil & Delitzsch",               short: "K&D",  date: "1861–1875", style: "Scholarly Old Testament, Hebrew text",   source: "helloao" },
   { id: "barnes",                          name: "Barnes' Notes",                  short: "Barnes", date: "1832–1853", style: "Clear explanatory notes for lay readers", source: "local" },
+  { id: "vincent",                         name: "Vincent's Word Studies",         short: "VWS",  date: "1887–1900", style: "The Greek words, phrase by phrase (NT)", source: "local" },
   { id: "john-calvin",                     name: "John Calvin",                    short: "Calvin", date: "1540–1564", style: "Reformation exposition",               source: "helloao" },
   { id: "matthew-henry-concise",           name: "Matthew Henry (Concise)",        short: "MHC",  date: "1706",      style: "Short devotional summaries",             source: "local", passages: true },
   { id: "wesley",                          name: "John Wesley's Notes",            short: "Wesley", date: "1755–1765", style: "Brief, pastoral",                      source: "local" },
@@ -161,7 +162,18 @@ const BIBLEHUB_SLUGS = {
 export function getBibleHubUrl(book, chapter, verse) {
   const slug = BIBLEHUB_SLUGS[book.toLowerCase()];
   if (!slug) return null;
-  return `https://biblehub.com/commentaries/${slug}/${chapter}-${verse}.htm`;
+  return verse
+    ? `https://biblehub.com/commentaries/${slug}/${chapter}-${verse}.htm`
+    : `https://biblehub.com/commentaries/${slug}/${chapter}-1.htm`;
+}
+
+// Precept Austin (Bruce Hurt's verse-by-verse notes; copyrighted, so we link
+// rather than copy). /commentary-reference/<book>/<ch>/<v> redirects to the
+// right page and anchor; verse 0 opens the chapter. Every NT verse is covered,
+// about two-thirds of the OT.
+export function getPreceptAustinUrl(book, chapter, verse) {
+  const slug = book.toLowerCase().replace(/\s+/g, "-");
+  return `https://www.preceptaustin.org/commentary-reference/${slug}/${chapter}/${verse || 0}`;
 }
 
 // ── Fetch one commentary from the proxy ──────────────────────────────────────

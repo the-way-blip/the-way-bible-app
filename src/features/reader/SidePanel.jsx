@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Link } from "react-router-dom";
 import { getChapterCrossReferences } from "../../services/crossReferences";
-import { getCommentariesForBook, loadCommentary } from "../../services/commentaryService";
+import { getCommentariesForBook, loadCommentary, getPreceptAustinUrl, getBibleHubUrl } from "../../services/commentaryService";
 import { linkifyRefs } from "../../components/RefText";
 import DictionaryPeek from "../../components/DictionaryPeek";
 import LexiconExtra from "../../components/LexiconExtra";
@@ -160,9 +160,41 @@ export function CommentaryTab({ book, chapter, selectedVerse }) {
             isOpen={open.has(c.id)} onToggle={() => toggle(c.id)} />
         ))}
       </div>
+      <MoreCommentary book={book} chapter={chapter} verse={verse} />
       <p className="px-4 py-3 text-[9px] text-warm-brown-light/50">
-        {t("panel.commentarySources", "Public-domain texts via CrossWire SWORD and bible.helloao.org. Tyndale Study Notes © Tyndale House, CC BY-SA 4.0.")}
+        {t("panel.commentarySources", "Public-domain texts via CrossWire SWORD, bible.helloao.org and BibleHub (Vincent's Word Studies). Tyndale Study Notes © Tyndale House, CC BY-SA 4.0.")}
       </p>
+    </div>
+  );
+}
+
+/** Outbound links for more on this verse (or chapter) from sites we can't copy. */
+function MoreCommentary({ book, chapter, verse }) {
+  const t = useT();
+  const where = `${book} ${chapter}${verse ? `:${verse}` : ""}`;
+  const links = [
+    { id: "precept-austin", name: "Precept Austin", note: t("panel.preceptAustinNote", "Verse-by-verse notes, Greek & Hebrew word studies"), href: getPreceptAustinUrl(book, chapter, verse) },
+    { id: "biblehub", name: "BibleHub", note: t("panel.bibleHubNote", "Dozens of commentaries side by side"), href: getBibleHubUrl(book, chapter, verse) },
+  ].filter((l) => l.href);
+  return (
+    <div className="px-4 py-3 border-t border-cream-dark">
+      <p className="text-[10px] uppercase tracking-wider font-semibold text-warm-brown-light mb-1">
+        {t("panel.moreOnWeb", "More on")} {where}
+      </p>
+      {links.map((l) => (
+        <a key={l.id} href={l.href} target="_blank" rel="noopener noreferrer"
+          onClick={() => logEvent("commentary_link", { commentary: l.id, book })}
+          className="flex items-center justify-between gap-3 min-h-[44px] group">
+          <span className="min-w-0">
+            <span className="block text-xs font-semibold text-gold group-hover:underline">{l.name}</span>
+            <span className="block text-[10px] text-warm-brown-light">{l.note}</span>
+          </span>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"
+            className="w-3.5 h-3.5 text-warm-brown-light/60 shrink-0">
+            <path d="M7 17 17 7M8 7h9v9" />
+          </svg>
+        </a>
+      ))}
     </div>
   );
 }

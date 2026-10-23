@@ -74,8 +74,9 @@ export async function suggestHeadwords(q, limit = 12) {
 
 // ── Devotionals ──────────────────────────────────────────────────────────────
 export const DEVOTIONALS = {
-  "morning-evening": { name: "Morning and Evening", author: "C. H. Spurgeon", date: "1865" },
-  "daily-light": { name: "Daily Light on the Daily Path", author: "Jonathan Bagster", date: "1875" },
+  "morning-evening": { name: "Morning and Evening", short: "Morning & Evening", author: "C. H. Spurgeon", date: "1865", twice: true, credit: "Public domain, via the CrossWire Bible Society." },
+  "daily-light": { name: "Daily Light on the Daily Path", short: "Daily Light", author: "Jonathan Bagster", date: "1875", twice: true, credit: "Public domain, via the CrossWire Bible Society." },
+  "faiths-checkbook": { name: "Faith's Checkbook", short: "Faith's Checkbook", author: "C. H. Spurgeon", date: "1888", twice: false, credit: "Public domain, from the Christian Classics Ethereal Library. Each day's promise is printed from the KJV." },
 };
 
 export const dayKey = (d = new Date()) => `${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;

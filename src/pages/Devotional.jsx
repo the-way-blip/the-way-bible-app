@@ -28,15 +28,17 @@ export default function Devotional() {
   }, [source, day]);
 
   const set = (next) => setParams({ source, day, ...next });
-  const text = data?.[part] || "";
+  const text = (DEVOTIONALS[source].twice ? data?.[part] : data?.morning) || "";
+  // One-a-day readings (Faith's Checkbook) open with the day's title.
+  const [heading, body] = DEVOTIONALS[source].twice ? ["", text] : [text.split("\n\n")[0], text.split("\n\n").slice(1).join("\n\n")];
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 overflow-x-auto">
         {Object.entries(DEVOTIONALS).map(([id, d]) => (
           <button key={id} type="button" onClick={() => set({ source: id })}
             className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors ${source === id ? "bg-gold text-white" : "bg-cream-dark text-warm-brown-light"}`}>
-            {d.name}
+            {d.short}
           </button>
         ))}
       </div>
@@ -51,23 +53,24 @@ export default function Devotional() {
         {day !== dayKey() && <> · <button type="button" onClick={() => set({ day: dayKey() })} className="text-gold">Today</button></>}
       </p>
 
-      <div className="flex bg-cream-dark rounded-full p-1 mb-5 max-w-xs mx-auto">
+      {DEVOTIONALS[source].twice && <div className="flex bg-cream-dark rounded-full p-1 mb-5 max-w-xs mx-auto">
         {["morning", "evening"].map((p) => (
           <button key={p} type="button" onClick={() => setPart(p)}
             className={`flex-1 py-1.5 rounded-full text-xs font-medium transition-colors ${part === p ? "bg-white text-warm-brown shadow-sm" : "text-warm-brown-light"}`}>
             {p === "morning" ? "Morning" : "Evening"}
           </button>
         ))}
-      </div>
+      </div>}
 
       {!data ? (
         <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin mx-auto my-12" />
       ) : (
         <div className="bg-white border border-cream-dark rounded-2xl p-5">
-          <p className="font-scripture text-[15px] text-warm-brown leading-relaxed whitespace-pre-wrap">{linkifyRefs(text)}</p>
+          {heading && <h2 className="font-serif text-lg font-bold text-warm-brown mb-3">{heading}</h2>}
+          <p className="font-scripture text-[15px] text-warm-brown leading-relaxed whitespace-pre-wrap">{linkifyRefs(body)}</p>
         </div>
       )}
-      <p className="text-[10px] text-warm-brown-light/60 mt-4 text-center">Public domain, via the CrossWire Bible Society.</p>
+      <p className="text-[10px] text-warm-brown-light/60 mt-4 text-center">{DEVOTIONALS[source].credit}</p>
       <p className="text-center mt-2"><Link to="/library" className="text-xs text-gold">More classics in the Library →</Link></p>
     </div>
   );

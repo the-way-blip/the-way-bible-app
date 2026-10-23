@@ -109,7 +109,7 @@ const STORIES = [
     verses: ["1 Kings 19:4", "1 Kings 19:5", "1 Kings 19:9", "1 Kings 19:11", "1 Kings 19:12", "1 Kings 19:13", "1 Kings 19:18", "Psalm 46:10", "Isaiah 30:21"] },
   { name: "The Handwriting on the Wall", aliases: ["handwriting-on-the-wall", "mene-mene-tekel-upharsin", "belshazzars-feast"],
     verses: ["Daniel 5:1", "Daniel 5:5", "Daniel 5:6", "Daniel 5:17", "Daniel 5:22", "Daniel 5:23", "Daniel 5:25", "Daniel 5:26", "Daniel 5:27", "Daniel 5:28", "Daniel 5:30"] },
-  { name: "Jonah and the Whale", aliases: ["jonah-and-the-great-fish", "the-whale", "jonah-and-the-fish"],
+  { name: "Jonah and the Whale", lead: "Jonah 1:17", aliases: ["jonah-and-the-great-fish", "the-whale", "jonah-and-the-fish"],
     verses: ["Jonah 1:1", "Jonah 1:2", "Jonah 1:3", "Jonah 1:12", "Jonah 1:17", "Jonah 2:1", "Jonah 2:2", "Jonah 2:9", "Jonah 2:10", "Jonah 3:5", "Matthew 12:40"] },
   { name: "The Wise Men", aliases: ["the-magi", "the-three-wise-men", "the-star-of-bethlehem"],
     verses: ["Matthew 2:1", "Matthew 2:2", "Matthew 2:9", "Matthew 2:10", "Matthew 2:11", "Matthew 2:12", "Micah 5:2", "Numbers 24:17", "Isaiah 60:3"] },

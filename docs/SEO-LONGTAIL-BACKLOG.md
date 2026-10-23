@@ -216,6 +216,55 @@ Topics 399 → 443. All 5,284 references resolve.
 Still unverified from the October wave: whether Bing has indexed anything, and
 whether the daily-verse invitation converts.
 
+## The snippet problem — Oct 23, 2026
+
+Sorting 28 days of queries by impressions instead of clicks shows something the
+click-sorted view hides. The ten biggest queries are not failing to rank:
+
+| query | impressions | position | clicks |
+|---|---|---|---|
+| jonah and the whale bible verse kjv | 160 | 8.2 | 2 |
+| david and goliath bible verse | 139 | 11.6 | 0 |
+| prodigal son kjv | 125 | 9.9 | 0 |
+| psalm 121 kjv | 116 | 22.0 | 0 |
+| david and goliath bible verse kjv | 100 | 8.4 | 1 |
+| john 1:10-11 | 99 | 9.7 | 0 |
+| king of kings bible verse | 95 | 9.8 | 0 |
+| proverbs 3 5-6 | 88 | 40.1 | 0 |
+| ephesians | 86 | 40.3 | 0 |
+| isaiah 41 10 | 83 | 34.9 | 1 |
+
+Six of them sit at position 8 to 12 and take almost no clicks. We have a page
+for every one.
+
+Searching the Jonah query explains it. Every competing result — Bible Gateway,
+King James Bible Online, Bible Hub, Bible.com — shows Jonah 1:17 in its snippet:
+*now the LORD had prepared a great fish*. Ours showed Jonah 2:9, *I cried by
+reason of mine affliction*. Google took the snippet from the middle of the page
+because the page opens on Jonah 1:1, the call to Nineveh, and the meta
+description listed the first three verses in canonical order. We were ranking on
+page one and showing the wrong verse.
+
+It is structural, not a one-off. Topic pages list verses canonically, so the
+defining verse is buried on every story page: David and Goliath opened on
+Goliath's height rather than *thou comest to me with a sword*; the prodigal son
+opened on the inheritance rather than *when he was yet a great way off*; king of
+kings opened on 1 Chronicles rather than the vesture and the thigh.
+
+Fixed by giving a topic an optional `lead` reference. It renders in a featured
+block above the verse list, goes first in the meta description, and becomes the
+share card. Set on the four topics above; the field is there for any other topic
+the data points at.
+
+Also wrote the eight missing meanings behind these queries — Jonah 1:17,
+1 Samuel 17:45, Luke 15:20, Revelation 19:16, Proverbs 3:5, John 1:10, John 1:11
+and Psalm 121:1. The meanings are the only original writing on a verse page and
+the part an assistant quotes, and the most-searched verses on the site had none.
+
+Still open from this table: the verse, chapter and book pages at position 22 to
+40 (psalm 121, proverbs 3:5-6, isaiah 41:10, ephesians). Those are a ranking
+problem rather than a snippet problem and need separate work.
+
 ## A note on new routes
 
 Three files have to agree or a route 404s in browsers while returning 200 to

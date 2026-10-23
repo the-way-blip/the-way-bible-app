@@ -161,7 +161,7 @@ const NAMES_OF_GOD = [
     verses: ["John 1:1", "John 1:14", "John 17:17", "Hebrews 4:12", "1 John 1:1", "Revelation 19:13", "Psalm 119:105", "Psalm 119:11", "Isaiah 40:8", "Matthew 24:35", "2 Timothy 3:16", "Colossians 3:16"] },
   { name: "The Rock", heading: "Bible Verses About God Our Rock", aliases: ["god-is-my-rock", "the-lord-is-my-rock", "rock-of-ages", "my-rock-and-fortress"],
     verses: ["Deuteronomy 32:4", "1 Samuel 2:2", "2 Samuel 22:32", "Psalm 18:2", "Psalm 40:2", "Psalm 61:2", "Psalm 62:2", "Psalm 95:1", "Psalm 144:1", "Isaiah 26:4", "Matthew 7:24-25", "1 Corinthians 10:4"] },
-  { name: "King of Kings", aliases: ["king-of-kings-and-lord-of-lords", "jesus-is-king", "the-king"],
+  { name: "King of Kings", lead: "Revelation 19:16", aliases: ["king-of-kings-and-lord-of-lords", "jesus-is-king", "the-king"],
     verses: ["1 Chronicles 29:11", "Psalm 24:8", "Psalm 47:7", "Psalm 95:3", "Isaiah 33:22", "Daniel 2:47", "Zechariah 14:9", "Philippians 2:9-11", "1 Timothy 6:15", "Revelation 11:15", "Revelation 17:14", "Revelation 19:16"] },
   { name: "Prince of Peace", aliases: ["jesus-prince-of-peace", "the-prince-of-peace"],
     verses: ["Isaiah 9:6", "Isaiah 26:3", "Isaiah 53:5", "Micah 5:5", "Luke 2:14", "John 14:27", "John 16:33", "Romans 5:1", "Ephesians 2:14", "Philippians 4:7", "Colossians 1:20", "2 Thessalonians 3:16"] },
@@ -180,7 +180,7 @@ const NAMES_OF_GOD = [
 ];
 
 const STORIES = [
-  { name: "David and Goliath", aliases: ["goliath", "david-vs-goliath", "the-giant", "facing-giants"],
+  { name: "David and Goliath", lead: "1 Samuel 17:45", aliases: ["goliath", "david-vs-goliath", "the-giant", "facing-giants"],
     verses: ["1 Samuel 17:4", "1 Samuel 17:26", "1 Samuel 17:32", "1 Samuel 17:37", "1 Samuel 17:38-39", "1 Samuel 17:40", "1 Samuel 17:45", "1 Samuel 17:46", "1 Samuel 17:47", "1 Samuel 17:49", "1 Samuel 17:50", "1 Samuel 17:51"] },
   { name: "Daniel in the Lions' Den", aliases: ["the-lions-den", "daniel-and-the-lions", "lions-den"],
     verses: ["Daniel 6:4", "Daniel 6:7", "Daniel 6:10", "Daniel 6:11", "Daniel 6:16", "Daniel 6:17", "Daniel 6:20", "Daniel 6:21-22", "Daniel 6:23", "Daniel 6:26", "Daniel 6:27", "Daniel 6:28"] },
@@ -198,7 +198,7 @@ const STORIES = [
     verses: ["Matthew 5:3", "Matthew 5:13", "Matthew 5:14", "Matthew 5:16", "Matthew 5:44", "Matthew 6:19-21", "Matthew 6:24", "Matthew 6:33", "Matthew 7:1", "Matthew 7:7", "Matthew 7:12", "Matthew 7:24-25"] },
   { name: "The Fruit of the Spirit", aliases: ["fruit-of-the-spirit", "nine-fruits-of-the-spirit", "galatians-5"],
     verses: ["Galatians 5:22-23", "Galatians 5:16", "Galatians 5:25", "John 15:5", "John 15:8", "Ephesians 5:9", "Philippians 1:11", "Colossians 1:10", "Matthew 7:16-17", "2 Peter 1:5-7", "2 Peter 1:8", "Psalm 1:3"] },
-  { name: "The Prodigal Son", aliases: ["prodigal-son", "the-lost-son", "coming-home-to-god"],
+  { name: "The Prodigal Son", lead: "Luke 15:20", aliases: ["prodigal-son", "the-lost-son", "coming-home-to-god"],
     verses: ["Luke 15:11-12", "Luke 15:13", "Luke 15:14", "Luke 15:16", "Luke 15:17-18", "Luke 15:20", "Luke 15:21", "Luke 15:22-23", "Luke 15:24", "Luke 15:28", "Luke 15:31-32", "Luke 15:7"] },
   { name: "The Good Samaritan", aliases: ["good-samaritan", "who-is-my-neighbour", "the-samaritan"],
     verses: ["Luke 10:25", "Luke 10:27", "Luke 10:29", "Luke 10:30", "Luke 10:31-32", "Luke 10:33", "Luke 10:34", "Luke 10:35", "Luke 10:36-37", "Leviticus 19:18", "James 2:8", "1 John 3:17-18"] },

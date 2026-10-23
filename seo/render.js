@@ -262,7 +262,7 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 ul.outline{list-style:none;padding:0;margin:0;display:grid;gap:8px}
 ul.outline li{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:11px 14px;font-size:15px;display:flex;gap:14px;align-items:baseline}
 ul.outline .r{flex:none;font-weight:600;color:var(--gold-dark);min-width:74px}
-ol.enum{list-style:none;counter-reset:e;padding:0;margin:0 0 18px;display:grid;gap:8px}ol.enum li{counter-increment:e;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 46px;position:relative;font-size:16px;line-height:1.55}ol.enum li::before{content:counter(e);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}ol.enum .r{font-weight:600;color:var(--gold-dark);white-space:nowrap;font-size:14px}p.alt{font-size:14px;color:var(--brown-light);margin:-4px 0 18px}p.note{font-size:14px;color:var(--brown-light);line-height:1.65;border-left:3px solid var(--line);padding-left:14px;margin:0 0 20px}.chips.tally span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;color:var(--brown-light)}.chips.tally b{color:var(--brown);font-weight:600}.faq{display:grid;gap:10px}
+ol.enum{list-style:none;counter-reset:e;padding:0;margin:0 0 18px;display:grid;gap:8px}ol.enum li{counter-increment:e;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px 12px 46px;position:relative;font-size:16px;line-height:1.55}ol.enum li::before{content:counter(e);position:absolute;left:14px;top:12px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}ol.enum .r{font-weight:600;color:var(--gold-dark);white-space:nowrap;font-size:14px}.keyv{background:var(--paper);border:1px solid var(--line);border-left:4px solid var(--gold);border-radius:10px;padding:14px 16px;margin:0 0 18px}.keyv .r{margin:0 0 6px;font-size:13px;font-weight:600;color:var(--brown-light);text-transform:none}.keyv blockquote{margin:0;font-size:18px;line-height:1.6}p.alt{font-size:14px;color:var(--brown-light);margin:-4px 0 18px}p.note{font-size:14px;color:var(--brown-light);line-height:1.65;border-left:3px solid var(--line);padding-left:14px;margin:0 0 20px}.chips.tally span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;color:var(--brown-light)}.chips.tally b{color:var(--brown);font-weight:600}.faq{display:grid;gap:10px}
 .faq details{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 16px}
 .faq summary{cursor:pointer;font-weight:600;font-size:15px}
 .faq p{margin:10px 0 0;font-size:15px;color:var(--brown-light);line-height:1.6}
@@ -629,12 +629,23 @@ function topicPage(t) {
   const L = TOPIC_LISTS[t.slug] || null;
   const alts = aliasNames(t);
   const altBlock = alts.length ? `<p class="alt">Also called ${alts.map((a) => esc(a)).join(" · ")}</p>` : "";
+  /* The verse the search is actually for. Topic pages list verses in canonical
+   * order, which buries it: /verses-about/jonah-and-the-whale opened on Jonah
+   * 1:1 and Google took its snippet from Jonah 2:9 — "I cried by reason of mine
+   * affliction" — while every competing result showed 1:17, the fish. 160
+   * impressions at position 8 returned 2 clicks. Naming the verse puts it at the
+   * top of the page, first in the description, and on the share card. */
+  const keyR = t.lead ? parseRef(t.lead) : null;
+  const keyBlock = keyR ? `<div class="keyv"><p class="r">The verse people usually mean · <a href="${verseUrl(keyR.book, keyR.chapter, keyR.from, keyR.to)}">${esc(t.lead)}</a> · ${VERSION}</p><blockquote>${verseHtml(keyR.book.chapters[keyR.chapter - 1].slice(keyR.from - 1, keyR.to).join(" "))}</blockquote></div>` : "";
+  // Description names the key verse first, then the next two in order.
+  const incl = (keyR ? [t.lead, ...items.map((x) => x.ref).filter((r) => r !== t.lead)] : items.map((x) => x.ref)).slice(0, 3).join(", ");
   const listBlock = L ? `<h2>${esc(L.heading)}</h2>
 <ol class="enum">${L.items.map(([text, ref]) => { const r = parseRef(ref); return `<li><span>${esc(text)}</span>${r ? ` <a class="r" href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a>` : ""}</li>`; }).join("")}</ol>
 ${L.note ? `<p class="note">${esc(L.note)}</p>` : ""}` : "";
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
 <h1>${L ? esc(L.title) : `${n} ${esc(topicPhrase(t))}`} <span class="badge">${VERSION}</span></h1>
 ${L ? `<p class="lead">${esc(L.lead)}</p>` : intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
+${keyBlock}
 ${altBlock}
 ${listBlock}
 ${L ? `<h2>${esc(L.title)} in scripture — ${n} verses, quoted in full</h2>` : ""}
@@ -649,8 +660,8 @@ ${promo()}`;
   const description = L
     ? L.desc
     : lead
-    ? `${lead} ${n} verses in the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}.`
-    : `${n} ${phrase} from the King James Version, quoted in full — including ${items.slice(0, 3).map((x) => x.ref).join(", ")}. Read each one in context.`;
+    ? `${lead} ${n} verses in the King James Version, quoted in full — including ${incl}.`
+    : `${n} ${phrase} from the King James Version, quoted in full — including ${incl}. Read each one in context.`;
   const jsonld = webPageLd([
     { "@type": "CollectionPage", name: topicPhrase(t), url: SITE + `/verses-about/${t.slug}`, description,
       ...(alts.length ? { alternateName: alts } : {}), isPartOf: { "@id": SITE + "/#website" },
@@ -659,7 +670,7 @@ ${promo()}`;
     ...(L ? [{ "@type": "FAQPage", "@id": SITE + `/verses-about/${t.slug}#faq`,
       mainEntity: L.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }] : []),
   ]);
-  return ok(shell({ title: L ? `${L.title} (KJV) — ${L.titleSuffix || `All ${L.items.length} Listed`} | ${SITE_NAME}` : `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: first ? `${SITE}/api/og?ref=${encodeURIComponent(first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
+  return ok(shell({ title: L ? `${L.title} (KJV) — ${L.titleSuffix || `All ${L.items.length} Listed`} | ${SITE_NAME}` : `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: (keyR || first) ? `${SITE}/api/og?ref=${encodeURIComponent(keyR ? t.lead : first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
 }
 
 const NAME_BY_SLUG = new Map(NAMES.map((n) => [n.name.toLowerCase(), n]));

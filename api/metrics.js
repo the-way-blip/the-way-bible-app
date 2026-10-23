@@ -67,11 +67,27 @@ async function accounts(w) {
     ids("profiles", "id").catch(() => null),
     ids("user_state", "user_id").catch(() => null),
   ]);
+  // Last activity per account: reading (TheWay Bible), Scroll state, or sign-in.
+  async function stamps(table, idCol, tsCol) {
+    const out = new Map();
+    for (let from = 0; from < 1e6; from += 1000) {
+      const { data, error } = await db.from(table).select(`${idCol},${tsCol}`).range(from, from + 999);
+      if (error) throw new Error(`${table}: ${error.message}`);
+      data.forEach((r) => { if (r[tsCol]) out.set(r[idCol], r[tsCol]); });
+      if (data.length < 1000) break;
+    }
+    return out;
+  }
+  const [readAt, scrollAt] = await Promise.all([
+    stamps("reading_progress", "user_id", "updated_at").catch(() => new Map()),
+    stamps("user_state", "user_id", "updated_at").catch(() => new Map()),
+  ]);
   const created = new Map(); // id -> YYYY-MM-DD
+  const signIn = new Map();
   for (let page = 1; page < 100; page++) {
     const { data, error } = await db.auth.admin.listUsers({ page, perPage: 1000 });
     if (error) throw error;
-    data.users.forEach((u) => created.set(u.id, (u.created_at || "").slice(0, 10)));
+    data.users.forEach((u) => { created.set(u.id, (u.created_at || "").slice(0, 10)); if (u.last_sign_in_at) signIn.set(u.id, u.last_sign_in_at); });
     if (data.users.length < 1000) break;
   }
   const daily = {};
@@ -83,7 +99,30 @@ async function accounts(w) {
       if (scroll && scroll.has(id)) scrollNew++;
     } else if (d >= w.prevStart && d <= w.prevEnd) inPrev++;
   }
+  // Active = read in TheWay Bible, used Scroll, or signed in, inside the window.
+  const now = Date.now();
+  const lastAct = new Map();
+  for (const id of created.keys()) {
+    const t = Math.max(Date.parse(readAt.get(id) || 0) || 0, Date.parse(scrollAt.get(id) || 0) || 0, Date.parse(signIn.get(id) || 0) || 0);
+    if (t) lastAct.set(id, t);
+  }
+  const activeSince = (ms) => [...lastAct.values()].filter((t) => t >= now - ms).length;
+  const readersSince = (ms) => [...readAt.values()].filter((t) => Date.parse(t) >= now - ms).length;
+  const scrollSince = (ms) => [...scrollAt.values()].filter((t) => Date.parse(t) >= now - ms).length;
+  // Weekly sign-up cohorts (Monday weeks, last 8): how many are still active in the last 7 days.
+  const monday = (d) => { const x = new Date(d + "T00:00:00Z"); const k = (x.getUTCDay() + 6) % 7; return iso(new Date(x.getTime() - k * DAY)); };
+  const cohorts = {};
+  for (const [id, d] of created) {
+    if (!d) continue;
+    const wk = monday(d);
+    if (Date.parse(wk) < now - 8 * 7 * DAY) continue;
+    cohorts[wk] = cohorts[wk] || { week: wk, signups: 0, activeLast7: 0 };
+    cohorts[wk].signups++;
+    if ((lastAct.get(id) || 0) >= now - 7 * DAY) cohorts[wk].activeLast7++;
+  }
   return {
+    active: { last7: activeSince(7 * DAY), last28: activeSince(28 * DAY), readers7: readersSince(7 * DAY), readers28: readersSince(28 * DAY), scroll7: scrollSince(7 * DAY), scroll28: scrollSince(28 * DAY) },
+    cohorts: Object.values(cohorts).sort((a, b) => a.week.localeCompare(b.week)),
     total: created.size,
     newInRange: inRange,
     newPrevRange: inPrev,
@@ -141,6 +180,21 @@ async function email(w) {
     [out.newContacts, out.newContactsPrev] = await Promise.all([addedBetween(w.start, w.end), addedBetween(w.prevStart, w.prevEnd)]);
   } catch (e) { out.newContactsError = String(e.message || e); }
 
+  async function tagCount(tag, a, b) {
+    const filters = [{ field: "tags", operator: "contains", value: [tag] }];
+    if (a) filters.push({ field: "dateAdded", operator: "range", value: { gte: `${a}T00:00:00Z`, lte: `${b}T23:59:59Z` } });
+    const r = await ghl(`/contacts/search`, { method: "POST", body: { locationId: loc, pageLimit: 1, filters } });
+    return r?.total ?? null;
+  }
+  try {
+    const [dTot, dNew, iTot, iNew, iPrev] = await Promise.all([
+      tagCount("daily-devotional"), tagCount("daily-devotional", w.start, w.end),
+      tagCount("interest-list"), tagCount("interest-list", w.start, w.end), tagCount("interest-list", w.prevStart, w.prevEnd),
+    ]);
+    out.devotional = { total: dTot, newInRange: dNew };
+    out.interestList = { total: iTot, newInRange: iNew, newPrevRange: iPrev };
+  } catch (e) { out.tagError = String(e.message || e); }
+
   // Broadcasts: GHL reports delivered counts; a "resend to unopened" child is
   // sent only to people who had NOT opened, so delivered − resend ≈ opened.
   const s = await ghl(`/emails/schedule?locationId=${loc}&limit=60`);
@@ -161,6 +215,20 @@ async function email(w) {
         resendDelivered: rs ? rs.successCount ?? null : null,
       };
     });
+  return out;
+}
+
+/* ---------------- App Store ratings (public lookup) ---------------- */
+async function ratings() {
+  const ids = { bible: "6762105782", scroll: "6801303519", lamp: "6822149430" };
+  const r = await fetch(`https://itunes.apple.com/lookup?id=${Object.values(ids).join(",")}&country=us`);
+  if (!r.ok) throw new Error(`iTunes lookup ${r.status}`);
+  const j = await r.json();
+  const out = {};
+  for (const [k, id] of Object.entries(ids)) {
+    const a = (j.results || []).find((x) => String(x.trackId) === id);
+    out[k] = a ? { rating: a.averageUserRating ?? null, count: a.userRatingCount ?? 0, version: a.version || null, live: true } : { live: false };
+  }
   return out;
 }
 
@@ -286,7 +354,8 @@ export default async function handler(req, res) {
   const errors = {};
   const safe = (name, p) => p.catch((e) => { errors[name] = String(e?.message || e); return null; });
 
-  const [acc, mail, gaChurch, gaBible, gaScroll, gaLamp, gscChurch, gscBible, gscScroll] = await Promise.all([
+  const [rate, acc, mail, gaChurch, gaBible, gaScroll, gaLamp, gscChurch, gscBible, gscScroll] = await Promise.all([
+    safe("ratings", ratings()),
     safe("accounts", accounts(w)),
     safe("email", email(w)),
     safe("ga.church", ga4(GA_PROPERTIES.church, w)),
@@ -302,6 +371,7 @@ export default async function handler(req, res) {
     generatedAt: new Date().toISOString(),
     range: w,
     accounts: acc,
+    ratings: rate,
     email: mail,
     ga: { church: gaChurch, bible: gaBible, scroll: gaScroll, lamp: gaLamp },
     gsc: { church: gscChurch, bible: gscBible, scroll: gscScroll },

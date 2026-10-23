@@ -106,7 +106,7 @@ export const MORE_TOPICS = [
     verses: ["James 1:19-20", "Proverbs 15:1", "Ephesians 4:26-27", "Proverbs 29:11", "Proverbs 16:32", "Ecclesiastes 7:9", "Colossians 3:8", "Proverbs 14:29", "Psalm 37:8", "Proverbs 19:11", "Ephesians 4:31-32", "Proverbs 22:24-25"] },
   { name: "Persecution", aliases: ["being-persecuted", "persecuted-christians", "suffering-for-christ", "opposition", "standing-firm"],
     verses: ["Matthew 5:10-12", "2 Timothy 3:12", "John 15:18-20", "Romans 8:35-37", "1 Peter 4:12-14", "Matthew 10:22", "2 Corinthians 4:8-10", "Revelation 2:10", "Luke 6:22-23", "1 Peter 3:14", "Acts 5:41", "Philippians 1:29"] },
-  { name: "Spiritual Dryness", aliases: ["feeling-far-from-god", "distant-from-god", "spiritual-desert", "dry-season", "when-god-feels-silent"],
+  { name: "Spiritual Dryness", lead: "Psalm 63:1", aliases: ["feeling-far-from-god", "distant-from-god", "spiritual-desert", "dry-season", "when-god-feels-silent"],
     verses: ["Psalm 42:1-2", "Psalm 63:1", "James 4:8", "Isaiah 55:6", "Psalm 13:1-2", "Jeremiah 29:13", "Psalm 22:1-2", "Lamentations 3:22-26", "Hosea 6:3", "Psalm 143:6-8", "Deuteronomy 4:29", "Psalm 84:2"] },
 
   /* -------------------------------------------------------- relationships */

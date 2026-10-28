@@ -52,7 +52,7 @@ export default defineConfig({
         // The map engine and the geocoding dataset are excluded from precache.
         // mapbox-gl is loaded as a UMD global from /mapbox-gl.js (public/).
         // Mapbox's terms also don't allow stashing their tiles offline.
-        globIgnores: ['landing/**','**/mapbox-gl.js', '**/mapbox-gl.css', '**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
+        globIgnores: ['landing/**','lamp/**','**/mapbox-gl.js', '**/mapbox-gl.css', '**/mapbox-gl-*.js', '**/mapbox-gl-*.css', '**/bible-places-*.js'],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Server-rendered SEO pages must never be answered with the app shell
         // by the service worker: it would serve index.html from cache, the SPA

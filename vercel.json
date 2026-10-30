@@ -159,6 +159,10 @@
     {
       "path": "/api/daily-verse",
       "schedule": "0 5 * * *"
+    },
+    {
+      "path": "/api/seo-crawl",
+      "schedule": "15 * * * *"
     }
   ],
   "functions": {
@@ -170,6 +174,9 @@
     },
     "api/app-page.js": {
       "includeFiles": "{dist/index.html,public/data/lexicon.json,public/data/strongs/*.json}"
+    },
+    "api/seo-crawl.js": {
+      "maxDuration": 300
     }
   }
 }

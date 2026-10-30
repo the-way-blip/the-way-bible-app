@@ -10,7 +10,7 @@
 export const SITES = [
   { id: "bible", property: "sc-domain:thewaybible.app", sitemap: "https://thewaybible.app/sitemap.xml", indexnowKey: "7c886aebbb2a11c8747017534fd721e9" },
   { id: "people", property: "sc-domain:offorandbythepeople.com", sitemap: "https://www.offorandbythepeople.com/sitemap.xml", indexnowKey: "918bdf7071ace4fbcc2a8df1008b7705" },
-  { id: "library", property: "sc-domain:thewaylibrary.com", sitemap: "https://thewaylibrary.com/sitemap.xml", indexnowKey: "7c886aebbb2a11c8747017534fd721e9" },
+  { id: "library", property: "https://thewaylibrary.com/", sitemap: "https://thewaylibrary.com/sitemap.xml", indexnowKey: "7c886aebbb2a11c8747017534fd721e9" },
   { id: "church", property: "sc-domain:bigrapids.church", sitemap: "https://bigrapids.church/sitemap.xml", indexnowKey: "7c886aebbb2a11c8747017534fd721e9" },
   { id: "scroll", property: "sc-domain:scroll.thewaybible.app", sitemap: "https://scroll.thewaybible.app/sitemap.xml", indexnowKey: "7c886aebbb2a11c8747017534fd721e9" },
 ];

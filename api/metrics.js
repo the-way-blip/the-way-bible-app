@@ -222,6 +222,36 @@ async function email(w) {
   return out;
 }
 
+/* ---------------- Social pages (GoHighLevel Social Planner, last 7 days) ---------------- */
+async function social() {
+  const loc = process.env.GHL_LOCATION_ID;
+  const a = await ghl(`/social-media-posting/${loc}/accounts`);
+  const accounts = ((a.results || {}).accounts || []).filter((x) => !x.deleted && x.active !== false);
+  const groups = {
+    people: accounts.filter((x) => /of, for/i.test(x.name || "")),
+    theway: accounts.filter((x) => !/of, for/i.test(x.name || "")),
+  };
+  const out = {};
+  for (const [k, list] of Object.entries(groups)) {
+    const ids = list.map((x) => x.profileId).filter(Boolean);
+    if (!ids.length) { out[k] = null; continue; }
+    const r = await ghl(`/social-media-posting/statistics?locationId=${loc}`, { method: "POST", body: { profileIds: ids } });
+    const res = r.results || {};
+    const b = res.breakdowns || {};
+    out[k] = {
+      accounts: list.map((x) => ({ platform: x.platform, name: x.name, expired: !!x.isExpired })),
+      dayRange: res.dayRange || null,
+      totals: res.totals || null,
+      impressions: b.impressions || null,
+      reach: b.reach || null,
+      engagement: b.engagement || null,
+      posts: b.posts || null,
+      dailyImpressions: (res.postPerformance || {}).impressions || null,
+    };
+  }
+  return out;
+}
+
 /* ---------------- App Store ratings (public lookup) ---------------- */
 async function ratings() {
   const ids = { bible: "6762105782", scroll: "6801303519", lamp: "6822149430" };
@@ -358,7 +388,8 @@ export default async function handler(req, res) {
   const errors = {};
   const safe = (name, p) => p.catch((e) => { errors[name] = String(e?.message || e); return null; });
 
-  const [rate, acc, mail, gaChurch, gaBible, gaScroll, gaLamp, gscChurch, gscBible, gscScroll, gaPeople, gaLibrary, gscPeople, gscLibrary] = await Promise.all([
+  const [soc, rate, acc, mail, gaChurch, gaBible, gaScroll, gaLamp, gscChurch, gscBible, gscScroll, gaPeople, gaLibrary, gscPeople, gscLibrary] = await Promise.all([
+    safe("social", social()),
     safe("ratings", ratings()),
     safe("accounts", accounts(w)),
     safe("email", email(w)),
@@ -380,6 +411,7 @@ export default async function handler(req, res) {
     range: w,
     accounts: acc,
     ratings: rate,
+    social: soc,
     email: mail,
     ga: { church: gaChurch, bible: gaBible, scroll: gaScroll, lamp: gaLamp, people: gaPeople, library: gaLibrary },
     gsc: { church: gscChurch, bible: gscBible, scroll: gscScroll, people: gscPeople, library: gscLibrary },

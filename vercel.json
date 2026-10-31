@@ -10,6 +10,11 @@
       ],
       "destination": "https://thewaybible.app/lamp/",
       "permanent": false
+    },
+    {
+      "source": "/:path((?:bible|verses-about|bible-names|bible-words|churches|strongs|verse-of-the-day|king-james-bible|bible-statistics)(?:/.*)?)/",
+      "destination": "/:path",
+      "permanent": true
     }
   ],
   "rewrites": [

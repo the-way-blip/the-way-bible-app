@@ -7,85 +7,106 @@
 # open to crawlers on purpose — Search Console showed 33 of them reported as
 # "Blocked by robots.txt", which means Google could not fetch the preview
 # image for those pages. Everything else under /api/ is internal.
+#
+# /read/ is the in-app reader (a JavaScript shell whose canonical is the
+# homepage). Every verse page links to it, so leaving it open spends crawl
+# budget on ~31,000 duplicate-of-home URLs. The indexable text lives at
+# /bible/<book>/<chapter>/<verse>.
 
 User-agent: *
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: Googlebot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: Google-Extended
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: Bingbot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: GPTBot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: OAI-SearchBot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: ChatGPT-User
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: ClaudeBot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: Claude-SearchBot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: Claude-User
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: PerplexityBot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: Perplexity-User
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: Applebot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: Applebot-Extended
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: CCBot
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 User-agent: meta-externalagent
 Allow: /
 Allow: /api/og
 Disallow: /api/
+Disallow: /read/
 
 Sitemap: https://thewaybible.app/sitemap.xml

@@ -25,11 +25,15 @@ const GA_PROPERTIES = {
   church: "502642659",
   bible: "548364027",
   scroll: "548463325",
+  people: "544008154", // Of, For & By the People (offorandbythepeople.com, buildmyballot.com redirects there)
+  library: process.env.GA_LIBRARY_PROPERTY || null, // TheWay Library (thewaylibrary.com, tag G-H4R6DGEL5N)
 };
 const GSC_SITES = {
   church: "sc-domain:bigrapids.church",
   bible: "sc-domain:thewaybible.app",
   scroll: "sc-domain:scroll.thewaybible.app",
+  people: "sc-domain:offorandbythepeople.com",
+  library: "https://thewaylibrary.com/",
 };
 const GHL_API = "https://services.leadconnectorhq.com";
 
@@ -354,7 +358,7 @@ export default async function handler(req, res) {
   const errors = {};
   const safe = (name, p) => p.catch((e) => { errors[name] = String(e?.message || e); return null; });
 
-  const [rate, acc, mail, gaChurch, gaBible, gaScroll, gaLamp, gscChurch, gscBible, gscScroll] = await Promise.all([
+  const [rate, acc, mail, gaChurch, gaBible, gaScroll, gaLamp, gscChurch, gscBible, gscScroll, gaPeople, gaLibrary, gscPeople, gscLibrary] = await Promise.all([
     safe("ratings", ratings()),
     safe("accounts", accounts(w)),
     safe("email", email(w)),
@@ -365,6 +369,10 @@ export default async function handler(req, res) {
     safe("gsc.church", gsc(GSC_SITES.church, w)),
     safe("gsc.bible", gsc(GSC_SITES.bible, w)),
     safe("gsc.scroll", gsc(GSC_SITES.scroll, w)),
+    safe("ga.people", ga4(GA_PROPERTIES.people, w)),
+    GA_PROPERTIES.library ? safe("ga.library", ga4(GA_PROPERTIES.library, w)) : Promise.resolve(null),
+    safe("gsc.people", gsc(GSC_SITES.people, w)),
+    safe("gsc.library", gsc(GSC_SITES.library, w)),
   ]);
 
   const body = {
@@ -373,8 +381,8 @@ export default async function handler(req, res) {
     accounts: acc,
     ratings: rate,
     email: mail,
-    ga: { church: gaChurch, bible: gaBible, scroll: gaScroll, lamp: gaLamp },
-    gsc: { church: gscChurch, bible: gscBible, scroll: gscScroll },
+    ga: { church: gaChurch, bible: gaBible, scroll: gaScroll, lamp: gaLamp, people: gaPeople, library: gaLibrary },
+    gsc: { church: gscChurch, bible: gscBible, scroll: gscScroll, people: gscPeople, library: gscLibrary },
     errors,
   };
   memo.set(days, { at: Date.now(), body });

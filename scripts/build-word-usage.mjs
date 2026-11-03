@@ -86,8 +86,9 @@ let totalVerses = 0;
 books.forEach(([name, abbr], bi) => {
   const d = JSON.parse(fs.readFileSync(path.join(DATA, `${abbr}.json`), "utf8"));
   const root = d[abbr] || d[name];
-  // Some book files repeat earlier chapters' verses inside later chapter objects
-  // (2Co|2 also holds 2Co|1|1…), so dedupe by the verse key, which carries its chapter.
+  // Twelve book files used to repeat earlier chapters' verses inside later chapter
+  // objects (2Co|2 also held 2Co|1|1…); fix-tagged-kjv-chapters.mjs removed them and
+  // tests/tagged-kjv.test.mjs guards it. Still dedupe by verse key, which carries its chapter.
   const verses = new Map();
   for (const ch of Object.values(root)) for (const [key, v] of Object.entries(ch)) if (!verses.has(key)) verses.set(key, v);
   totalVerses += verses.size;

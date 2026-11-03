@@ -17,6 +17,11 @@
       "permanent": true
     },
     {
+      "source": "/lamp/",
+      "destination": "/kids/",
+      "permanent": true
+    },
+    {
       "source": "/lamp/:path*",
       "destination": "/kids/:path*",
       "permanent": true

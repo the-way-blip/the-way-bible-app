@@ -13,6 +13,7 @@ import { Capacitor } from "@capacitor/core";
 import { booksWithStudy, buildStudyDoc, printDoc, saveFile } from "../services/studyExport";
 import OfflineBooks from "../components/OfflineBooks";
 import { getReminder, setReminder, remindersSupported } from "../services/reminders";
+import { useReadingWpm, setWpm, WPM_ALOUD, WPM_SILENT, WPM_MIN, WPM_MAX } from "../utils/readingTime";
 
 const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 
@@ -205,6 +206,11 @@ export default function Settings() {
         <p className="text-[10px] text-warm-brown-light/60 mt-2">
           {t("settings.modeHint")}
         </p>
+      </SettingsSection>
+
+      {/* Reading speed (reading-plan time estimates) */}
+      <SettingsSection title={t("settings.readingSpeed", "Reading speed")}>
+        <ReadingSpeedControl />
       </SettingsSection>
 
       {/* Color Theme */}
@@ -775,6 +781,51 @@ function InfoRow({ label, value }) {
     <div>
       <p className="text-[10px] font-semibold text-warm-brown-light uppercase tracking-wider">{label}</p>
       <p className="text-xs text-warm-brown mt-0.5">{value}</p>
+    </div>
+  );
+}
+
+/** Words-per-minute used for reading-plan time estimates. */
+function ReadingSpeedControl() {
+  const t = useT();
+  const wpm = useReadingWpm();
+  const presets = [
+    [WPM_ALOUD, t("settings.readAloud", "Read aloud")],
+    [WPM_SILENT, t("settings.silentReading", "Silent")],
+  ];
+  return (
+    <div>
+      <div className="flex gap-2 mb-3">
+        {presets.map(([n, label]) => (
+          <button
+            key={n}
+            type="button"
+            onClick={() => setWpm(n)}
+            aria-pressed={wpm === n}
+            className={`flex-1 py-3 rounded-xl text-sm font-medium transition-colors ${
+              wpm === n ? "bg-gold text-white" : "bg-cream-dark text-warm-brown-light"
+            }`}
+          >
+            {label} ({n})
+          </button>
+        ))}
+      </div>
+      <div className="flex items-center gap-3">
+        <input
+          type="range"
+          min={WPM_MIN}
+          max={WPM_MAX}
+          step="1"
+          value={wpm}
+          onChange={(e) => setWpm(parseInt(e.target.value, 10))}
+          aria-label={t("settings.readingSpeed", "Reading speed")}
+          className="flex-1 accent-gold"
+        />
+        <span className="text-xs text-warm-brown-light w-20 text-right tabular-nums">{wpm} {t("settings.wpm", "words/min")}</span>
+      </div>
+      <p className="text-[10px] text-warm-brown-light/60 mt-2">
+        {t("settings.readingSpeedHint", "Used for the reading-time estimates in Reading Plans. Most adults read aloud at about 183 words a minute and silently at about 238.")}
+      </p>
     </div>
   );
 }

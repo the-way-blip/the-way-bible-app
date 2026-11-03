@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Capacitor } from "@capacitor/core";
-import PLANS, { getPlan, getCurrentDay } from "../data/readingPlans";
+import PLANS, { getPlan, getCurrentDay, planDayDate, todaysCalendarDay } from "../data/readingPlans";
+import { useReadingWpm, dayReadings, sumWords, sumVerses, minutesFor, planAverageWords, readingLabel } from "../utils/readingTime";
+import { logEvent } from "../services/ga";
+import { useApp } from "../stores/AppContext";
 import useReadingPlanProgress from "../hooks/useReadingPlanProgress";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import usePageMeta from "../hooks/usePageMeta";
@@ -13,7 +16,7 @@ export default function ReadingPlan() {
   useDocumentTitle("Reading Plans");
   const t = useT();
   usePageMeta({
-    description: "Structured Bible reading plans — Gospel of John in 21 days, Proverbs in 31, Psalms in 60, NT in 90, or the whole Bible in a year.",
+    description: "Structured Bible reading plans — Gospel of John in 21 days, Proverbs in 31, Psalms in 60, NT in 90, the whole Bible in a year, M'Cheyne's classic calendar, or the Bible in chronological order.",
     ogTitle: "Reading Plans — TheWay Bible App",
   });
   const { activeRecord, records, loading, startPlan, markDayComplete, stopPlan, resetPlan } = useReadingPlanProgress();
@@ -73,6 +76,7 @@ export default function ReadingPlan() {
               plan={plan}
               completedCount={completedCount}
               onStart={async () => {
+                logEvent("plan_start", { plan: plan.id, resumed: completedCount > 0 });
                 await startPlan(plan.id);
                 showToast(`Started ${plan.shortName} — let's go!`, { icon: "📖" });
               }}
@@ -99,8 +103,10 @@ export default function ReadingPlan() {
 /* ─────────────────────────── Plan Card ─────────────────────────── */
 function PlanCard({ plan, completedCount, onStart }) {
   const t = useT();
+  const wpm = useReadingWpm();
   const pct = Math.round((completedCount / plan.duration) * 100);
   const hasProgress = completedCount > 0;
+  const dailyMin = minutesFor(planAverageWords(plan), wpm);
 
   return (
     <div className="bg-white rounded-xl border border-cream-dark p-4 hover:border-gold/30 transition-colors">
@@ -114,8 +120,14 @@ function PlanCard({ plan, completedCount, onStart }) {
         </div>
       </div>
       <div className="flex items-center justify-between gap-3">
-        <div className="text-[11px] text-warm-brown-light flex items-center gap-2">
-          <span>{plan.duration} days</span>
+        <div className="text-[11px] text-warm-brown-light flex flex-wrap items-center gap-x-2 gap-y-0.5">
+          <span>{plan.duration} {t("plans.days")}</span>
+          {dailyMin > 0 && (
+            <>
+              <span>·</span>
+              <span>{t("plans.aboutMinDay", "about {n} min a day").replace("{n}", dailyMin)}</span>
+            </>
+          )}
           {hasProgress && (
             <>
               <span>·</span>
@@ -156,12 +168,19 @@ function maybeRequestReview() {
 function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToast }) {
   const t = useT();
   const audioPlayer = useAudio();
+  const { language } = useApp();
+  const wpm = useReadingWpm();
   const currentDay = getCurrentDay(plan, record);
   const [viewingDay, setViewingDay] = useState(currentDay);
   const dayData = plan.days[viewingDay - 1];
   const isCompleted = !!(record.completedDays?.[viewingDay]);
   const completedCount = Object.keys(record.completedDays || {}).length;
   const pct = Math.round((completedCount / plan.duration) * 100);
+  const readings = dayReadings(dayData);
+  const dayMinutes = minutesFor(readings.reduce((a, rd) => a + sumWords(rd.refs), 0), wpm);
+  const dayDate = planDayDate(plan, viewingDay, language);
+  const calendarToday = plan.calendar ? todaysCalendarDay() : null;
+  const chapterCount = dayData?.refs?.length || 0;
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6 pb-24">
@@ -193,7 +212,21 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
         >
           {t("plans.prev")}
         </button>
-        <p className="text-sm font-semibold text-warm-brown">{t("plans.day")} {viewingDay}</p>
+        <div className="text-center">
+          <p className="text-sm font-semibold text-warm-brown">
+            {t("plans.day")} {viewingDay}
+            {dayDate && <span className="font-normal text-warm-brown-light"> · {dayDate}</span>}
+          </p>
+          {calendarToday && calendarToday !== viewingDay && (
+            <button
+              type="button"
+              onClick={() => setViewingDay(calendarToday)}
+              className="text-[11px] text-gold hover:underline"
+            >
+              {t("plans.jumpToToday", "Jump to today")} · {planDayDate(plan, calendarToday, language)}
+            </button>
+          )}
+        </div>
         <button
           onClick={() => setViewingDay(Math.min(plan.duration, viewingDay + 1))}
           disabled={viewingDay >= plan.duration}
@@ -217,22 +250,38 @@ function ActivePlanView({ plan, record, onMarkComplete, onStop, onReset, showToa
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
               <path d="M3 18v-6a9 9 0 0 1 18 0v6" /><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
             </svg>
-            {dayData.refs.length > 1 ? `Listen to all ${dayData.refs.length} chapters` : "Listen to this reading"}
+            {chapterCount > 1 ? `Listen to all ${chapterCount} chapters` : "Listen to this reading"}
           </button>
         )}
+        {readings.length > 0 && (
+          <p className="text-[11px] text-warm-brown-light mb-2">
+            {readings.length} {readings.length === 1 ? t("plans.reading", "reading") : t("plans.readings", "readings")} · {dayMinutes} {t("plans.min", "min")}
+          </p>
+        )}
         <div className="space-y-2">
-          {dayData?.refs.map((r, i) => (
-            <Link
-              key={i}
-              to={`/read/${encodeURIComponent(r.book)}/${r.chapter}`}
-              className="flex items-center justify-between bg-cream rounded-lg px-3 py-2.5 hover:bg-cream-dark/50 transition-colors"
-            >
-              <span className="text-sm font-medium text-warm-brown">{r.book} {r.chapter}</span>
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
-                <polyline points="9 18 15 12 9 6" />
-              </svg>
-            </Link>
-          ))}
+          {readings.map((rd, i) => {
+            const first = rd.refs[0];
+            const verses = sumVerses(rd.refs);
+            const mins = minutesFor(sumWords(rd.refs), wpm);
+            return (
+              <Link
+                key={i}
+                to={`/read/${encodeURIComponent(first.book)}/${first.chapter}${first.from > 1 ? `?v=${first.from}` : ""}`}
+                className="flex items-center justify-between gap-3 bg-cream rounded-lg px-3 py-2.5 hover:bg-cream-dark/50 transition-colors"
+              >
+                <span className="min-w-0">
+                  <span className="block text-sm font-medium text-warm-brown">{readingLabel(rd.refs)}</span>
+                  <span className="block text-[11px] text-warm-brown-light">
+                    {rd.label && <>{t(`plans.label.${rd.label}`, rd.label === "family" ? "Family" : "Secret")} · </>}
+                    {verses} {verses === 1 ? t("plans.verse", "verse") : t("plans.verses", "verses")} · {mins} {t("plans.min", "min")}
+                  </span>
+                </span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 shrink-0 text-warm-brown-light">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </Link>
+            );
+          })}
         </div>
 
         <button

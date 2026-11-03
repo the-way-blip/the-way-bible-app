@@ -8,6 +8,9 @@
  * To add a plan: append a new object to PLANS. Keep ids stable.
  */
 
+import mcheyneData from "./plans/mcheyne.json";
+import chronoData from "./plans/chronological.json";
+
 /* ── Helpers to compactly build chapter ranges ────────────────────────── */
 const range = (book, start, end) => {
   const days = [];
@@ -144,6 +147,39 @@ const sermonOnMountPlan = [
   { refs: [{ book: "Matthew", chapter: 5 }, { book: "Matthew", chapter: 6 }, { book: "Matthew", chapter: 7 }], note: "Read all three chapters together as one sermon" },
 ];
 
+/* ── Classic plans (data built by scripts/build-reading-plans.mjs) ─────── */
+// Compact refs: [book, chapter] or [book, chapter, fromVerse, toVerse].
+const expandRef = ([book, chapter, from, to]) => (from ? { book, chapter, from, to } : { book, chapter });
+/** Flat chapter list for the audio queue (a partial chapter plays as the whole chapter). */
+const queueRefs = (refs) => {
+  const out = [];
+  for (const r of refs) {
+    if (!out.some((q) => q.book === r.book && q.chapter === r.chapter)) out.push({ book: r.book, chapter: r.chapter });
+  }
+  return out;
+};
+
+/* M'Cheyne's Calendar for Daily Readings (1842): four readings a day, the first two
+   for the family, the last two "secret" (private). Day 1 = January 1. */
+const MCHEYNE_LABELS = ["family", "family", "secret", "secret"];
+const mcheynePlan = mcheyneData.days.map((day) => {
+  const readings = day.map((rs, i) => ({ refs: rs.map(expandRef), label: MCHEYNE_LABELS[i] }));
+  return { refs: queueRefs(readings.flatMap((r) => r.refs)), readings };
+});
+
+/* Chronological: KJV margin (Ussher) order, split into 365 days by word count. */
+// Consecutive chapters of the same book form one reading ("Genesis 1–3", "Psalms 7–9, 12").
+const chronologicalPlan = chronoData.days.map((day) => {
+  const refs = day.map(expandRef);
+  const readings = [];
+  for (const r of refs) {
+    const last = readings[readings.length - 1];
+    if (last && last.refs[0].book === r.book) last.refs.push(r);
+    else readings.push({ refs: [r] });
+  }
+  return { refs, readings };
+});
+
 /* ─────────────────────────────────────────────────────────────────────── */
 
 const PLANS = [
@@ -201,6 +237,25 @@ const PLANS = [
     cover: "📚",
     days: wholeBiblePlan,
   },
+  {
+    id: "mcheyne",
+    name: "M'Cheyne Bible Reading Plan",
+    shortName: "M'Cheyne",
+    description: "Robert Murray M'Cheyne's 1842 calendar — four readings a day, through the Old Testament once and the New Testament and Psalms twice in a year.",
+    duration: 365,
+    cover: "🕯️",
+    calendar: true, // day 1 = January 1
+    days: mcheynePlan,
+  },
+  {
+    id: "chronological-365",
+    name: "Chronological Bible in a Year",
+    shortName: "Chronological",
+    description: "The whole Bible in the order events happened, following the KJV margin (Ussher) chronology used by the app's timeline — psalms with David, prophets with their kings, letters within Acts.",
+    duration: 365,
+    cover: "⏳",
+    days: chronologicalPlan,
+  },
 ];
 
 export default PLANS;
@@ -213,6 +268,26 @@ export function getPlan(id) {
  * Determine the user's current day in a plan based on their progress
  * record. Returns 1-indexed day.
  */
+/** For calendar plans (M'Cheyne): the date a plan day falls on, e.g. "Nov 2". */
+export function planDayDate(plan, dayNum, locale) {
+  if (!plan?.calendar) return null;
+  const d = new Date(2025, 0, dayNum); // a non-leap year, matching the 365-day calendar
+  try {
+    return d.toLocaleDateString(locale || undefined, { month: "short", day: "numeric" });
+  } catch {
+    return `${d.getMonth() + 1}/${d.getDate()}`;
+  }
+}
+
+/** For calendar plans: today's plan day (Feb 29 reads Feb 28's portion). */
+export function todaysCalendarDay(now = new Date()) {
+  const start = new Date(now.getFullYear(), 0, 1);
+  let doy = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - start) / 86400000) + 1;
+  const leap = new Date(now.getFullYear(), 1, 29).getMonth() === 1;
+  if (leap && doy >= 60) doy -= 1;
+  return Math.min(365, Math.max(1, doy));
+}
+
 export function getCurrentDay(plan, progress) {
   if (!progress) return 1;
   const completedDays = Object.keys(progress.completedDays || {}).length;

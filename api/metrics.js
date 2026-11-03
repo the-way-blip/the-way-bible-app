@@ -4,7 +4,7 @@
  * Returns COUNTS ONLY (no names, emails or ids) for:
  *   - accounts: sign-ups in the shared Supabase project (TheWay Bible + Scroll)
  *   - email:    GoHighLevel list size, new contacts, broadcast delivery
- *   - ga:       GA4 for bigrapids.church, TheWay Bible app, Scroll, and /lamp
+ *   - ga:       GA4 for bigrapids.church, TheWay Bible app, Scroll, and TheWay Kids (/kids + legacy /lamp)
  *   - gsc:      Search Console for bigrapids.church, thewaybible.app, scroll
  *
  * Guarded by METRICS_KEY (?key=...). Each source fails on its own: a broken
@@ -254,6 +254,7 @@ async function social() {
 
 /* ---------------- App Store ratings (public lookup) ---------------- */
 async function ratings() {
+  // "lamp" = the kids' app's App Store id (listing was "Lamp Bible"; now TheWay Kids). Key kept for the dashboard.
   const ids = { bible: "6762105782", scroll: "6801303519", lamp: "6822149430" };
   const r = await fetch(`https://itunes.apple.com/lookup?id=${Object.values(ids).join(",")}&country=us`);
   if (!r.ok) throw new Error(`iTunes lookup ${r.status}`);
@@ -308,9 +309,12 @@ const rowsOf = (rep) => (rep.rows || []).map((r) => ({
 async function ga4(propertyId, w, pathPrefix) {
   const ranges = [{ startDate: w.start, endDate: w.end }, { startDate: w.prevStart, endDate: w.prevEnd }];
   const cur = [{ startDate: w.start, endDate: w.end }];
-  const filter = pathPrefix
-    ? { dimensionFilter: { filter: { fieldName: "pagePath", stringFilter: { matchType: "BEGINS_WITH", value: pathPrefix } } } }
-    : {};
+  // pathPrefix: a string, or an array of prefixes OR-ed together.
+  const prefixes = [].concat(pathPrefix || []);
+  const pf = (value) => ({ filter: { fieldName: "pagePath", stringFilter: { matchType: "BEGINS_WITH", value } } });
+  const filter = prefixes.length === 0 ? {}
+    : prefixes.length === 1 ? { dimensionFilter: pf(prefixes[0]) }
+    : { dimensionFilter: { orGroup: { expressions: prefixes.map(pf) } } };
   const totalsM = ["activeUsers", "newUsers", "sessions", "screenPageViews", "engagementRate", "averageSessionDuration", "engagedSessions"].map((name) => ({ name }));
   const requests = [
     { dateRanges: ranges, metrics: totalsM, ...filter },
@@ -388,7 +392,7 @@ export default async function handler(req, res) {
   const errors = {};
   const safe = (name, p) => p.catch((e) => { errors[name] = String(e?.message || e); return null; });
 
-  const [soc, rate, acc, mail, gaChurch, gaBible, gaScroll, gaLamp, gscChurch, gscBible, gscScroll, gaPeople, gaLibrary, gscPeople, gscLibrary] = await Promise.all([
+  const [soc, rate, acc, mail, gaChurch, gaBible, gaScroll, gaKids, gscChurch, gscBible, gscScroll, gaPeople, gaLibrary, gscPeople, gscLibrary] = await Promise.all([
     safe("social", social()),
     safe("ratings", ratings()),
     safe("accounts", accounts(w)),
@@ -396,7 +400,8 @@ export default async function handler(req, res) {
     safe("ga.church", ga4(GA_PROPERTIES.church, w)),
     safe("ga.bible", ga4(GA_PROPERTIES.bible, w)),
     safe("ga.scroll", ga4(GA_PROPERTIES.scroll, w)),
-    safe("ga.lamp", ga4(GA_PROPERTIES.bible, w, "/lamp")),
+    // TheWay Kids (was "Lamp Bible" at /lamp until Nov 2026): count both paths.
+    safe("ga.kids", ga4(GA_PROPERTIES.bible, w, ["/kids", "/lamp"])),
     safe("gsc.church", gsc(GSC_SITES.church, w)),
     safe("gsc.bible", gsc(GSC_SITES.bible, w)),
     safe("gsc.scroll", gsc(GSC_SITES.scroll, w)),
@@ -413,7 +418,7 @@ export default async function handler(req, res) {
     ratings: rate,
     social: soc,
     email: mail,
-    ga: { church: gaChurch, bible: gaBible, scroll: gaScroll, lamp: gaLamp, people: gaPeople, library: gaLibrary },
+    ga: { church: gaChurch, bible: gaBible, scroll: gaScroll, kids: gaKids, lamp: gaKids /* legacy key for the dashboard */, people: gaPeople, library: gaLibrary },
     gsc: { church: gscChurch, bible: gscBible, scroll: gscScroll, people: gscPeople, library: gscLibrary },
     errors,
   };

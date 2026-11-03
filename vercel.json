@@ -8,8 +8,28 @@
           "value": "lamp.thewaybible.app"
         }
       ],
-      "destination": "https://thewaybible.app/lamp/",
+      "destination": "https://thewaybible.app/kids/",
       "permanent": false
+    },
+    {
+      "source": "/lamp",
+      "destination": "/kids/",
+      "permanent": true
+    },
+    {
+      "source": "/lamp/:path*",
+      "destination": "/kids/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/lamp-bible-privacy.html",
+      "destination": "/kids-privacy.html",
+      "permanent": true
+    },
+    {
+      "source": "/lamp-bible-privacy",
+      "destination": "/kids-privacy.html",
+      "permanent": true
     },
     {
       "source": "/:path((?:bible|verses-about|bible-names|bible-words|churches|strongs|verse-of-the-day|king-james-bible|bible-statistics)(?:/.*)?)/",
@@ -119,7 +139,7 @@
       "destination": "/api/app-page?page=login"
     },
     {
-      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|churches|strongs|sitemap|lamp).*)",
+      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|churches|strongs|sitemap|kids|lamp).*)",
       "destination": "/index.html"
     }
   ],

@@ -11,7 +11,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-warm-brown mb-6">Privacy Policy</h1>
-      <p className="text-xs text-warm-brown-light mb-6">Last updated: October 22, 2026</p>
+      <p className="text-xs text-warm-brown-light mb-6">Last updated: November 3, 2026</p>
 
       <div className="space-y-6 text-sm text-warm-brown leading-relaxed">
         <Section title="Overview">
@@ -60,6 +60,7 @@ export default function PrivacyPolicy() {
             <li><strong>Vercel Analytics</strong> — aggregate page views and conversion events so we can improve the app. No tracking across other sites.</li>
             <li><strong>Sentry</strong> — error and crash reporting, including stack traces and sampled performance diagnostics. Automatic inclusion of account identity and IP addresses is disabled in this version. Diagnostic requests still involve network metadata.</li>
             <li><strong>Google Analytics</strong> — website usage and interaction measurement. Google Analytics may use cookies or browser identifiers and receive page URLs, events, device information, and network metadata. It is loaded on the public website.</li>
+            <li><strong>Microsoft Clarity</strong> — records how visitors use pages, such as scrolling, clicks and where people stop reading, and shows it to us as heatmaps and session replays. Clarity uses cookies and hides text typed into form fields. It is loaded on the public website and the app, not on TheWay Kids.</li>
             <li><strong>Pexels and Unsplash</strong> — stock photo backgrounds for the verse-share image feature. Only the search query you choose (e.g. "mountain") is sent; no personal data.</li>
           </ul>
         </Section>

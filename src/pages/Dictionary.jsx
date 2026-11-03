@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import { getDictionaryEntry, suggestHeadwords, DICTIONARIES } from "../services/libraryService";
-import { linkifyRefs } from "../components/RefText";
+import DictionaryArticle from "../components/DictionaryArticle";
 
 const STARTERS = ["Abraham", "Covenant", "Faith", "Grace", "Jerusalem", "Messiah", "Passover", "Pharisees", "Redemption", "Sabbath", "Tabernacle", "Zion"];
 
@@ -80,37 +80,10 @@ function Entry({ term }) {
       <h2 className="font-serif text-2xl font-bold text-warm-brown">{headword}</h2>
       {meaning && <p className="text-sm text-warm-brown-light italic mt-1">Name meaning: {meaning.text}</p>}
       <div className="mt-4 space-y-3">
-        {articles.filter((a) => a.meta.kind !== "names").map((a, i) => <ArticleCard key={a.id} article={a} defaultOpen={i === 0} />)}
+        {articles.filter((a) => a.meta.kind !== "names").map((a, i) => <DictionaryArticle key={a.id} article={a} defaultOpen={i === 0} />)}
       </div>
       <p className="text-[10px] text-warm-brown-light/60 mt-6">Public-domain works, via the CrossWire Bible Society.</p>
     </article>
-  );
-}
-
-function ArticleCard({ article, defaultOpen }) {
-  const [open, setOpen] = useState(defaultOpen);
-  const [full, setFull] = useState(false);
-  const { meta, text } = article;
-  const long = text.length > 1800;
-  const shown = long && !full ? text.slice(0, text.lastIndexOf(" ", 1800)) + "…" : text;
-  return (
-    <div className="bg-white border border-cream-dark rounded-xl">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
-        className="w-full px-4 py-3 flex items-center justify-between text-left gap-3">
-        <div>
-          <p className="text-sm font-semibold text-warm-brown">{meta.name}</p>
-          <p className="text-[10px] text-warm-brown-light">{meta.date} · {meta.kind === "topical" ? "Topical Bible" : "Dictionary"}</p>
-        </div>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          className={`w-4 h-4 text-warm-brown-light/50 shrink-0 transition-transform ${open ? "rotate-180" : ""}`}><polyline points="6 9 12 15 18 9" /></svg>
-      </button>
-      {open && (
-        <div className="px-4 pb-4">
-          <p className="text-sm text-warm-brown leading-relaxed whitespace-pre-wrap">{linkifyRefs(shown)}</p>
-          {long && <button type="button" onClick={() => setFull((f) => !f)} className="text-xs font-medium text-gold mt-2">{full ? "Show less" : "Read the full article"}</button>}
-        </div>
-      )}
-    </div>
   );
 }
 

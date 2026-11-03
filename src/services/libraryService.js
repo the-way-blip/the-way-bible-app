@@ -56,6 +56,39 @@ export async function getDictionaryEntry(headword) {
   return { headword: word[0], articles: articles.filter(Boolean).sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id)) };
 }
 
+/**
+ * Dictionary headwords for a Strong's word's KJV renderings ([[english, count]]).
+ * Keeps renderings used at least 5% as often as the commonest one, tries simple
+ * singular forms ("mercies" → "mercy"), and returns [{ headword, rendering, count }].
+ */
+export function matchRenderingHeadwords(renderings, byKey, limit = 5) {
+  const sorted = [...renderings].sort((a, b) => b[1] - a[1]);
+  const floor = (sorted[0]?.[1] || 0) * 0.05;
+  const out = [], seen = new Set();
+  for (const [eng, count] of sorted) {
+    if (out.length >= limit) break;
+    if (count < floor) continue;
+    const clean = (eng || "").replace(/[^A-Za-z' -]/g, "").trim();
+    if (clean.length < 3) continue;
+    const k = normKey(clean);
+    const forms = [k, k.replace(/IES$/, "Y"), k.replace(/ES$/, ""), k.replace(/S$/, "")];
+    const word = forms.map((f) => byKey.get(f)).find(Boolean);
+    if (!word || seen.has(word[0])) continue;
+    seen.add(word[0]);
+    out.push({ headword: word[0], rendering: clean, count });
+  }
+  return out;
+}
+
+/** Full entries for the headwords matching a word's KJV renderings. */
+export async function getRenderingEntries(renderings) {
+  const idx = await loadDictionaryIndex();
+  if (!idx) return [];
+  const matches = matchRenderingHeadwords(renderings, idx.byKey);
+  const entries = await Promise.all(matches.map((m) => getDictionaryEntry(m.headword)));
+  return matches.map((m, i) => ({ ...m, articles: entries[i]?.articles || [] })).filter((m) => m.articles.length);
+}
+
 /** Headword suggestions: exact, then prefix, then contains. */
 export async function suggestHeadwords(q, limit = 12) {
   const idx = await loadDictionaryIndex();

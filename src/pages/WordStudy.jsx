@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 import LexiconExtra from "../components/LexiconExtra";
 import WordUsage from "../components/WordUsage";
 import { useParams, Link } from "react-router-dom";
-import { lookupConcordance, lookupWebsters } from "../services/concordanceService";
+import { lookupWebsters } from "../services/concordanceService";
+import WordDictionaries from "../components/WordDictionaries";
 import usePageMeta from "../hooks/usePageMeta";
 import { getLexicon, getStrongs } from "../services/wordStudyLocal";
 import useDocumentTitle from "../hooks/useDocumentTitle";
@@ -23,8 +24,8 @@ export default function WordStudy() {
   const t = useT();
   const [entry, setEntry] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [concordance, setConcordance] = useState(null);
-  const [websters, setWebsters] = useState(null);
+  // undefined = loading, null = nothing found, string = definition text
+  const [websters, setWebsters] = useState(undefined);
   const [verseResults, setVerseResults] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -33,8 +34,7 @@ export default function WordStudy() {
     let cancelled = false;
     setLoading(true);
     setEntry(null);
-    setConcordance(null);
-    setWebsters(null);
+    setWebsters(undefined);
     setVerseResults(null);
     setActiveTab("overview");
 
@@ -102,17 +102,15 @@ export default function WordStudy() {
         setEntry(merged);
         setLoading(false);
 
-        // Load concordance and Webster's in background
-        if (merged.kjv_def) {
-          const firstTranslation = merged.kjv_def.split(",")[0].trim().replace(/[^a-zA-Z\s]/g, "").trim();
-          if (firstTranslation) {
-            lookupConcordance(strongsId)
-              .then((c) => { if (!cancelled) setConcordance(c); })
-              .catch(() => { if (!cancelled) setConcordance(null); });
-            lookupWebsters(firstTranslation)
-              .then((w) => { if (!cancelled) setWebsters(w); })
-              .catch(() => { if (!cancelled) setWebsters(null); });
-          }
+        // Webster's 1828 for the commonest KJV rendering, in the background
+        const topRendering = Object.entries(occMap).sort(([, a], [, b]) => b - a)[0]?.[0] || merged.kjv_def.split(",")[0];
+        const webstersWord = (topRendering || "").replace(/[^a-zA-Z\s]/g, "").trim();
+        if (webstersWord) {
+          lookupWebsters(webstersWord)
+            .then((w) => { if (!cancelled) setWebsters(w); })
+            .catch(() => { if (!cancelled) setWebsters(null); });
+        } else {
+          setWebsters(null);
         }
       } catch {
         if (!cancelled) setLoading(false);
@@ -355,34 +353,22 @@ export default function WordStudy() {
 
       {activeTab === "dictionaries" && (
         <div className="space-y-4">
-          {concordance ? (
-            <Section title={t("wordStudy.navesConcordance")}>
-              {concordance.entries?.map((ce, i) => (
-                <div key={i} className="mb-3 last:mb-0">
-                  {ce.topic && <p className="text-xs font-semibold text-gold mb-1">{ce.topic}</p>}
-                  <p className="text-sm text-warm-brown leading-relaxed">{ce.text}</p>
-                </div>
-              )) || <p className="text-sm text-warm-brown leading-relaxed">{concordance.text || t("wordStudy.noEntries")}</p>}
-            </Section>
-          ) : (
-            <Section title={t("wordStudy.navesConcordance")}>
-              <p className="text-sm text-warm-brown-light italic">{t("general.loading")}</p>
-            </Section>
-          )}
+          <WordDictionaries
+            key={strongsId}
+            renderings={Object.keys(entry.occurrence_map).length
+              ? Object.entries(entry.occurrence_map)
+              : entry.kjv_def.split(",").map((w) => [w, 1])}
+          />
 
-          {websters ? (
-            <Section title={t("wordStudy.websters1828")}>
-              {websters.definitions?.map((d, i) => (
-                <div key={i} className="mb-3 last:mb-0">
-                  <p className="text-sm text-warm-brown leading-relaxed">{d}</p>
-                </div>
-              )) || <p className="text-sm text-warm-brown leading-relaxed">{websters.text || t("wordStudy.noDefinition")}</p>}
-            </Section>
-          ) : (
-            <Section title={t("wordStudy.websters1828")}>
+          <Section title={t("wordStudy.websters1828")}>
+            {websters === undefined ? (
               <p className="text-sm text-warm-brown-light italic">{t("general.loading")}</p>
-            </Section>
-          )}
+            ) : websters ? (
+              <p className="text-sm text-warm-brown leading-relaxed">{websters}</p>
+            ) : (
+              <p className="text-sm text-warm-brown-light italic">{t("wordStudy.noDefinition")}</p>
+            )}
+          </Section>
         </div>
       )}
 

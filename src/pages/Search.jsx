@@ -11,10 +11,15 @@ import {
 import { parseRef } from "../utils/scriptureRef";
 import DictionaryPeek from "../components/DictionaryPeek";
 import { logEvent } from "../services/ga";
+import { studyCounts } from "../services/personalSearch";
+import { COMMENTARIES } from "../services/commentaryService";
+import { NotesResults, HighlightsResults, CommentaryResults } from "../features/search/ScopedResults";
 
 const TOPIC_CHIPS = ["Faith", "Love", "Prayer", "Salvation", "Grace", "Peace", "Hope", "Forgiveness", "Wisdom", "Strength", "Joy", "Anxiety"];
 const EXAMPLES = ["John 3:16", "Psalm 23", "faith hope love", "what does the Bible say about anxiety", "\"be still\"", "H430"];
 const PAGE = 40;
+const SCOPES = ["bible", "notes", "highlights", "commentaries"];
+const LOCAL_COMMENTARIES = COMMENTARIES.filter((c) => c.source === "local" && c.kind !== "crossrefs");
 
 function getSearchHistory() {
   try { return JSON.parse(localStorage.getItem("searchHistory") || "[]"); } catch { return []; }
@@ -36,7 +41,13 @@ export default function Search() {
   });
 
   const [params, setParams] = useSearchParams();
+  const scope = SCOPES.includes(params.get("scope")) ? params.get("scope") : "bible";
+  const isBible = scope === "bible";
   const [query, setQuery] = useState(params.get("q") || "");
+  const [scopedQuery, setScopedQuery] = useState(params.get("q") || "");
+  const [highlightColor, setHighlightColor] = useState("all");
+  const [commentaryFilter, setCommentaryFilter] = useState("all");
+  const [counts, setCounts] = useState(null);
   const [state, setState] = useState(null); // result bundle
   const [loading, setLoading] = useState(false);
   const [indexReady, setIndexReady] = useState(false);
@@ -50,12 +61,19 @@ export default function Search() {
   const runId = useRef(0);
 
   useEffect(() => { loadIndex().then(() => setIndexReady(true)); }, []);
+  useEffect(() => { studyCounts().then(setCounts).catch(() => {}); }, [scope]);
+
+  // Testament/book filters as a Set of reader book names (null = everything); shared by every scope
+  const bookSet = useMemo(() => (testamentFilter !== "all" || bookFilter !== "all")
+    ? new Set(bibleBooks.filter((b) => (testamentFilter === "all" || b.testament === testamentFilter) && (bookFilter === "all" || b.name === bookFilter)).map((b) => b.name))
+    : null, [testamentFilter, bookFilter]);
 
   const booksByTestament = useMemo(
     () => (testamentFilter === "all" ? bibleBooks : bibleBooks.filter((b) => b.testament === testamentFilter)),
     [testamentFilter]
   );
-  const activeFilterCount = (testamentFilter !== "all" ? 1 : 0) + (bookFilter !== "all" ? 1 : 0) + (matchType !== "all" ? 1 : 0);
+  const activeFilterCount = (testamentFilter !== "all" ? 1 : 0) + (bookFilter !== "all" ? 1 : 0)
+    + (isBible && matchType !== "all" ? 1 : 0) + (scope === "commentaries" && commentaryFilter !== "all" ? 1 : 0);
 
   const runSearch = useCallback(async (raw, { record = true, corrected = null } = {}) => {
     const q = raw.trim();
@@ -122,37 +140,84 @@ export default function Search() {
   useEffect(() => {
     const q = params.get("q") || "";
     setQuery(q);
-    if (q) runSearch(q, { record: false });
-    else setState(null);
+    setScopedQuery(q);
+    if (!SCOPES.includes(params.get("scope")) || params.get("scope") === "bible") {
+      if (q) runSearch(q, { record: false });
+      else setState(null);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params]);
 
   // Re-run when filters change
   useEffect(() => {
-    if (state?.query) runSearch(state.query, { record: false });
+    if (isBible && state?.query) runSearch(state.query, { record: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [testamentFilter, bookFilter, matchType]);
 
   // Live search while typing (after the index is in memory)
   useEffect(() => {
-    if (!indexReady) return;
     const q = query.trim();
+    if (!isBible) {
+      // Notes/highlights filter as you type (even back to empty); commentaries wait for 3+ letters
+      if (scope === "commentaries" && q.length > 0 && q.length < 3) return;
+      const timer = setTimeout(() => setScopedQuery(q), scope === "commentaries" ? 400 : 200);
+      return () => clearTimeout(timer);
+    }
+    if (!indexReady) return;
     if (q.length < 3 || q === (params.get("q") || "")) return;
     const timer = setTimeout(() => runSearch(q, { record: false }), 300);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, indexReady]);
+  }, [query, indexReady, scope]);
 
   const submit = (q) => {
     const trimmed = (q ?? query).trim();
-    if (!trimmed) return;
-    logEvent("search", { length: trimmed.length });
+    if (!trimmed && isBible) return;
+    if (trimmed) logEvent("search", { length: trimmed.length, method: scope });
     setQuery(trimmed);
     setShowHistory(false);
     inputRef.current?.blur();
+    if (!isBible) {
+      setScopedQuery(trimmed);
+      if (trimmed !== (params.get("q") || "")) setParams(trimmed ? { q: trimmed, scope } : { scope });
+      return;
+    }
     addToHistory(trimmed);
     if (trimmed === (params.get("q") || "")) runSearch(trimmed, { record: false });
     else setParams({ q: trimmed });
+  };
+
+  const changeScope = (next) => {
+    if (next === scope) return;
+    const q = query.trim();
+    const p = {};
+    if (q) p.q = q;
+    if (next !== "bible") p.scope = next;
+    setParams(p);
+    if (q) logEvent("search", { length: q.length, method: next });
+  };
+
+  // Tag chip: toggle "#tag" in the notes query
+  const addTag = (tag) => {
+    const esc = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const tagRe = new RegExp(`(^|\\s)#${esc}(?=\\s|$)`, "i");
+    const next = tagRe.test(query) ? query.replace(tagRe, " ").replace(/\s+/g, " ").trim() : `${query.trim()} #${tag}`.trim();
+    setQuery(next);
+    setScopedQuery(next);
+    setParams(next ? { q: next, scope } : { scope });
+  };
+
+  const placeholder = {
+    bible: t("search.unifiedPlaceholder", "Reference, word, phrase, topic, or question…"),
+    notes: t("search.notesPlaceholder", "Words, \"phrases\" or #tags"),
+    highlights: t("search.highlightsPlaceholder", "Filter by word, or pick a colour"),
+    commentaries: t("search.commentariesPlaceholder", "Word or \"phrase\" — e.g. propitiation"),
+  }[scope];
+  const scopeLabel = {
+    bible: t("search.scopeBible", "Bible"),
+    notes: t("search.scopeNotes", "My notes"),
+    highlights: t("search.scopeHighlights", "Highlights"),
+    commentaries: t("search.scopeCommentaries", "Commentaries"),
   };
 
   const history = getSearchHistory();
@@ -175,12 +240,12 @@ export default function Search() {
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setShowHistory(true)}
               onBlur={() => setTimeout(() => setShowHistory(false), 200)}
-              placeholder={t("search.unifiedPlaceholder", "Reference, word, phrase, topic, or question…")}
+              placeholder={placeholder}
               autoComplete="off"
               enterKeyHint="search"
               className="w-full bg-white border border-cream-dark rounded-xl px-4 py-3 text-base text-warm-brown placeholder-warm-brown-light/40 focus:outline-none focus:ring-2 focus:ring-gold/30"
             />
-            {showHistory && history.length > 0 && !query && (
+            {isBible && showHistory && history.length > 0 && !query && (
               <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-cream-dark rounded-xl shadow-lg z-20 py-1">
                 <p className="px-3 py-1 text-[10px] text-warm-brown-light uppercase tracking-wider">{t("search.recent")}</p>
                 {history.map((h) => (
@@ -201,6 +266,21 @@ export default function Search() {
             </svg>
           </button>
         </form>
+
+        {/* Scope */}
+        <div role="radiogroup" aria-label={t("search.scopeLabel", "Search in")}
+          className="grid grid-cols-[0.8fr_1fr_1fr_1.3fr] gap-0.5 p-1 mb-2 bg-white border border-cream-dark rounded-xl">
+          {SCOPES.map((s) => {
+            const n = s === "notes" ? counts?.notes : s === "highlights" ? counts?.highlights : null;
+            return (
+              <button key={s} type="button" role="radio" aria-checked={scope === s} onClick={() => changeScope(s)}
+                className={`min-w-0 min-h-[36px] px-1 py-1.5 rounded-lg text-[11px] font-medium leading-tight transition-colors ${scope === s ? "bg-gold text-white" : "text-warm-brown-light hover:bg-cream-dark/40"}`}>
+                <span className="block truncate">{scopeLabel[s]}</span>
+                {n != null && n > 0 && <span className={`block text-[10px] tabular-nums ${scope === s ? "text-white/80" : "text-warm-brown-light/60"}`}>{n.toLocaleString()}</span>}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Filters */}
         <div className="mb-4">
@@ -234,7 +314,17 @@ export default function Search() {
                   {booksByTestament.map((b) => <option key={b.name} value={b.name}>{b.name}</option>)}
                 </select>
               </div>
-              <div>
+              {scope === "commentaries" && (
+                <div>
+                  <label htmlFor="commentary-filter" className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1.5 block">{t("search.commentary", "Commentary")}</label>
+                  <select id="commentary-filter" value={commentaryFilter} onChange={(e) => setCommentaryFilter(e.target.value)}
+                    className="w-full bg-cream border border-cream-dark rounded-lg px-3 py-2 text-sm text-warm-brown focus:outline-none focus:border-gold/30">
+                    <option value="all">{t("search.allCommentaries", "All commentaries")}</option>
+                    {LOCAL_COMMENTARIES.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+              )}
+              {isBible && <div>
                 <p className="text-[10px] font-medium text-warm-brown-light uppercase tracking-wider mb-1.5">{t("search.matchType")}</p>
                 <div className="grid grid-cols-3 gap-1.5">
                   {[{ v: "all", l: t("search.allWords") }, { v: "any", l: t("search.anyWord") }, { v: "exact", l: t("search.exact") }].map((opt) => (
@@ -244,17 +334,21 @@ export default function Search() {
                     </button>
                   ))}
                 </div>
-              </div>
+              </div>}
               {activeFilterCount > 0 && (
-                <button type="button" onClick={() => { setTestamentFilter("all"); setBookFilter("all"); setMatchType("all"); }}
+                <button type="button" onClick={() => { setTestamentFilter("all"); setBookFilter("all"); setMatchType("all"); setCommentaryFilter("all"); }}
                   className="w-full text-xs text-warm-brown-light hover:text-warm-brown py-1">{t("search.resetFilters")}</button>
               )}
             </div>
           )}
         </div>
 
+        {scope === "notes" && <NotesResults q={scopedQuery} books={bookSet} t={t} onAddTag={addTag} />}
+        {scope === "highlights" && <HighlightsResults q={scopedQuery} books={bookSet} t={t} color={highlightColor} onColor={setHighlightColor} />}
+        {scope === "commentaries" && <CommentaryResults q={scopedQuery} books={bookSet} commentary={commentaryFilter} t={t} />}
+
         {/* Empty state */}
-        {!state && !loading && (
+        {isBible && !state && !loading && (
           <div className="space-y-6">
             <div>
               <p className="text-[10px] text-warm-brown-light uppercase tracking-wider mb-2">{t("search.tryExamples", "Try")}</p>
@@ -292,7 +386,7 @@ export default function Search() {
           </div>
         )}
 
-        <div aria-live="polite" aria-atomic="true">
+        {isBible && <div aria-live="polite" aria-atomic="true">
           {loading && (
             <div className="flex items-center justify-center py-12 gap-2" role="status">
               <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin" />
@@ -305,9 +399,9 @@ export default function Search() {
               <p className="text-xs text-warm-brown-light/70 mt-1">{t("search.noResultsHint")}</p>
             </div>
           )}
-        </div>
+        </div>}
 
-        {searched && hasResults && (
+        {isBible && searched && hasResults && (
           <div className="space-y-5">
             {state.corrected && (
               <p className="text-xs text-warm-brown-light bg-cream-dark/40 rounded-lg px-3 py-2">

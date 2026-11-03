@@ -82,7 +82,8 @@ test('initial HTML has route-specific metadata, readable lexical content, and sa
   const { appPageHtml, lexicalMetadata } = await import('../api/_appPageHtml.js');
   const template = '<head><title>Home</title><meta name="description" content="Home"><meta property="og:url" content="/"><link rel="canonical" href="/"></head><body><div id="root"></div></body>';
   const html = appPageHtml(template, lexicalMetadata('G25', {Gk_word:'ἀγαπάω',strongs_def:'.'}, {strongs_def:'to love <script>bad</script>'}));
-  assert.match(html, /https:\/\/thewaybible.app\/word\/G25/);
+  // Canonical is the crawlable /strongs/<id> page (f9c3005); /word/<id> is the in-app view.
+  assert.match(html, /canonical" href="https:\/\/thewaybible.app\/strongs\/g25"/);
   assert.match(html, /<main/);
   assert.doesNotMatch(html, /<script>bad/);
   assert.match(html, /to love &lt;script&gt;/);
@@ -98,7 +99,7 @@ test('public app page handler renders known words, returns 404 for unknown words
   const word=request({id:'G25'});
   assert.equal(word.code,200);
   assert.match(word.body,/to love/);
-  assert.match(word.body,/canonical" href="https:\/\/thewaybible.app\/word\/G25/);
+  assert.match(word.body,/canonical" href="https:\/\/thewaybible.app\/strongs\/g25"/);
   assert.equal(request({id:'G99999'}).code,404);
   assert.equal(request({id:'../../etc/passwd'}).code,404);
   assert.equal(request({id:'g25'}).location,'/word/G25');

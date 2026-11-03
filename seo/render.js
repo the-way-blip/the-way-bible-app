@@ -1546,7 +1546,7 @@ function sitemapIndex() {
 }
 function sitemapFile(name) {
   if (name === "pages") {
-    const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
+    const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/kids/", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
     urls.push(["/churches", "0.8"], ["/churches/network", "0.5"]);
     for (const g of CITY_LIST) if (g.list.length > 1) urls.push([`/churches/in/${g.key}`, "0.7"]);

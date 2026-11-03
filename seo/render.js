@@ -840,7 +840,7 @@ const churchCard = (c, mi) => `<div class="card row" data-s="${attr([c.name, c.c
 const CHURCH_CSS = `
 [hidden]{display:none!important}
 .dir{display:grid;gap:10px}
-.subform{display:grid;gap:12px;margin-top:12px}.subform label{display:grid;gap:4px;font-size:14px;font-weight:600}.subform input,.subform textarea{font:inherit;font-weight:400;padding:11px 12px;border:1px solid var(--line,#d7d2c8);border-radius:10px;background:#fff;color:inherit;width:100%;box-sizing:border-box}.subform .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.subform .hp{position:absolute;left:-9999px;height:0;overflow:hidden}.citylinks{line-height:2;font-size:15px}.citylinks a{white-space:nowrap}
+.subform{display:grid;gap:12px;margin-top:12px}.subform label{display:grid;gap:4px;font-size:14px;font-weight:600}.subform input,.subform textarea{font:inherit;font-weight:400;padding:11px 12px;border:1px solid var(--line,#d7d2c8);border-radius:10px;background:#fff;color:inherit;width:100%;box-sizing:border-box}.subform .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.subform .hp{position:absolute;left:-9999px;height:0;overflow:hidden}.linkbox{margin:18px 0;padding:12px 14px;border:1px solid var(--line,#d7d2c8);border-radius:12px}.linkbox summary{cursor:pointer;font-weight:600}.linkbox textarea{font:13px/1.4 ui-monospace,monospace;width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line,#d7d2c8);border-radius:8px;background:#fff;color:inherit}.citylinks{line-height:2;font-size:15px}.citylinks a{white-space:nowrap}
 .card.row{display:flex;align-items:stretch;padding:0;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:12px}
 .card.row:hover{border-color:var(--gold)}
 .card.row .main{flex:1;min-width:0;display:block;padding:14px 16px;color:var(--brown)}.card.row .main:hover{text-decoration:none;background:var(--cream-dark)}
@@ -956,6 +956,26 @@ ${near.length ? `<h2>Churches near ${esc(g.city)}</h2><div class="dir">${near.ma
   return ok(shell({ title, description: `${n} ${n === 1 ? "church" : "churches"} in ${g.city}, ${g.stateName}: ${g.list.slice(0, 3).map((c) => c.name).join(", ")}${n > 3 ? " and more" : ""}. Service times, addresses, phone numbers and websites. Free, no ads.`, canonical: `/churches/in/${key}`, h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true, noindex: n < 2 }));
 }
 
+
+function churchNetwork() {
+  const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], ["Church network", "/churches/network"]])}
+<h1>The church network</h1>
+<p class="sub">A free directory where churches that preach the Bible help each other be found.</p>
+<h2>What every church gets</h2>
+<div class="info"><p>A page of its own with service times, address, pastor, a map link, and a link straight to the church's website. No ads, no paid placement, and no charge. ${DIRECTORY.length} churches are listed so far.</p></div>
+<h2>How the network helps</h2>
+<div class="info"><p>People searching for a church near them find the churches in this directory, and they click through to each church's own site. When churches also link to their listing from their own websites, every church in the network is easier to find. Linking back is optional, and your listing stays the same either way.</p></div>
+<h2>Join</h2>
+<div class="info"><ol>
+<li><a href="/churches">Find your church</a> in the directory. If it is not there, <a href="/churches#list-your-church">send it for review</a>.</li>
+<li>Check your page. Send a correction from the bottom of the page if anything is out of date.</li>
+<li>Optional: open "Link to this page from your church website" at the bottom of your page and paste the link into your site.</li>
+</ol></div>
+<p class="slim"><a href="/churches">All churches</a> · <a href="/churches#list-your-church">List your church</a></p>`;
+  const jsonld = webPageLd([breadcrumbLd([["Home", "/"], ["Churches", "/churches"], ["Church network", "/churches/network"]])]);
+  return ok(shell({ title: `The Church Network – Free Church Directory | ${SITE_NAME}`, description: "A free directory where Bible-preaching churches help each other be found: a page for every church with service times, address and a link to its own website. No ads.", canonical: "/churches/network", h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true }));
+}
+
 function churchPage(c) {
   const title = churchTitle(c);
   const place = `${c.city}, ${c.stateName}`;
@@ -995,6 +1015,10 @@ ${contact}
 ${c.ministries?.length ? `<h2>Ministries</h2><ul class="outline">${c.ministries.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}
 ${social || extra ? `<h2>Online</h2><div class="actions">${social}${extra}</div>` : ""}
 ${nearby.length ? `<h2>Churches nearby</h2><div class="dir">${nearby.map(({ x, mi }) => churchCard(x, mi)).join("")}</div>` : ""}
+<details class="linkbox"><summary>Link to this page from your church website</summary>
+<p>If this is your church, you can point visitors here from your own site. Copy this into your page or footer:</p>
+<textarea readonly rows="3" onclick="this.select()" aria-label="Link code">${esc(`<a href="${SITE}${churchUrl(c)}">Find us in the TheWay Church Directory</a>`)}</textarea>
+<p class="fine">Optional, and it never affects your listing. <a href="/churches/network">About the church network</a></p></details>
 <p class="fine">Details from ${esc(c.source || "the church's website")}, checked ${esc(c.checked || "October 2026")}. Times change, so confirm with the church before you visit. Is this your church? <a href="/churches?fix=${encodeURIComponent(c.slug)}&n=${encodeURIComponent(c.name)}&c=${encodeURIComponent(c.city)}#list-your-church">Send a correction</a> or <a href="/churches?fix=${encodeURIComponent(c.slug)}&n=${encodeURIComponent(c.name)}&c=${encodeURIComponent(c.city)}&remove=1#list-your-church">ask us to remove this page</a>. <a href="/churches">All churches</a></p>
 <p class="slim">Free King James Bible online and in the app: <a href="/bible">read on the web</a> · <a href="${appHref()}" data-cta="church-ios">get the iPhone app</a></p>
 ${bar.length ? `<nav class="cbar" aria-label="Contact ${attr(c.name)}">${bar.join("")}</nav>` : ""}`;
@@ -1524,7 +1548,7 @@ function sitemapFile(name) {
   if (name === "pages") {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
-    urls.push(["/churches", "0.8"]);
+    urls.push(["/churches", "0.8"], ["/churches/network", "0.5"]);
     for (const g of CITY_LIST) if (g.list.length > 1) urls.push([`/churches/in/${g.key}`, "0.7"]);
     for (const c of DIRECTORY) urls.push([churchUrl(c), "0.7"]);
     urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"], ["/bible-statistics", "0.9"]);
@@ -1564,6 +1588,7 @@ export function render(q = {}) {
   if (kind === "churchcity") return cityPage(String(q.city || "").toLowerCase());
   if (kind === "church") {
     const slug = String(q.slug || "").toLowerCase();
+    if (slug === "network") return churchNetwork();
     const c = CHURCH_BY_SLUG.get(slug);
     return c ? churchPage(c) : notFound();
   }

@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import useDocumentTitle from "../hooks/useDocumentTitle";
 import { getHymns, getPoems } from "../services/libraryService";
 import { linkifyRefs } from "../components/RefText";
 import { logEvent } from "../services/ga";
+import useT from "../hooks/useT";
+import { hymnSlides } from "../utils/presentSlides";
+import { enterFullscreen } from "../utils/fullscreen";
+
+const PresentMode = lazy(() => import("../components/PresentMode"));
 
 /**
  * Hymns & Poems for reading: /hymns, /hymns/:id, /poems, /poems/:id.
@@ -133,8 +138,15 @@ function Reading({ kind, item, prev, next }) {
   useDocumentTitle(item.title);
   const navigate = useNavigate();
   useEffect(() => { logEvent(kind === "poems" ? "poem_view" : "hymn_view", { method: item.id }); }, [kind, item.id]);
+  const t = useT();
   const stanzas = item.verses || item.stanzas;
   const isHymn = kind === "hymns";
+  const [slides, setSlides] = useState(null); // Present mode slides while open
+  const present = () => {
+    enterFullscreen(); // inside the click so the browser sees the gesture
+    setSlides(hymnSlides(item, t));
+    logEvent("present_open", { method: "hymn" });
+  };
 
   const share = async () => {
     const body = stanzas.map((v, i) => (isHymn && item.refrain && i === 0 ? [...v, "", ...item.refrain] : v).join("\n")).join("\n\n");
@@ -194,13 +206,25 @@ function Reading({ kind, item, prev, next }) {
       )}
 
       <div className="mt-6 flex items-center justify-between gap-3">
-        <button type="button" onClick={share} className="text-xs font-medium text-gold min-h-[44px]">Share</button>
+        <div className="flex items-center gap-4">
+          <button type="button" onClick={share} className="text-xs font-medium text-gold min-h-[44px]">Share</button>
+          {isHymn && (
+            <button type="button" onClick={present} className="text-xs font-medium text-gold min-h-[44px]"
+              aria-label={t("present.hymnLabel", "Present this hymn full screen")}>{t("present.button", "Present")}</button>
+          )}
+        </div>
         <p className="text-[10px] text-warm-brown-light/70 text-right">
           Public domain · {isHymn
             ? <a href={item.source?.url} target="_blank" rel="noopener noreferrer" className="underline">{item.source?.name}{item.source?.number ? ` #${item.source.number}` : ""}</a>
             : <a href={item.source} target="_blank" rel="noopener noreferrer" className="underline">Wikisource</a>}
         </p>
       </div>
+
+      {slides && (
+        <Suspense fallback={null}>
+          <PresentMode slides={slides} title={item.title} onClose={() => setSlides(null)} />
+        </Suspense>
+      )}
 
       <nav className="mt-6 grid grid-cols-2 gap-3 text-xs" aria-label={isHymn ? "More hymns" : "More poems"}>
         {prev ? <Link to={`/${kind}/${prev.id}`} className="bg-white border border-cream-dark rounded-xl px-3 py-2.5 hover:border-gold/30"><span className="text-warm-brown-light">‹ Previous</span><span className="block font-serif font-bold text-warm-brown truncate">{prev.title}</span></Link> : <span />}

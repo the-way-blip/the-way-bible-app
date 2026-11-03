@@ -26,6 +26,7 @@ const InHistory = lazy(() => import("../features/reader/InHistory"));
 const ShareSheet = lazy(() => import("../components/ShareSheet"));
 const PlaceExplorer = lazy(() => import("../features/reader/PlaceExplorer"));
 const CommentaryTab = lazy(() => import("../features/reader/SidePanel").then((m) => ({ default: m.CommentaryTab })));
+const PresentPassage = lazy(() => import("../features/reader/PresentPassage"));
 import { useApp } from "../stores/AppContext";
 import { useToast } from "../components/Toast";
 import { useAuth } from "../stores/AuthContext";
@@ -34,6 +35,7 @@ import { syncReadingProgressUpdate } from "../services/supabaseSync";
 import { requestedVerse } from "../utils/verseLink";
 import { logEvent } from "../services/ga";
 import { offlineBooks, downloadBook, estimateAudioMB } from "../services/offlineService";
+import { enterFullscreen } from "../utils/fullscreen";
 
 export default function Reader() {
   const t = useT();
@@ -76,6 +78,8 @@ export default function Reader() {
   const [scrollProgress, setScrollProgress] = useState(0);
   // Biblical atlas: { place, book, chapter, places } for the open map panel
   const [atlas, setAtlas] = useState(null);
+  // Present mode (project the chapter): { startVerse } while open
+  const [presenting, setPresenting] = useState(null);
 
   // These need to be declared before the keyboard shortcuts effect
   const bookInfo = getBook(book);
@@ -555,6 +559,23 @@ export default function Reader() {
                       <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
                     </svg>
                   </button>
+                  {data?.verses?.length > 0 && (
+                    <button
+                      onClick={() => {
+                        setShowTools(false);
+                        enterFullscreen();
+                        const sel = activeChapterCtx.book === book && activeChapterCtx.chapter === chapterNum ? selectedVerse : null;
+                        setPresenting({ startVerse: sel });
+                        logEvent("present_open", { method: "passage" });
+                      }}
+                      className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-warm-brown hover:bg-cream-dark/50"
+                    >
+                      <span>{t("present.passage", "Present passage")}</span>
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4 text-warm-brown-light">
+                        <rect x="2" y="4" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" />
+                      </svg>
+                    </button>
+                  )}
                   <div className="flex items-center justify-between px-3 py-2 text-sm text-warm-brown">
                     <span>{t("reader.textSize", "Text size")}</span>
                     <div className="flex items-center bg-cream-dark rounded-full">
@@ -776,6 +797,14 @@ export default function Reader() {
           }}
           onClose={() => setSelectedVerse(null)}
         />
+      )}
+
+      {presenting && data?.verses && (
+        <Suspense fallback={null}>
+          <PresentPassage verses={data.verses} book={bookInfo?.name || book} chapter={chapterNum}
+            translation={getTranslation(translation).short || translation} startVerse={presenting.startVerse}
+            onClose={() => setPresenting(null)} />
+        </Suspense>
       )}
 
       {/* Commentary sheet (phones) */}

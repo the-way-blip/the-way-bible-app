@@ -497,3 +497,58 @@ html.dark .drop-cap::first-letter {
 button.word-tappable { font: inherit; color: inherit; text-align: inherit; }
 button.word-tappable:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; border-radius: 3px; }
 @media (prefers-reduced-motion: reduce) { .verse-flash { animation: none; background-color: #c9a84c33; } }
+
+/* ── Present mode (hymns + passages on a church screen) ──────────────────
+   Black stage, cream serif type. The font-size here is the ceiling; the
+   PresentMode fit loop shrinks it until the slide fits without scrolling.
+   Colours are fixed (not themed) so the projector always gets contrast. */
+.present-stage {
+  background: #000;
+  color: #f6efdd;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-y pinch-zoom;
+}
+.present-fit {
+  font-family: var(--font-serif);
+  font-size: clamp(22px, min(9vw, 9.5vh), 128px);
+  line-height: 1.32;
+  overflow-wrap: break-word;
+}
+.present-fit.is-title { font-size: clamp(28px, min(11vw, 13vh), 150px); line-height: 1.12; }
+.present-fit .present-line { text-wrap: balance; }
+.present-fit .present-prose { text-wrap: pretty; }
+.present-fit.is-nowrap .present-line { white-space: nowrap; }
+.present-caption {
+  font-family: var(--font-serif);
+  font-size: clamp(14px, min(2.6vw, 4.2vh), 48px);
+  color: #c9a84c;
+  letter-spacing: 0.02em;
+}
+.present-chrome {
+  color: rgba(246, 239, 221, 0.72);
+  transition: opacity 400ms ease;
+}
+.present-btn {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  font-size: 13px;
+  color: rgba(246, 239, 221, 0.85);
+  background: rgba(255, 255, 255, 0.08);
+}
+.present-btn:hover { background: rgba(255, 255, 255, 0.16); }
+.present-btn[aria-pressed="true"] { background: rgba(201, 168, 76, 0.9); color: #000; }
+.present-btn:focus-visible { outline: 2px solid #c9a84c; outline-offset: 2px; }
+.present-stage:focus { outline: none; }
+@keyframes presentFade { from { opacity: 0; } to { opacity: 1; } }
+.present-slide-in { animation: presentFade 220ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .present-slide-in { animation: none; }
+  .present-chrome { transition: none; }
+}

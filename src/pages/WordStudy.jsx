@@ -1,6 +1,7 @@
 import { firstMeaningfulText } from "../utils/lexiconText";
 import { useState, useEffect } from "react";
 import LexiconExtra from "../components/LexiconExtra";
+import WordUsage from "../components/WordUsage";
 import { useParams, Link } from "react-router-dom";
 import { lookupConcordance, lookupWebsters } from "../services/concordanceService";
 import usePageMeta from "../hooks/usePageMeta";
@@ -347,6 +348,8 @@ export default function WordStudy() {
               <p className="text-sm text-warm-brown leading-relaxed">{entry.kjv_def}</p>
             </Section>
           )}
+
+          <WordUsage key={strongsId} strongsId={strongsId} />
         </div>
       )}
 

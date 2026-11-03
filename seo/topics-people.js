@@ -126,6 +126,10 @@ const PEOPLE = [
     verses: ["2 Kings 22:1", "2 Kings 22:2", "2 Kings 22:8", "2 Kings 22:11", "2 Kings 22:19", "2 Kings 23:3", "2 Kings 23:21", "2 Kings 23:25", "2 Chronicles 34:1-2", "2 Chronicles 34:3", "2 Chronicles 34:27", "2 Chronicles 35:18"] },
   { name: "Cornelius", aliases: ["cornelius-in-the-bible", "the-centurion-cornelius", "the-gospel-to-the-gentiles"],
     verses: ["Acts 10:1-2", "Acts 10:3-4", "Acts 10:5", "Acts 10:22", "Acts 10:24", "Acts 10:33", "Acts 10:34-35", "Acts 10:43", "Acts 10:44", "Acts 10:47", "Acts 11:14", "Acts 11:18"] },
+  { name: "Gaius, Diotrephes, and Demetrius", lead: "3 John 1:9",
+    blurb: "Three men in a fourteen-verse letter: Gaius, commended for walking in truth; Diotrephes, who loved to have the preeminence; and Demetrius, of good report.",
+    aliases: ["diotrephes", "demetrius", "gaius", "who-was-diotrephes", "diotrephes-and-demetrius", "diotrephes-in-the-bible", "three-men-of-3-john", "3-john"],
+    verses: ["3 John 1:1", "3 John 1:2", "3 John 1:3", "3 John 1:4", "3 John 1:5", "3 John 1:8", "3 John 1:9", "3 John 1:10", "3 John 1:11", "3 John 1:12", "Proverbs 16:18", "Matthew 23:11-12"] },
   { name: "Priscilla and Aquila", lead: "Acts 18:2", aliases: ["aquila-and-priscilla", "priscilla-in-the-bible", "a-ministry-couple"],
     verses: ["Acts 18:1-2", "Acts 18:3", "Acts 18:18", "Acts 18:19", "Acts 18:26", "Romans 16:3", "Romans 16:4", "Romans 16:5", "1 Corinthians 16:19", "2 Timothy 4:19", "Ecclesiastes 4:9-10", "Acts 18:27"] },
 ];

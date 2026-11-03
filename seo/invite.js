@@ -101,6 +101,9 @@ var st=get();
 // reappearing on every page with no way to remember a dismissal.
 if(st===null)return;
 if(st.s)return;
+// Never on the page someone lands on from search or a link; only once they
+// have moved on to a second page here.
+try{var rf=document.referrer;if(!rf||new URL(rf).host!==location.host)return}catch(e){return}
 if(st.d&&Date.now()-st.d<${HIDE_DAYS}*864e5)return;
 var shown=false,scrolled=false,t=null;
 function open(){if(shown)return;shown=true;clearTimeout(t);off();

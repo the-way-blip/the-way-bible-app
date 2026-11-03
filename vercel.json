@@ -9,7 +9,7 @@
         }
       ],
       "destination": "https://thewaybible.app/kids/",
-      "permanent": false
+      "permanent": true
     },
     {
       "source": "/lamp",

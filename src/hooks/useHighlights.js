@@ -22,12 +22,14 @@ export default function useHighlights(book, chapter) {
     return () => window.removeEventListener("theway:synced", reload);
   }, [load]);
 
-  const addHighlight = async (verseNumber, color) => {
+  // style: "fill" (default) | "underline" | "dashed" | "dotted" — see utils/highlights.js.
+  // Tapping the colour a verse already has (in the same style) removes it.
+  const addHighlight = async (verseNumber, color, style = "fill") => {
     logEvent("highlight_add", { color });
     const id = `${book}-${chapter}-${verseNumber}`;
     const existing = highlights.find((h) => h.id === id);
 
-    if (color == null || (existing && existing.color === color)) {
+    if (color == null || (existing && existing.color === color && (existing.style || "fill") === style)) {
       await dbDelete("highlights", id);
       syncDelete("highlights", id, user?.id);
     } else {
@@ -37,6 +39,7 @@ export default function useHighlights(book, chapter) {
         chapter,
         verseNumber,
         color,
+        style: style === "fill" ? undefined : style,
         createdAt: Date.now(),
       };
       await dbPut("highlights", record);

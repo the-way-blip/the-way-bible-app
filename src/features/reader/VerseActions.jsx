@@ -1,14 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { useToast } from "../../components/Toast";
 import { hapticTap } from "../../utils/native";
+import { Link } from "react-router-dom";
 import useT from "../../hooks/useT";
+import useHighlightLabels from "../../hooks/useHighlightLabels";
+import { HIGHLIGHT_COLORS, HIGHLIGHT_STYLES } from "../../utils/highlights";
 
-const COLORS = [
-  { name: "yellow", bg: "bg-highlight-yellow", border: "border-yellow-400" },
-  { name: "green", bg: "bg-highlight-green", border: "border-green-400" },
-  { name: "blue", bg: "bg-highlight-blue", border: "border-blue-400" },
-  { name: "pink", bg: "bg-highlight-pink", border: "border-pink-400" },
-];
+const STYLE_LABEL = { fill: "Fill", underline: "Underline", dashed: "Dashed", dotted: "Dotted" };
+
+/** A tiny preview of each highlight style for the style picker. */
+function StyleSample({ style }) {
+  if (style === "fill") return <span className="px-1 rounded-sm bg-highlight-yellow">Aa</span>;
+  return <span style={{ textDecorationLine: "underline", textDecorationStyle: style === "underline" ? "solid" : style, textDecorationThickness: "2px", textUnderlineOffset: "3px", textDecorationColor: "#d4a514" }}>Aa</span>;
+}
 
 export default function VerseActions({
   verse,
@@ -17,6 +21,7 @@ export default function VerseActions({
   chapter,
   currentHighlight,
   currentNote,
+  verseCount,
   isMemoryVerse,
   isBookmarkedVerse,
   onHighlight,
@@ -34,7 +39,12 @@ export default function VerseActions({
   const t = useT();
   const [showNote, setShowNote] = useState(false);
   const [noteText, setNoteText] = useState(currentNote?.text || "");
+  // A range note opened from any of its verses is saved under its first verse.
+  const noteStart = currentNote?.verseNumber || verse;
+  const [noteEnd, setNoteEnd] = useState(currentNote?.verseEnd || noteStart);
   const [visible, setVisible] = useState(false);
+  const labels = useHighlightLabels();
+  const [style, setStyle] = useState(currentHighlight?.style || "fill");
   const panelRef = useRef(null);
 
   useEffect(() => {
@@ -100,30 +110,33 @@ export default function VerseActions({
 
         {!showNote ? (
           <div>
-            {/* Top row: highlight colors */}
-            <div className="px-4 pt-3 pb-2 flex items-center justify-center gap-3">
-              {COLORS.map((c) => (
-                <button
-                  key={c.name}
-                  aria-label={`Highlight ${c.name}`}
-                  aria-pressed={currentHighlight?.color === c.name}
-                  onClick={() => {
-                    onHighlight(verse, c.name);
-                    hapticTap();
-                    showToast(t("verse.highlightApplied"));
-                  }}
-                  className={`w-11 h-11 rounded-full ${c.bg} border-2 ${
-                    currentHighlight?.color === c.name ? c.border : "border-transparent"
-                  } transition-transform hover:scale-110`}
-                />
-              ))}
+            {/* Top row: highlight colours (with the reader's names for them) */}
+            <div className="px-4 pt-3 pb-1 flex items-start justify-center gap-3">
+              {HIGHLIGHT_COLORS.map((c) => {
+                const active = currentHighlight?.color === c.name;
+                return (
+                  <div key={c.name} className="flex flex-col items-center w-14">
+                    <button
+                      aria-label={`Highlight ${labels[c.name] || c.name}`}
+                      aria-pressed={active}
+                      onClick={() => {
+                        onHighlight(verse, c.name, style);
+                        hapticTap();
+                        showToast(t("verse.highlightApplied"));
+                      }}
+                      className={`w-11 h-11 rounded-full ${c.fill} border-2 ${active ? c.ring : "border-transparent"} transition-transform hover:scale-110`}
+                    />
+                    {labels[c.name] && <span className="mt-1 text-[10px] leading-tight text-warm-brown-light text-center truncate w-full">{labels[c.name]}</span>}
+                  </div>
+                );
+              })}
               {currentHighlight && (
                 <button
                   onClick={() => {
                     onHighlight(verse, null);
                     showToast(t("verse.highlightRemoved"));
                   }}
-                  className="w-6 h-6 rounded-full border border-cream-dark flex items-center justify-center text-warm-brown-light hover:text-warm-brown hover:border-warm-brown-light transition-colors ml-1"
+                  className="w-6 h-6 mt-2.5 rounded-full border border-cream-dark flex items-center justify-center text-warm-brown-light hover:text-warm-brown hover:border-warm-brown-light transition-colors"
                   title={t("verse.clearHighlight")}
                 >
                   <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-3 h-3">
@@ -133,6 +146,29 @@ export default function VerseActions({
                 </button>
               )}
             </div>
+            {/* Style: fill or one of three underlines. Changing it restyles the current highlight. */}
+            <div className="px-4 pb-2 flex items-center justify-center gap-1.5" role="radiogroup" aria-label={t("verse.highlightStyle", "Highlight style")}>
+              {HIGHLIGHT_STYLES.map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  role="radio"
+                  aria-checked={style === s}
+                  onClick={() => {
+                    setStyle(s);
+                    if (currentHighlight && (currentHighlight.style || "fill") !== s) onHighlight(verse, currentHighlight.color, s);
+                  }}
+                  className={`min-h-[36px] px-2.5 rounded-full text-[11px] flex items-center gap-1.5 border ${style === s ? "border-gold text-warm-brown bg-gold/10" : "border-cream-dark text-warm-brown-light"}`}
+                >
+                  <StyleSample style={s} /> {t(`verse.style.${s}`, STYLE_LABEL[s])}
+                </button>
+              ))}
+            </div>
+            <p className="text-center pb-2">
+              <Link to="/settings#highlight-names" onClick={onClose} className="text-[11px] text-gold">
+                {Object.keys(labels).length ? t("verse.editColourNames", "Edit colour names") : t("verse.nameColours", "Name your colours")}
+              </Link>
+            </p>
 
             {/* Divider */}
             <div className="mx-4 border-t border-cream-dark" />
@@ -280,13 +316,28 @@ export default function VerseActions({
           </div>
         ) : (
           <div className="px-4 py-3">
+            {verseCount > noteStart && (
+              <label className="flex items-center gap-2 mb-2 text-xs text-warm-brown-light">
+                {t("verse.noteCovers", "Note on")} {book} {chapter}:{noteStart}
+                <span aria-hidden="true">–</span>
+                <select
+                  value={noteEnd}
+                  onChange={(e) => setNoteEnd(Number(e.target.value))}
+                  aria-label={t("verse.noteThrough", "Through verse")}
+                  className="bg-cream rounded-md px-2 py-1 text-[16px] text-warm-brown focus:outline-none focus:ring-2 focus:ring-gold/30"
+                >
+                  {Array.from({ length: verseCount - noteStart + 1 }, (_, i) => noteStart + i).map((v) => <option key={v} value={v}>{v}</option>)}
+                </select>
+              </label>
+            )}
             <textarea
               value={noteText}
               onChange={(e) => setNoteText(e.target.value)}
               placeholder={t("verse.writeNote")}
-              className="w-full h-24 bg-cream rounded-lg px-3 py-2 text-[16px] text-warm-brown placeholder-warm-brown-light/50 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30"
+              className="w-full h-28 bg-cream rounded-lg px-3 py-2 text-[16px] text-warm-brown placeholder-warm-brown-light/50 resize-none focus:outline-none focus:ring-2 focus:ring-gold/30"
               autoFocus
             />
+            <p className="text-[10px] text-warm-brown-light/70 mt-1">{t("verse.noteFormatting", "**bold**, *italic*, “- ” for a list, “> ” to quote. References like John 3:16 become links.")}</p>
             <div className="flex items-center justify-between mt-2">
               <button
                 onClick={() => setShowNote(false)}
@@ -298,7 +349,7 @@ export default function VerseActions({
                 {currentNote && (
                   <button
                     onClick={() => {
-                      onDeleteNote(verse);
+                      onDeleteNote(noteStart);
                       showToast(t("verse.noteDeleted"));
                       setShowNote(false);
                     }}
@@ -310,7 +361,7 @@ export default function VerseActions({
                 <button
                   onClick={() => {
                     if (noteText.trim()) {
-                      onSaveNote(verse, noteText.trim());
+                      onSaveNote(noteStart, noteText.trim(), currentNote?.tags || [], noteEnd);
                       showToast(t("verse.noteSaved"));
                     }
                     setShowNote(false);

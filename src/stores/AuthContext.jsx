@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import { adoptAccountLabels } from "../utils/highlights";
 import { isSupabaseConfigured, getSupabase } from "../services/supabase";
 import { syncAll } from "../services/supabaseSync";
 import { gaEvent } from "../services/ga";
@@ -41,6 +42,7 @@ export function AuthProvider({ children }) {
   const handleUserLogin = useCallback(async (authUser) => {
     setUser(authUser);
     if (authUser) {
+      adoptAccountLabels(authUser); // highlight colour names saved on another device
       loadProfile(authUser.id);
       lastSyncRef.current = 0; // reset so login always syncs
       await runSync(authUser.id);

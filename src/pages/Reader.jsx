@@ -742,6 +742,7 @@ export default function Reader() {
           chapter={activeChapterCtx.chapter}
           currentHighlight={getHighlight(selectedVerse)}
           currentNote={getNote(selectedVerse)}
+          verseCount={data?.verses?.length || selectedVerse}
           isMemoryVerse={isMemoryVerse(activeChapterCtx.book, activeChapterCtx.chapter, selectedVerse)}
           isBookmarkedVerse={isBookmarked(activeChapterCtx.book, activeChapterCtx.chapter, selectedVerse)}
           onHighlight={addHighlight}

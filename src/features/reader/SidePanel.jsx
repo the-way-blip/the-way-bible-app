@@ -10,6 +10,31 @@ import useJournal from "../../hooks/useJournal";
 import { tokenizeRefs } from "../../utils/scriptureRef";
 import useT from "../../hooks/useT";
 import { logEvent } from "../../services/ga";
+import useNotes from "../../hooks/useNotes";
+import NoteText from "../../components/NoteText";
+
+/**
+ * The verse at the top of the reading area as the reader scrolls. The reader
+ * renders each verse with data-verse; we watch those from here so the panel can
+ * follow the passage without the reader having to report it.
+ */
+function useReadingVerse(book, chapter) {
+  const [verse, setVerse] = useState(null);
+  useEffect(() => {
+    setVerse(null);
+    if (typeof IntersectionObserver === "undefined") return;
+    const seen = new Map();
+    const io = new IntersectionObserver((entries) => {
+      for (const e of entries) seen.set(e.target, e.isIntersecting);
+      const top = [...seen].filter(([, on]) => on).map(([el]) => Number(el.dataset.verse)).filter(Boolean).sort((a, b) => a - b)[0];
+      if (top) setVerse(top);
+    }, { rootMargin: "-20% 0px -60% 0px" });
+    // The chapter renders after this mounts; give it a moment, then watch its verses.
+    const timer = setTimeout(() => document.querySelectorAll("main [data-verse]").forEach((el) => io.observe(el)), 600);
+    return () => { clearTimeout(timer); io.disconnect(); };
+  }, [book, chapter]);
+  return verse;
+}
 
 export default function SidePanel({
   book,
@@ -23,6 +48,7 @@ export default function SidePanel({
     { id: "wordstudy",  label: t("panel.tabStudy") },
     { id: "crossrefs",  label: t("panel.tabRefs") },
     { id: "commentary", label: t("panel.tabCommentary") },
+    { id: "notes",      label: t("panel.tabNotes", "Notes") },
     { id: "compare",    label: t("panel.tabCompare") },
     { id: "journal",    label: t("panel.tabJournal") },
   ];
@@ -37,6 +63,7 @@ export default function SidePanel({
   }, [activeWordInfo]);
 
   const displayedWord = activeWordInfo || lastWordInfo;
+  const readingVerse = useReadingVerse(book, chapter);
 
   return (
     <aside className="flex flex-col h-full bg-white border-l border-cream-dark w-full" aria-label="Study panel">
@@ -77,7 +104,10 @@ export default function SidePanel({
           <CrossRefsTab book={book} chapter={chapter} />
         </TabPane>
         <TabPane id="panel-commentary" labelledBy="tab-commentary" visible={activeTab === "commentary"}>
-          <CommentaryTab book={book} chapter={chapter} selectedVerse={selectedVerse} />
+          <CommentaryTab book={book} chapter={chapter} selectedVerse={selectedVerse} readingVerse={readingVerse} visible={activeTab === "commentary"} />
+        </TabPane>
+        <TabPane id="panel-notes" labelledBy="tab-notes" visible={activeTab === "notes"}>
+          <NotesTab book={book} chapter={chapter} readingVerse={selectedVerse || readingVerse} visible={activeTab === "notes"} />
         </TabPane>
         <TabPane id="panel-compare" labelledBy="tab-compare" visible={activeTab === "compare"}>
           <CompareTab
@@ -116,8 +146,10 @@ function readOpen() {
   try { return new Set(JSON.parse(localStorage.getItem(OPEN_KEY) || '["the-god-who-leads","matthew-henry"]')); } catch { return new Set(["the-god-who-leads", "matthew-henry"]); }
 }
 
-export function CommentaryTab({ book, chapter, selectedVerse }) {
+export function CommentaryTab({ book, chapter, selectedVerse, readingVerse = null, visible = true }) {
   const t = useT();
+  const rootRef = useRef(null);
+  const [follow, setFollow] = useState(() => { try { return localStorage.getItem("commentaryFollow") !== "0"; } catch { return true; } });
   const available = useMemo(() => getCommentariesForBook(book), [book]);
   const [open, setOpen] = useState(readOpen);
   const [wholeChapter, setWholeChapter] = useState(false);
@@ -138,9 +170,12 @@ export function CommentaryTab({ book, chapter, selectedVerse }) {
   }
 
   const verse = wholeChapter ? null : selectedVerse;
+  // With no verse picked, the commentary keeps pace with the verse being read.
+  const following = follow && !verse ? readingVerse : null;
 
   return (
-    <div>
+    <div ref={rootRef}>
+      <FollowScroll rootRef={rootRef} verse={following} active={visible} />
       <div className="px-4 py-2 bg-cream/50 border-b border-cream-dark flex items-center justify-between gap-2">
         <p className="text-[10px] text-warm-brown-light">
           {book} {chapter}{verse ? `:${verse}` : ""} — {available.length} {t("panel.commentaries", "commentaries")}
@@ -152,11 +187,18 @@ export function CommentaryTab({ book, chapter, selectedVerse }) {
         )}
       </div>
       {!selectedVerse && (
-        <p className="px-4 pt-3 text-[10px] text-warm-brown-light/80">{t("panel.tapVerseForCommentary", "Tap a verse number to focus every commentary on that verse.")}</p>
+        <div className="px-4 pt-3 flex items-start justify-between gap-3">
+          <p className="text-[10px] text-warm-brown-light/80">{t("panel.tapVerseForCommentary", "Tap a verse number to focus every commentary on that verse.")}</p>
+          <label className="flex items-center gap-1.5 text-[10px] text-warm-brown-light shrink-0 cursor-pointer">
+            <input type="checkbox" checked={follow} className="accent-gold"
+              onChange={(e) => { setFollow(e.target.checked); try { localStorage.setItem("commentaryFollow", e.target.checked ? "1" : "0"); } catch { /* storage blocked */ } }} />
+            {t("panel.followReading", "Follow my reading")}
+          </label>
+        </div>
       )}
       <div className="divide-y divide-cream-dark">
         {available.map((c) => (
-          <CommentarySource key={c.id} meta={c} book={book} chapter={chapter} verse={verse}
+          <CommentarySource key={c.id} meta={c} book={book} chapter={chapter} verse={verse} following={following}
             isOpen={open.has(c.id)} onToggle={() => toggle(c.id)} />
         ))}
       </div>
@@ -199,7 +241,7 @@ function MoreCommentary({ book, chapter, verse }) {
   );
 }
 
-function CommentarySource({ meta, book, chapter, verse, isOpen, onToggle }) {
+function CommentarySource({ meta, book, chapter, verse, following = null, isOpen, onToggle }) {
   const t = useT();
   const [state, setState] = useState({ loading: false, data: null });
 
@@ -242,7 +284,8 @@ function CommentarySource({ meta, book, chapter, verse, isOpen, onToggle }) {
           )}
           {showIntro && <CommentaryText label={t("panel.introduction", "Introduction")} text={data.intro} kind={meta.kind} />}
           {sections.map((s) => (
-            <CommentaryText key={`${s.start}-${s.end}`} label={`${s.start === s.end ? "v." : "vv."} ${s.label}`} text={s.text} kind={meta.kind} />
+            <CommentaryText key={`${s.start}-${s.end}`} label={`${s.start === s.end ? "v." : "vv."} ${s.label}`} text={s.text} kind={meta.kind}
+              start={s.start} end={s.end} current={following != null && s.start <= following && following <= s.end} />
           ))}
         </div>
       )}
@@ -251,13 +294,13 @@ function CommentarySource({ meta, book, chapter, verse, isOpen, onToggle }) {
 }
 
 const CLAMP = 1400;
-function CommentaryText({ label, text, kind }) {
+function CommentaryText({ label, text, kind, start, end, current = false }) {
   const t = useT();
   const [expanded, setExpanded] = useState(false);
   const long = text.length > CLAMP && kind !== "crossrefs";
   const shown = long && !expanded ? text.slice(0, text.lastIndexOf(" ", CLAMP)) + "…" : text;
   return (
-    <div>
+    <div data-start={start} data-end={end} className={current ? "-ml-3 pl-[10px] border-l-2 border-gold transition-colors" : "transition-colors"}>
       <p className="text-[10px] font-semibold text-gold uppercase tracking-wider mb-1">{label}</p>
       <p className={`text-xs text-warm-brown leading-relaxed whitespace-pre-wrap ${kind === "crossrefs" ? "font-mono text-[11px]" : ""}`}>
         {linkifyRefs(shown)}
@@ -267,6 +310,89 @@ function CommentaryText({ label, text, kind }) {
           {expanded ? t("search.showLess", "Show less") : t("panel.readMore", "Read more")}
         </button>
       )}
+    </div>
+  );
+}
+
+/** Scroll the panel so the section covering `verse` sits near the top (only while the tab is showing). */
+function FollowScroll({ rootRef, verse, active }) {
+  useEffect(() => {
+    if (!active || verse == null) return;
+    const root = rootRef.current;
+    const pane = root?.closest("[role=tabpanel]");
+    if (!pane) return;
+    const target = [...root.querySelectorAll("[data-start]")].find((el) => +el.dataset.start <= verse && verse <= +el.dataset.end);
+    if (!target) return;
+    const top = target.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop - 12;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    pane.scrollTo({ top, behavior: reduce ? "auto" : "smooth" });
+  }, [rootRef, verse, active]);
+  return null;
+}
+
+/* ─── Notes Tab ─── */
+// The chapter note, then every verse and range note in order — formatted, editable
+// in place, and kept in step with the verse being read.
+function NotesTab({ book, chapter, readingVerse, visible }) {
+  const t = useT();
+  const { notes, saveNote, deleteNote, chapterNote } = useNotes(book, chapter);
+  const rootRef = useRef(null);
+  const [editing, setEditing] = useState(null); // verseNumber being edited (0 = chapter note)
+  const [draft, setDraft] = useState("");
+  const verseNotes = useMemo(() => notes.filter((n) => n.verseNumber > 0).sort((a, b) => a.verseNumber - b.verseNumber), [notes]);
+
+  const start = (n, v) => { setEditing(v); setDraft(n?.text || ""); };
+  const save = async () => {
+    const n = editing === 0 ? chapterNote : notes.find((x) => x.verseNumber === editing);
+    if (draft.trim()) await saveNote(editing, draft.trim(), n?.tags || [], n?.verseEnd || null);
+    else if (n) await deleteNote(editing);
+    setEditing(null);
+  };
+  const label = (n) => (n.verseEnd ? `vv. ${n.verseNumber}–${n.verseEnd}` : `v. ${n.verseNumber}`);
+
+  const editor = (
+    <div>
+      <textarea value={draft} onChange={(e) => setDraft(e.target.value)} autoFocus
+        className="w-full h-28 bg-cream rounded-lg px-3 py-2 text-[16px] text-warm-brown resize-y focus:outline-none focus:ring-2 focus:ring-gold/30" />
+      <p className="text-[10px] text-warm-brown-light/70 mt-1">{t("verse.noteFormatting", "**bold**, *italic*, “- ” for a list, “> ” to quote. References like John 3:16 become links.")}</p>
+      <div className="flex justify-end gap-3 mt-1.5">
+        <button type="button" onClick={() => setEditing(null)} className="text-xs text-warm-brown-light min-h-[36px]">{t("verse.cancel")}</button>
+        <button type="button" onClick={save} className="text-xs font-semibold text-gold min-h-[36px]">{t("verse.save")}</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div ref={rootRef} className="p-4 space-y-4">
+      <FollowScroll rootRef={rootRef} verse={readingVerse} active={visible && editing == null} />
+      <section className="rounded-xl border border-cream-dark bg-cream p-3">
+        <p className="text-[10px] font-semibold text-gold uppercase tracking-wider mb-1.5">{t("panel.chapterNote", "Chapter note")} · {book} {chapter}</p>
+        {editing === 0 ? editor : chapterNote ? (
+          <button type="button" onClick={() => start(chapterNote, 0)} className="block w-full text-left text-xs text-warm-brown leading-relaxed">
+            <NoteText text={chapterNote.text} />
+          </button>
+        ) : (
+          <button type="button" onClick={() => start(null, 0)} className="text-xs text-gold min-h-[36px]">+ {t("panel.addChapterNote", "Add a note on the whole chapter")}</button>
+        )}
+      </section>
+      {verseNotes.length === 0 && (
+        <p className="text-xs text-warm-brown-light">{t("panel.noVerseNotes", "No verse notes in this chapter yet. Tap a verse number, then the note button, to write one — on a single verse or a range.")}</p>
+      )}
+      {verseNotes.map((n) => {
+        const current = readingVerse != null && n.verseNumber <= readingVerse && readingVerse <= (n.verseEnd || n.verseNumber);
+        return (
+          <section key={n.id} data-start={n.verseNumber} data-end={n.verseEnd || n.verseNumber}
+            className={current ? "-ml-3 pl-[10px] border-l-2 border-gold" : ""}>
+            <div className="flex items-baseline justify-between gap-2 mb-1">
+              <p className="text-[10px] font-semibold text-gold uppercase tracking-wider">{label(n)}</p>
+              {editing !== n.verseNumber && (
+                <button type="button" onClick={() => start(n, n.verseNumber)} className="text-[10px] text-warm-brown-light hover:text-warm-brown">{t("panel.edit", "Edit")}</button>
+              )}
+            </div>
+            {editing === n.verseNumber ? editor : <NoteText text={n.text} className="text-xs text-warm-brown leading-relaxed" />}
+          </section>
+        );
+      })}
     </div>
   );
 }

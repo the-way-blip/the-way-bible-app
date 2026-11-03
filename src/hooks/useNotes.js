@@ -4,6 +4,10 @@ import { syncPush, syncDelete } from "../services/supabaseSync";
 import { useAuth } from "../stores/AuthContext";
 import { logEvent } from "../services/ga";
 
+// A note sits on one verse, on a range (verseNumber..verseEnd), or on the whole
+// chapter (verseNumber 0). Its id is always keyed by the first verse.
+const CHANGED = "theway:notes-changed";
+
 export default function useNotes(book, chapter) {
   const [notes, setNotes] = useState([]);
   const { user } = useAuth();
@@ -19,10 +23,14 @@ export default function useNotes(book, chapter) {
   useEffect(() => {
     const reload = () => { load().catch?.(() => {}); };
     window.addEventListener("theway:synced", reload);
-    return () => window.removeEventListener("theway:synced", reload);
+    window.addEventListener(CHANGED, reload); // another view saved a note
+    return () => {
+      window.removeEventListener("theway:synced", reload);
+      window.removeEventListener(CHANGED, reload);
+    };
   }, [load]);
 
-  const saveNote = async (verseNumber, text, tags = []) => {
+  const saveNote = async (verseNumber, text, tags = [], verseEnd = null) => {
     logEvent("note_save", { book, chapter });
     const id = `${book}-${chapter}-${verseNumber}`;
     const existing = await dbGet("notes", id);
@@ -31,6 +39,7 @@ export default function useNotes(book, chapter) {
       book,
       chapter,
       verseNumber,
+      verseEnd: verseEnd && verseEnd > verseNumber ? verseEnd : undefined,
       text,
       tags,
       createdAt: existing?.createdAt || Date.now(),
@@ -39,6 +48,7 @@ export default function useNotes(book, chapter) {
     await dbPut("notes", record);
     syncPush("notes", record, user?.id);
     await load();
+    window.dispatchEvent(new Event(CHANGED));
   };
 
   const deleteNote = async (verseNumber) => {
@@ -46,11 +56,15 @@ export default function useNotes(book, chapter) {
     await dbDelete("notes", id);
     syncDelete("notes", id, user?.id);
     await load();
+    window.dispatchEvent(new Event(CHANGED));
   };
 
-  const getNote = (verseNumber) => {
-    return notes.find((n) => n.verseNumber === verseNumber);
-  };
+  /** The note on this verse: one that starts here, else a range that covers it. */
+  const getNote = (verseNumber) =>
+    notes.find((n) => n.verseNumber === verseNumber)
+    || notes.find((n) => n.verseNumber > 0 && n.verseEnd && n.verseNumber < verseNumber && verseNumber <= n.verseEnd);
 
-  return { notes, saveNote, deleteNote, getNote };
+  const chapterNote = notes.find((n) => n.verseNumber === 0) || null;
+
+  return { notes, saveNote, deleteNote, getNote, chapterNote };
 }

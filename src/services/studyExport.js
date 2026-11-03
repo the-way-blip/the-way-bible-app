@@ -32,15 +32,25 @@ export async function buildStudyDoc(book = null) {
   const key = (b, c, v) => `${b}|${c}|${v}`;
   const at = (b, c, v) => {
     const k = key(b, c, v);
-    if (!verses.has(k)) verses.set(k, { book: b, chapter: Number(c), verse: Number(v), notes: [], color: null });
+    if (!verses.has(k)) verses.set(k, { book: b, chapter: Number(c), verse: Number(v), end: null, notes: [], color: null });
     return verses.get(k);
   };
-  for (const n of notes) if (n.text?.trim() && (!book || n.book === book)) at(n.book, n.chapter, n.verseNumber ?? n.verse).notes.push(n);
+  for (const n of notes) {
+    if (!n.text?.trim() || (book && n.book !== book)) continue;
+    const v = at(n.book, n.chapter, n.verseNumber ?? n.verse);
+    v.notes.push(n);
+    if (n.verseEnd > v.verse) v.end = Math.max(v.end || 0, n.verseEnd);   // a note on a range of verses
+  }
   for (const h of highlights) if (!book || h.book === book) at(h.book, h.chapter, h.verseNumber ?? h.verse).color = h.color;
 
   const list = [...verses.values()].sort((a, b) =>
     (ORDER.get(a.book) ?? 99) - (ORDER.get(b.book) ?? 99) || a.chapter - b.chapter || a.verse - b.verse);
-  for (const v of list) v.text = (await kjvChapter(v.book, v.chapter))?.[v.verse - 1] || "";
+  for (const v of list) {
+    const ch = await kjvChapter(v.book, v.chapter);
+    // Verse 0 is a note on the whole chapter; a range shows every verse it covers.
+    v.text = v.verse === 0 ? "" : (ch?.slice(v.verse - 1, v.end || v.verse) || []).join(" ");
+    v.ref = v.verse === 0 ? `${v.book} ${v.chapter} (chapter note)` : `${v.book} ${v.chapter}:${v.verse}${v.end ? `–${v.end}` : ""}`;
+  }
 
   const title = book ? `${book}: my study notes` : "My study notes";
   const date = new Date().toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
@@ -51,8 +61,8 @@ export async function buildStudyDoc(book = null) {
     if (v.book !== lastBook) { html += `<h2>${esc(v.book)}</h2>`; text += `\n\n${v.book.toUpperCase()}\n`; lastBook = v.book; lastChapter = null; }
     if (v.chapter !== lastChapter) { html += `<h3>Chapter ${v.chapter}</h3>`; text += `\nChapter ${v.chapter}\n`; lastChapter = v.chapter; }
     const bg = v.color ? ` style="background:${COLORS[v.color] || "#fde68a"}"` : "";
-    html += `<div class="v"><p class="t"><span class="r">${esc(v.book)} ${v.chapter}:${v.verse}</span> <mark${bg}>${esc(v.text)}</mark></p>`;
-    text += `\n${v.book} ${v.chapter}:${v.verse}  ${v.text}\n`;
+    html += `<div class="v"><p class="t"><span class="r">${esc(v.ref)}</span> <mark${bg}>${esc(v.text)}</mark></p>`;
+    text += `\n${v.ref}  ${v.text}\n`;
     for (const n of v.notes) {
       const tags = n.tags?.length ? ` <span class="tags">${n.tags.map((t) => `#${esc(t)}`).join(" ")}</span>` : "";
       html += `<p class="n">${esc(n.text).replace(/\n/g, "<br>")}${tags}</p>`;

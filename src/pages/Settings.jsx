@@ -13,6 +13,8 @@ import { Capacitor } from "@capacitor/core";
 import { booksWithStudy, buildStudyDoc, printDoc, saveFile } from "../services/studyExport";
 import OfflineBooks from "../components/OfflineBooks";
 import { getReminder, setReminder, remindersSupported } from "../services/reminders";
+import { HIGHLIGHT_COLORS, saveHighlightLabels } from "../utils/highlights";
+import useHighlightLabels from "../hooks/useHighlightLabels";
 
 const SIZE_OPTIONS = [14, 16, 18, 20, 22, 24];
 
@@ -265,6 +267,12 @@ export default function Settings() {
           </div>
         </button>
       </SettingsSection>
+
+      <div id="highlight-names" className="scroll-mt-20">
+        <SettingsSection title={t("settings.highlightNames", "Highlight colours")}>
+          <HighlightNames />
+        </SettingsSection>
+      </div>
 
       {/* Data Management */}
       {remindersSupported() && (
@@ -837,6 +845,48 @@ function StudyNotesExport() {
 }
 
 /** iOS app: a daily notification with the verse of the day, or a nudge back to the chapter you were reading. */
+/** Name what each highlight colour means ("Promises", "Commands"); names show in the reader and in search. */
+function HighlightNames() {
+  const { user } = useAuth();
+  const saved = useHighlightLabels();
+  const [draft, setDraft] = useState(saved);
+  const [status, setStatus] = useState(null);
+  useEffect(() => { setDraft(saved); }, [saved]);
+  useEffect(() => {
+    if (window.location.hash === "#highlight-names") document.getElementById("highlight-names")?.scrollIntoView({ block: "start" });
+  }, []);
+  const save = async () => {
+    await saveHighlightLabels(draft, user);
+    logEvent("highlight_names_saved", { method: String(Object.values(draft).filter(Boolean).length) });
+    setStatus("Saved");
+    setTimeout(() => setStatus(null), 2000);
+  };
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-warm-brown-light">Give each colour a meaning, like “Promises” or “Commands”. The names show when you highlight, and you can search for every verse you marked in a colour.</p>
+      {HIGHLIGHT_COLORS.map((c) => (
+        <label key={c.name} className="flex items-center gap-3">
+          <span className={`w-7 h-7 rounded-full shrink-0 ${c.fill}`} aria-hidden="true" />
+          <span className="sr-only">Name for {c.name}</span>
+          <input
+            type="text"
+            value={draft[c.name] || ""}
+            maxLength={24}
+            placeholder={c.name[0].toUpperCase() + c.name.slice(1)}
+            onChange={(e) => setDraft((d) => ({ ...d, [c.name]: e.target.value }))}
+            className="flex-1 bg-cream border border-cream-dark rounded-lg px-3 py-2 text-[16px] text-warm-brown placeholder-warm-brown-light/50 focus:outline-none focus:border-gold"
+          />
+        </label>
+      ))}
+      <div className="flex items-center gap-3 pt-1">
+        <button type="button" onClick={save} className="px-4 py-2 rounded-full bg-gold text-white text-xs font-semibold">Save names</button>
+        {status && <span role="status" className="text-xs text-warm-brown-light">{status}</span>}
+        <Link to="/search?scope=highlights" className="ml-auto text-xs text-gold">Find highlights →</Link>
+      </div>
+    </div>
+  );
+}
+
 function DailyReminder() {
   const [r, setR] = useState(getReminder);
   const [denied, setDenied] = useState(false);

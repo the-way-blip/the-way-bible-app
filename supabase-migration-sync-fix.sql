@@ -38,3 +38,7 @@ end $$;
 
 -- PostgREST caches the schema; tell it to reload so the new columns are usable immediately
 notify pgrst, 'reload schema';
+
+-- 2026-11-02: highlight styles and note ranges
+alter table public.highlights     add column if not exists style text;
+alter table public.notes          add column if not exists verse_end integer;

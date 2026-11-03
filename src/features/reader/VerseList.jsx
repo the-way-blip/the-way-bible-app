@@ -1,13 +1,7 @@
 import { Fragment, useMemo, useRef, useState } from "react";
 import { useApp } from "../../stores/AppContext";
 import { detectMentions, detectMentionsInWords } from "../../services/biblePlaces";
-
-const HIGHLIGHT_COLORS = {
-  yellow: "bg-highlight-yellow",
-  green: "bg-highlight-green",
-  blue: "bg-highlight-blue",
-  pink: "bg-highlight-pink",
-};
+import { highlightLook } from "../../utils/highlights";
 
 /**
  * Build a "Book Chapter:V1" or "Book Chapter:V1-Vn" reference string.
@@ -119,7 +113,7 @@ export default function VerseList({
         const highlight = getHighlight(v.verse);
         const note = getNote(v.verse);
         const isSelected = selectedVerse === v.verse;
-        const hlClass = highlight ? HIGHLIGHT_COLORS[highlight.color] : "";
+        const hl = highlightLook(highlight);
         const wordsForVerse = chapterWords?.[v.verse];
         const showBreak = shouldBreakParagraph(v.verse, verses.length);
         const isParaStart = v.verse === 1 || showBreak;
@@ -134,9 +128,10 @@ export default function VerseList({
           >
             {showBreak && <span className="block h-3" aria-hidden="true" />}
             <span
-              className={`transition-colors rounded-sm ${hlClass} ${
+              className={`transition-colors rounded-sm ${hl.className} ${
                 isSelected ? "ring-2 ring-gold/50 rounded" : ""
               }`}
+              style={hl.style}
             >
               {/* Verse number — tappable for actions */}
               {showVerseNumbers && (
@@ -164,7 +159,7 @@ export default function VerseList({
                 <ReadText text={v.text} places={places} onPlaceTap={onPlaceTap} />
               )}
               {" "}
-              {note && (
+              {note && note.verseNumber === v.verse && (
                 <svg
                   aria-hidden="true"
                   xmlns="http://www.w3.org/2000/svg"

@@ -4,7 +4,11 @@ export default async function handler(req, res) {
   if (!checkOrigin(req)) return res.status(403).json({ error: "Forbidden" });
   if (rateLimit(req, { windowMs: 60_000, max: 60 })) return res.status(429).json({ error: "Too many requests" });
 
-  const path = req.query.path?.join("/") || "";
+  // Vercel doesn't hand plain (non-Next) functions the catch-all as an array in
+  // req.query.path, so read the word from the URL itself.
+  const word = decodeURIComponent((req.url || "").split("?")[0].replace(/^\/api\/websters\/?/, ""));
+  const path = encodeURIComponent(word.replace(/[^A-Za-z' -]/g, "").trim().toLowerCase());
+  if (!path) return res.status(400).json({ error: "Missing word" });
   const url = `https://webstersdictionary1828.com/Dictionary/${path}`;
 
   try {

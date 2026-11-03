@@ -1191,6 +1191,7 @@ export const CHURCHES_MI = [
  {
   "slug": "metro-baptist-church-belleville",
   "name": "Metro Baptist Church",
+  "website": "http://metrobaptistbelleville.com",
   "city": "Belleville",
   "state": "MI",
   "stateName": "Michigan",
@@ -1229,7 +1230,7 @@ export const CHURCHES_MI = [
   "social": {
    "facebook": "https://www.facebook.com/metrobaptistbelleville/"
   },
-  "source": "the KJV Churches directory listing",
+  "source": "the KJV Churches directory listing and the church's website",
   "lat": 42.22118,
   "lng": -83.50185
  },
@@ -6176,7 +6177,6 @@ export const CHURCHES_MI = [
  {
   "slug": "first-baptist-church-goodells",
   "name": "First Baptist Church",
-  "website": "https://www.fbcgoodells.org",
   "city": "Goodells",
   "state": "MI",
   "stateName": "Michigan",
@@ -6216,7 +6216,7 @@ export const CHURCHES_MI = [
   "social": {
    "facebook": "https://www.facebook.com/FirstBaptistChurchGoodells/"
   },
-  "source": "the KJV Churches directory listing and the church's website",
+  "source": "the KJV Churches directory listing",
   "lat": 42.98816,
   "lng": -82.6655
  },
@@ -7157,6 +7157,30 @@ export const CHURCHES_MI = [
   "lng": -87.40664
  },
  {
+  "slug": "hadley-community-church-hadley",
+  "name": "Hadley Community Church",
+  "website": "https://hadleycommunitychurch.org",
+  "city": "Hadley",
+  "state": "MI",
+  "stateName": "Michigan",
+  "address": {
+   "street": "3638 S Hadley Rd",
+   "city": "Hadley",
+   "state": "MI",
+   "zip": "48455"
+  },
+  "phone": "(810) 797-4540",
+  "pastor": "Pastor Wally Rose",
+  "worship": "Traditional",
+  "about": "Hadley Community Church is a church in Hadley, Michigan. Pastor Wally Rose is the pastor. The church describes its worship style as traditional.",
+  "services": [],
+  "timesNote": "Listed service times: Please see church website or social media for service times and details.",
+  "social": {
+   "facebook": "https://www.facebook.com/HadleyCommunityChurch/"
+  },
+  "source": "the KJV Churches directory listing and the church's website"
+ },
+ {
   "slug": "the-baptist-church-hadley",
   "name": "The Baptist Church",
   "website": "https://www.tbchadley.org",
@@ -7815,6 +7839,7 @@ export const CHURCHES_MI = [
  {
   "slug": "ventura-baptist-church-holland",
   "name": "Ventura Baptist Church",
+  "website": "https://www.venturabaptistchurch.com",
   "city": "Holland",
   "state": "MI",
   "stateName": "Michigan",
@@ -7848,7 +7873,7 @@ export const CHURCHES_MI = [
   "social": {
    "facebook": "https://www.facebook.com/venturabc/"
   },
-  "source": "the KJV Churches directory listing",
+  "source": "the KJV Churches directory listing and the church's website",
   "lat": 42.8395,
   "lng": -86.18363
  },
@@ -9066,6 +9091,7 @@ export const CHURCHES_MI = [
  {
   "slug": "evergreen-bible-baptist-church-kalkaska",
   "name": "Evergreen Bible Baptist Church",
+  "website": "https://www.evergreenbbc.com",
   "city": "Kalkaska",
   "state": "MI",
   "stateName": "Michigan",
@@ -9104,7 +9130,7 @@ export const CHURCHES_MI = [
   "social": {
    "facebook": "https://www.facebook.com/evergreenbiblebaptist.church"
   },
-  "source": "the KJV Churches directory listing",
+  "source": "the KJV Churches directory listing and the church's website",
   "lat": 44.68518,
   "lng": -85.13486
  },
@@ -9283,6 +9309,26 @@ export const CHURCHES_MI = [
   "source": "the KJV Churches directory listing and the church's website",
   "lat": 42.9648,
   "lng": -82.53222
+ },
+ {
+  "slug": "grace-baptist-church-kingsford",
+  "name": "Grace Baptist Church",
+  "website": "https://gracekingsford.org",
+  "city": "Kingsford",
+  "state": "MI",
+  "stateName": "Michigan",
+  "address": {
+   "street": "1295 Pyle Dr",
+   "city": "Kingsford",
+   "state": "MI",
+   "zip": "49802"
+  },
+  "phone": "(906) 771-5851",
+  "worship": "Traditional",
+  "about": "Grace Baptist Church is a church in Kingsford, Michigan. The church describes its worship style as traditional.",
+  "services": [],
+  "timesNote": "Listed service times: Please see church website or social media for service times and details.",
+  "source": "the KJV Churches directory listing and the church's website"
  },
  {
   "slug": "fundamental-baptist-church-kinross",
@@ -9688,7 +9734,6 @@ export const CHURCHES_MI = [
  {
   "slug": "walker-bible-baptist-church-lansing",
   "name": "Walker Bible Baptist Church",
-  "website": "https://wbbcmichigan.com",
   "city": "Lansing",
   "state": "MI",
   "stateName": "Michigan",
@@ -9728,7 +9773,7 @@ export const CHURCHES_MI = [
   "social": {
    "facebook": "https://www.facebook.com/profile.php?id=100067941152845"
   },
-  "source": "the KJV Churches directory listing and the church's website",
+  "source": "the KJV Churches directory listing",
   "lat": 42.76756,
   "lng": -84.54792
  },
@@ -10813,6 +10858,7 @@ export const CHURCHES_MI = [
  {
   "slug": "victory-baptist-church-marysville",
   "name": "Victory Baptist Church",
+  "website": "https://victoryifb.com/",
   "city": "Marysville",
   "state": "MI",
   "stateName": "Michigan",
@@ -10849,7 +10895,7 @@ export const CHURCHES_MI = [
     "time": "6:30 pm"
    }
   ],
-  "source": "the KJV Churches directory listing",
+  "source": "the KJV Churches directory listing and the church's website",
   "lat": 42.90669,
   "lng": -82.48006
  },
@@ -17412,6 +17458,7 @@ export const CHURCHES_MI = [
  {
   "slug": "first-baptist-church-wixom",
   "name": "First Baptist Church",
+  "website": "https://fbcwixom.org/",
   "city": "Wixom",
   "state": "MI",
   "stateName": "Michigan",
@@ -17451,7 +17498,7 @@ export const CHURCHES_MI = [
   "social": {
    "facebook": "https://www.facebook.com/FirstBaptistWixom/"
   },
-  "source": "the KJV Churches directory listing",
+  "source": "the KJV Churches directory listing and the church's website",
   "lat": 42.53082,
   "lng": -83.53566
  },

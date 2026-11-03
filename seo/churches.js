@@ -91,6 +91,9 @@ const HAND = [
     nameLong: "TheWay — Big Rapids",
     website: "https://bigrapids.church",
     city: "Big Rapids", state: "MI", stateName: "Michigan", county: "Mecosta County",
+    // No meeting place yet, so this is the center of Big Rapids. It lets the
+    // directory find the churches nearby instead of falling back to A-Z.
+    lat: 43.6981, lng: -85.4837,
     phone: "(231) 279-1900",
     email: "dillon@bigrapids.church",
     affiliation: "Independent, self-governed church",

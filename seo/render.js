@@ -291,8 +291,16 @@ footer.bottom a{color:var(--brown-light)}
 @media(max-width:560px){h1{font-size:28px}.scripture{font-size:20px;padding:20px}nav.main .hide{display:none}}
 `;
 
+/** Search results show about 155-160 characters; cut longer descriptions at a word. */
+function clampDesc(d, max = 160) {
+  d = String(d || "").replace(/\s+/g, " ").trim();
+  if (d.length <= max) return d;
+  return d.slice(0, max - 1).replace(/[\s,;:–—-]+\S*$/, "").replace(/[\s,;:–—.-]+$/, "") + "…";
+}
+
 function shell({ title, description, canonical, h, jsonld, ogImage, noindex, pageType = "bible-other", ref = "", hideSearch = false, extraCss = "", noInvite = false }) {
   const url = SITE + canonical;
+  description = clampDesc(description);
   // GA4: same property as the app. content_group / page_type / bible_ref let reports
   // split verse vs chapter vs topic traffic; seo_cta_click measures hand-off into the app.
   const ga = `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
@@ -338,7 +346,7 @@ ${hideSearch ? "" : `<form class="search" action="/bible/search" role="search"><
 ${h}
 </div></main>
 <footer class="bottom"><div class="wrap">
-<span class="apps"><strong>More from TheWay</strong> · <a href="https://scroll.thewaybible.app">Scroll</a> — a verse a day, in a feed · <a href="https://thewaybible.app/kids/">TheWay Kids</a> — the Gospels, for children learning to read</span>
+<span class="apps"><strong>More from TheWay</strong> · <a href="https://scroll.thewaybible.app">Scroll</a> — a verse a day, in a feed · <a href="https://thewaybible.app/kids/">TheWay Kids</a> — the Gospels, for children learning to read · <a href="https://thewaylibrary.com">TheWay Library</a> · <a href="https://thewayhelp.com">TheWay Help</a> · <a href="https://bigrapids.church">TheWay church in Big Rapids</a></span>
 <span>© ${new Date().getFullYear()} TheWay Bible App · Scripture text: ${VERSION_LONG} (public domain)</span>
 <span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="/churches">Find a church</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:dillon@bigrapids.church">Contact</a></span>
 </div></footer>
@@ -898,7 +906,7 @@ function churchesIndex() {
 <p class="count" id="count" aria-live="polite"></p>
 </div>
 ${groups.map((g) => `<section class="st" id="${g.state.toLowerCase()}"><h2>${esc(g.stateName)} — ${g.churches.length}</h2><div class="dir">${g.churches.map((c) => churchCard(c)).join("")}</div></section>`).join("")}
-${(() => { const cs = CITY_LIST.filter((x) => x.list.length > 1); return cs.length ? `<h2>Browse by city</h2><p class="citylinks">${cs.map((x) => `<a href="/churches/in/${x.key}">${esc(x.city)}, ${esc(x.state)} (${x.list.length})</a>`).join(" · ")}</p>` : ""; })()}
+${(() => { const cs = CITY_LIST.filter(cityIndexable); return cs.length ? `<h2>Browse by city</h2><p class="citylinks">${cs.map((x) => `<a href="/churches/in/${x.key}">${esc(x.city)}, ${esc(x.state)} (${x.list.length})</a>`).join(" · ")}</p>` : ""; })()}
 <p class="note" id="none" hidden>No churches match that search. Try a city name, or <a href="#list-your-church">tell us about a church to add</a>.</p>
 <h2 id="list-your-church">List your church</h2>
 <div class="info"><p id="sub-intro">Listing is free, and your page links straight to your website. Send us the basics and we'll review and publish it, usually within a few days.</p>
@@ -933,6 +941,10 @@ const cityKey = (c) => `${c.city.toLowerCase().replace(/[^a-z0-9]+/g, "-").repla
 const cityUrl = (c) => `/churches/in/${cityKey(c)}`;
 const CITY_MAP = new Map();
 for (const c of DIRECTORY) { const k = cityKey(c); if (!CITY_MAP.has(k)) CITY_MAP.set(k, []); CITY_MAP.get(k).push(c); }
+/* TheWay's home city. It lists one church today, but it is the page people in
+ * Big Rapids reach, so it stays indexable while other one-church cities don't. */
+const HOME_CITY = "big-rapids-mi";
+const cityIndexable = (g) => g.list.length > 1 || g.key === HOME_CITY;
 const CITY_LIST = [...CITY_MAP.entries()].map(([key, list]) => ({ key, city: list[0].city, state: list[0].state, stateName: list[0].stateName, list: list.slice().sort((a, b) => a.name.localeCompare(b.name)) }))
   .sort((a, b) => a.city.localeCompare(b.city));
 function cityPage(key) {
@@ -953,7 +965,7 @@ ${near.length ? `<h2>Churches near ${esc(g.city)}</h2><div class="dir">${near.ma
       mainEntity: { "@type": "ItemList", itemListElement: g.list.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, url: SITE + churchUrl(c) })) } },
     breadcrumbLd([["Home", "/"], ["Churches", "/churches"], [`${g.city}, ${g.state}`, `/churches/in/${key}`]]),
   ]);
-  return ok(shell({ title, description: `${n} ${n === 1 ? "church" : "churches"} in ${g.city}, ${g.stateName}: ${g.list.slice(0, 3).map((c) => c.name).join(", ")}${n > 3 ? " and more" : ""}. Service times, addresses, phone numbers and websites. Free, no ads.`, canonical: `/churches/in/${key}`, h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true, noindex: n < 2 }));
+  return ok(shell({ title, description: `${n} ${n === 1 ? "church" : "churches"} in ${g.city}, ${g.stateName}: ${g.list.slice(0, 3).map((c) => c.name).join(", ")}${n > 3 ? " and more" : ""}. Service times, addresses, phone numbers and websites. Free, no ads.`, canonical: `/churches/in/${key}`, h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true, noindex: !cityIndexable(g) }));
 }
 
 
@@ -1036,12 +1048,12 @@ ${bar.length ? `<nav class="cbar" aria-label="Contact ${attr(c.name)}">${bar.joi
   const jsonld = webPageLd([
     { "@type": "WebPage", name: `${c.name} – ${place}`, url: SITE + churchUrl(c), isPartOf: { "@id": SITE + "/#website" }, about: { "@id": church["@id"] } },
     church,
-    breadcrumbLd([["Home", "/"], ["Churches", "/churches"], [c.name, churchUrl(c)]]),
+    breadcrumbLd([["Home", "/"], ["Churches", "/churches"], [`${c.city}, ${c.state}`, cityUrl(c)], [c.name, churchUrl(c)]]),
   ]);
   const sun = c.services.filter((s) => s.day === "Sunday").map((s) => `${s.label} ${s.time}`).join(", ");
   const timesBit = sun ? `Service times: ${sun}. ` : c.timesNote ? `Service times: ${c.timesNote} ` : "";
   const description = c.planting
-    ? `${c.name} is a new church forming in ${place}. ${c.tagline} Contact, social links, and how to join the interest list.`
+    ? `${c.name} is a new church forming in ${place}. Contact, social links, and how to join the interest list.`
     : `${c.name} in ${place}${c.address ? ` (${c.address.street})` : ""}. ${timesBit}${c.pastor ? c.pastor + ". " : ""}Address, phone, directions, and ${c.website ? "website" : "sermons"}.`;
   return ok(shell({ title: c.planting ? `${c.name} – A New Church in ${c.city}, ${c.state} | ${SITE_NAME}` : `${title} – ${c.city}, ${c.state} | Service Times, Address & Website`, description: description.length > 300 ? description.slice(0, 297).replace(/\s+\S*$/, "") + "..." : description, canonical: churchUrl(c), h, jsonld, pageType: "church", ref: c.slug, extraCss: CHURCH_CSS, noInvite: true }));
 }
@@ -1162,7 +1174,10 @@ ${gaSearch}${promo()}`;
 }
 
 /* ------------------------------------------------------------------ sitemaps */
-const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
+/* Last date the server-rendered pages changed in a way search engines should
+ * re-read (templates, titles, descriptions, listings). Bump it when they do. */
+const LASTMOD = "2026-11-03";
+const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc><lastmod>${LASTMOD}</lastmod>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
 /* ------------------------------------------------------------------ stats */
 /**
@@ -1542,14 +1557,14 @@ ${promo()}`;
 function sitemapIndex() {
   const maps = ["/sitemaps/pages.xml", "/sitemaps/strongs-hebrew.xml", "/sitemaps/strongs-greek.xml",
     ...books().map((b) => `/sitemaps/verses-${b.slug}.xml`)];
-  return xml(`<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${maps.map((m) => `<sitemap><loc>${SITE}${m}</loc></sitemap>`).join("\n")}\n</sitemapindex>`);
+  return xml(`<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${maps.map((m) => `<sitemap><loc>${SITE}${m}</loc><lastmod>${LASTMOD}</lastmod></sitemap>`).join("\n")}\n</sitemapindex>`);
 }
 function sitemapFile(name) {
   if (name === "pages") {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/kids/", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
     urls.push(["/churches", "0.8"], ["/churches/network", "0.5"]);
-    for (const g of CITY_LIST) if (g.list.length > 1) urls.push([`/churches/in/${g.key}`, "0.7"]);
+    for (const g of CITY_LIST) if (cityIndexable(g)) urls.push([`/churches/in/${g.key}`, "0.7"]);
     for (const c of DIRECTORY) urls.push([churchUrl(c), "0.7"]);
     urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"], ["/bible-statistics", "0.9"]);
     for (const w of WORDS) urls.push([`/bible-words/${w.word.replace(/ /g, "-")}`, "0.7"]);

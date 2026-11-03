@@ -11,7 +11,11 @@ export function appPageHtml(template, { title, description, path, content = '', 
   }
   html = html.replace(/<link rel="canonical"[^>]*>/, `<link rel="canonical" href="${escape(url)}" />`);
   if (noindex) html = html.replace('</head>', '<meta name="robots" content="noindex, follow" /></head>');
-  return html.replace('<div id="root"></div>', `<div id="root">${content}</div>`);
+  // The shell's root holds crawlable homepage links (ending in a marker comment);
+  // a page with its own content replaces them.
+  if (!content) return html;
+  const root = /<div id="root">(?:[\s\S]*?<!--\/root-fallback-->)?<\/div>/;
+  return html.replace(root, () => `<div id="root">${content}</div>`);
 }
 
 export function lexicalMetadata(id, entry, fallback = {}) {

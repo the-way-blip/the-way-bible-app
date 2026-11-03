@@ -150,6 +150,17 @@ export function lookupReference(ref) {
   return out;
 }
 
+// KJV text of one verse from the loaded index (call after loadIndex()); null if absent
+let verseMap = null;
+export function getVerseText(book, chapter, verse) {
+  if (!index) return null;
+  if (!verseMap) {
+    verseMap = new Map();
+    for (const e of index) verseMap.set(`${toReaderBook(e.b)}|${e.c}|${e.v}`, e.t);
+  }
+  return verseMap.get(`${toReaderBook(book)}|${chapter}|${verse}`) ?? null;
+}
+
 /* ─────────────────────────── Vocabulary helpers ─────────────────────────── */
 
 const QUESTION_WORDS = /\b(what|how|why|when|where|who|does|do|did|is|are|can|should|say|says|said|about|bible|scripture|scriptures|verse|verses|passage|passages)\b/;

@@ -30,7 +30,6 @@ import { CHURCH, studyFor } from "./studies.js";
 import { inviteHtml, inviteJs, INVITE_CSS } from "./invite.js";
 import { KJV_FACTS, KJV_SECTIONS, KJV_FAQ } from "./kjv-story.js";
 import { WORDS } from "./words-archaic.js";
-import { CHURCHES as DIRECTORY, CHURCH_BY_SLUG, churchesByState } from "./churches.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -342,7 +341,7 @@ ${fb}
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">TheWay Bible</a>
 ${hideSearch ? "" : `<form class="search" action="/bible/search" role="search"><input type="search" name="q" placeholder="Search verse, topic, or word" aria-label="Search the Bible" enterkeyhint="search" autocapitalize="none" autocorrect="off"><button type="submit" aria-label="Search">⌕</button></form>`}
-<nav class="main"><a href="/bible">Read</a><a href="/verses-about">Topics</a><a href="/verse-of-the-day" class="hide">Verse of the day</a><a href="https://churchesinmichigan.com/" class="hide">Churches</a></nav>
+<nav class="main"><a href="/bible">Read</a><a href="/verses-about">Topics</a><a href="/verse-of-the-day" class="hide">Verse of the day</a><a href="https://churchesinmichigan.com" class="hide">Churches</a></nav>
 </div></header>
 <div class="appbar"><div class="wrap"><div class="t"><b>Free on iPhone</b><span>Study, memorize, journal, and pray.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the app</a></div></div>
 <main><div class="wrap">
@@ -351,7 +350,7 @@ ${h}
 <footer class="bottom"><div class="wrap">
 <span class="apps"><strong>More from TheWay</strong> · <a href="https://scroll.thewaybible.app">Scroll</a> — a verse a day, in a feed · <a href="https://thewaybible.app/kids/">TheWay Kids</a> — the Gospels, for children learning to read · <a href="https://thewaylibrary.com">TheWay Library</a> · <a href="https://thewayhelp.com">TheWay Help</a> · <a href="https://bigrapids.church">TheWay church in Big Rapids</a></span>
 <span>© ${new Date().getFullYear()} TheWay Bible App · Scripture text: ${VERSION_LONG} (public domain)</span>
-<span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="https://churchesinmichigan.com/">Find a church</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:dillon@bigrapids.church">Contact</a></span>
+<span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="https://churchesinmichigan.com">Find a church</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:dillon@bigrapids.church">Contact</a></span>
 </div></footer>
 ${noindex || noInvite ? "" : inviteHtml(appHref())}
 ${noindex || noInvite ? "" : `<script>${inviteJs(pageType)}</script>`}
@@ -825,245 +824,6 @@ ${promo(r.book, r.chapter, r.from)}`;
     "public, max-age=0, s-maxage=3600, stale-while-revalidate=300");
 }
 
-
-/* ------------------------------------------------------------------ churches */
-const churchUrl = (c) => `/churches/${c.slug}`;
-const churchTitle = (c) => c.nameLong || c.name;
-const addressLine = (a) => [a.street, `${a.city}, ${a.state}${a.zip ? " " + a.zip : ""}`].filter(Boolean).join(", ");
-const mapsHref = (c) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${c.name}, ${addressLine(c.address)}`)}`;
-const telHref = (p) => `tel:+1${p.replace(/\D/g, "")}`;
-const hostOf = (u) => u.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
-/** Straight-line miles between two churches (null when either has no coordinates). */
-const milesBetween = (a, b) => {
-  if (a.lat == null || b.lat == null) return null;
-  const r = Math.PI / 180, dLa = (b.lat - a.lat) * r, dLo = (b.lng - a.lng) * r;
-  const x = Math.sin(dLa / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLo / 2) ** 2;
-  return 2 * 3958.8 * Math.asin(Math.sqrt(x));
-};
-/** The one outbound link a church page leads with: its own site, else its sermon page. */
-const mainLink = (c) => c.website ? { href: c.website, label: `Visit ${c.name}'s website`, short: "Website", cta: "church-website" }
-  : c.sermons ? { href: c.sermons, label: "Listen to sermons", short: "Sermons", cta: "church-sermons" } : null;
-/** One scannable line for list cards: "Sun 9:45 am · 11:00 am · 6:00 pm — Wed 7:00 pm". */
-const glance = (c) => {
-  if (!c.services.length) return c.planting ? "Gathering now — join the interest list" : "";
-  const sun = [...new Set(c.services.filter((x) => x.day === "Sunday").map((x) => x.time))];
-  const wed = [...new Set(c.services.filter((x) => x.day && x.day !== "Sunday").map((x) => `${x.day.slice(0, 3)} ${x.time}`))];
-  return [sun.length ? `Sun ${sun.join(" · ")}` : "", ...wed].filter(Boolean).join(" — ");
-};
-const churchCard = (c, mi) => `<div class="card row" data-s="${attr([c.name, c.city, c.stateName, c.state, c.county || "", c.pastor || "", c.affiliation || "", c.address ? c.address.zip : ""].join(" ").toLowerCase())}" data-kjv="${c.kjv ? 1 : 0}"${c.lat != null ? ` data-lat="${c.lat}" data-lng="${c.lng}"` : ""}><a class="main" href="${churchUrl(c)}"><div class="n">${esc(c.name)}</div><div class="m"><b>${esc(c.city)}, ${esc(c.state)}</b>${c.county ? ` · ${esc(c.county)}` : ""}${c.kjv ? ` · <span class="kjv">King James Bible</span>` : ""}<span class="mi">${mi != null ? ` · ${Math.round(mi)} mi away` : ""}</span></div>${glance(c) ? `<div class="g">${esc(glance(c))}</div>` : ""}</a>${c.phone ? `<a class="call" href="${telHref(c.phone)}" aria-label="Call ${attr(c.name)}" data-cta="church-call-list">Call</a>` : ""}</div>`;
-
-const CHURCH_CSS = `
-[hidden]{display:none!important}
-.dir{display:grid;gap:10px}
-.subform{display:grid;gap:12px;margin-top:12px}.subform label{display:grid;gap:4px;font-size:14px;font-weight:600}.subform input,.subform textarea{font:inherit;font-weight:400;padding:11px 12px;border:1px solid var(--line,#d7d2c8);border-radius:10px;background:#fff;color:inherit;width:100%;box-sizing:border-box}.subform .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.subform .hp{position:absolute;left:-9999px;height:0;overflow:hidden}.linkbox{margin:18px 0;padding:12px 14px;border:1px solid var(--line,#d7d2c8);border-radius:12px}.linkbox summary{cursor:pointer;font-weight:600}.linkbox textarea{font:13px/1.4 ui-monospace,monospace;width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--line,#d7d2c8);border-radius:8px;background:#fff;color:inherit}.citylinks{line-height:2;font-size:15px}.citylinks a{white-space:nowrap}
-.card.row{display:flex;align-items:stretch;padding:0;overflow:hidden;background:var(--paper);border:1px solid var(--line);border-radius:12px}
-.card.row:hover{border-color:var(--gold)}
-.card.row .main{flex:1;min-width:0;display:block;padding:14px 16px;color:var(--brown)}.card.row .main:hover{text-decoration:none;background:var(--cream-dark)}
-.card.row .call{flex:none;display:flex;align-items:center;padding:0 20px;border-left:1px solid var(--line);font-weight:600;font-size:14px;min-width:64px;justify-content:center}.card.row .call:hover{background:var(--cream-dark);text-decoration:none}
-.dir .n{font-weight:600;font-size:17px;line-height:1.3}.dir .m{font-size:14px;color:var(--brown-light);margin-top:2px}.dir .m b{color:var(--brown);font-weight:500}.dir .g{font-size:14px;margin-top:5px}
-.kjv{color:var(--gold-dark);font-weight:600}
-.finder{display:grid;gap:4px;margin:0 0 22px}
-.finder input[type=search]{width:100%;border:1px solid var(--line);border-radius:10px;padding:14px;font:16px Inter,system-ui,sans-serif;color:var(--brown);background:var(--paper);-webkit-appearance:none;appearance:none}
-.finder input[type=search]:focus{outline:none;border-color:var(--gold)}
-.finder .row2{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center}
-.finder .chk{display:flex;gap:10px;align-items:center;min-height:44px;font-size:15px;cursor:pointer}.finder .chk input{width:20px;height:20px;accent-color:var(--gold-dark)}
-.finder .nearbtn{border:1px solid var(--gold);background:var(--gold);color:#fff;border-radius:10px;padding:0 16px;min-height:44px;font:600 15px Inter,system-ui,sans-serif;cursor:pointer}.finder .nearbtn:disabled{opacity:.7;cursor:default}
-.finder .count{font-size:14px;color:var(--brown-light);margin:0;min-height:20px}
-section.st{margin:0 0 8px}
-table.times{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:16px}
-table.times td{padding:12px 14px;border-top:1px solid var(--line)}table.times tr:first-child td{border-top:0}table.times td.t{white-space:nowrap;font-weight:600;color:var(--gold-dark);width:1%}
-.info{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;font-size:16px;line-height:1.6}.info p{margin:0 0 8px}.info p:last-child{margin:0}
-.about p{font-size:17px;line-height:1.7;margin:0 0 12px}
-p.fine{font-size:13px;color:var(--brown-light);line-height:1.6;margin:22px 0 0}
-p.slim{font-size:14px;color:var(--brown-light);margin:26px 0 0;padding-top:16px;border-top:1px solid var(--line)}
-.cbar{display:none}
-@media(max-width:640px){
-.cbar{display:flex;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:40;padding:10px max(14px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));background:var(--paper);border-top:1px solid var(--line)}
-.cbar a{flex:1;text-align:center;padding:13px 8px;border:1px solid var(--line);border-radius:10px;font-weight:600;font-size:15px;color:var(--brown);background:var(--cream)}
-.cbar a.go{background:var(--gold);border-color:var(--gold);color:#fff}
-.cbar a:hover{text-decoration:none}
-main{padding-bottom:96px}
-.card.row .call{padding:0 16px}
-.finder .nearbtn{flex:1 1 100%}
-}
-`;
-const FINDER_JS = `(function(){var f=document.querySelector('.finder');if(!f)return;f.hidden=false;var q=document.getElementById('q'),k=document.getElementById('kjv'),cards=[].slice.call(document.querySelectorAll('.dir .card')),secs=[].slice.call(document.querySelectorAll('section.st')),n=document.getElementById('count'),none=document.getElementById('none'),nb=document.getElementById('near');
-function run(){var t=q.value.trim().toLowerCase(),words=t.split(' ').filter(Boolean),shown=0;cards.forEach(function(c){var s=c.getAttribute('data-s'),ok=words.every(function(w){return s.indexOf(w)>-1})&&(!k.checked||c.getAttribute('data-kjv')==='1');c.hidden=!ok;if(ok)shown++});secs.forEach(function(s){s.hidden=!s.querySelector('.card:not([hidden])')});n.textContent=(t||k.checked)?shown+' of '+cards.length+' churches':'';none.hidden=shown>0}
-q.addEventListener('input',run);k.addEventListener('change',run);run();
-if(nb)nb.addEventListener('click',function(){if(!navigator.geolocation){n.textContent='Location is not available in this browser. Search by city instead.';return}
-nb.disabled=true;nb.textContent='Finding you...';
-navigator.geolocation.getCurrentPosition(function(p){var la=p.coords.latitude,lo=p.coords.longitude,r=Math.PI/180;
-cards.forEach(function(c){var a=parseFloat(c.getAttribute('data-lat')),b=parseFloat(c.getAttribute('data-lng')),m=c.querySelector('.mi');if(isNaN(a)||isNaN(b)){c._d=1e9;if(m)m.textContent='';return}
-var x=Math.sin((a-la)*r/2),y=Math.sin((b-lo)*r/2),h=x*x+Math.cos(la*r)*Math.cos(a*r)*y*y;c._d=2*3958.8*Math.asin(Math.sqrt(h));if(m)m.textContent=' · '+Math.round(c._d)+' mi away'});
-[].slice.call(document.querySelectorAll('.dir')).forEach(function(d){var cs=[].slice.call(d.children);cs.sort(function(x,y){return x._d-y._d});cs.forEach(function(c){d.appendChild(c)})});
-nb.textContent='Sorted by distance from you';n.textContent='Nearest churches first. Your location stays in your browser.';},
-function(){nb.disabled=false;nb.textContent='Churches near me';n.textContent='Could not get your location. You can still search by city.'},{timeout:10000,maximumAge:600000})});
-})();`;
-
-const SUBMIT_JS = "(function(){var f=document.getElementById(\"subform\");if(!f)return;var m=document.getElementById(\"submsg\"),b=document.getElementById(\"subbtn\");\nvar qs=new URLSearchParams(location.search),fix=qs.get(\"fix\");if(fix){f.kind.value=qs.get(\"remove\")?\"remove\":\"update\";f.slug.value=fix;f.name.value=qs.get(\"n\")||\"\";f.city.value=qs.get(\"c\")||\"\";document.getElementById(\"sub-intro\").textContent=(qs.get(\"remove\")?\"Request removal of this listing\":\"Send corrections for this listing\")+\" and we will review it.\";}\nf.addEventListener(\"submit\",function(e){e.preventDefault();m.hidden=false;if(!f.name.value.trim()||!f.city.value.trim()){m.textContent=\"Please add the church name and city.\";return;}\nb.disabled=true;m.textContent=\"Sending...\";var d={};new FormData(f).forEach(function(v,k){d[k]=v;});\nfetch(\"/api/church-submit\",{method:\"POST\",headers:{\"Content-Type\":\"application/json\"},body:JSON.stringify(d)}).then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});}).then(function(x){if(x.ok){f.reset();m.textContent=\"Thank you. We received it and will review it soon.\";}else{m.textContent=x.j.error||\"Something went wrong. Please try again.\";b.disabled=false;}}).catch(function(){m.textContent=\"Could not send. Please email dillon@bigrapids.church.\";b.disabled=false;});});})();";
-
-function churchesIndex() {
-  const groups = churchesByState();
-  const h = `${crumbs([["Home", "/"], ["Churches", "/churches"]])}
-<h1>Find a church</h1>
-<p class="sub">Service times, address, pastor, and a link to each church's own website. ${DIRECTORY.length} churches listed. No ads, no paid placement.</p>
-<div class="finder" hidden>
-<input id="q" type="search" placeholder="Search by church, city, or pastor" aria-label="Search churches" autocomplete="off" autocapitalize="none" autocorrect="off" enterkeyhint="search">
-<div class="row2"><button type="button" id="near" class="nearbtn">Churches near me</button><label class="chk"><input type="checkbox" id="kjv"> King James Bible churches only</label></div>
-<p class="count" id="count" aria-live="polite"></p>
-</div>
-${groups.map((g) => `<section class="st" id="${g.state.toLowerCase()}"><h2>${esc(g.stateName)} — ${g.churches.length}</h2><div class="dir">${g.churches.map((c) => churchCard(c)).join("")}</div></section>`).join("")}
-${(() => { const cs = CITY_LIST.filter(cityIndexable); return cs.length ? `<h2>Browse by city</h2><p class="citylinks">${cs.map((x) => `<a href="/churches/in/${x.key}">${esc(x.city)}, ${esc(x.state)} (${x.list.length})</a>`).join(" · ")}</p>` : ""; })()}
-<p class="note" id="none" hidden>No churches match that search. Try a city name, or <a href="#list-your-church">tell us about a church to add</a>.</p>
-<h2 id="list-your-church">List your church</h2>
-<div class="info"><p id="sub-intro">Listing is free, and your page links straight to your website. Send us the basics and we'll review and publish it, usually within a few days.</p>
-<form id="subform" class="subform" novalidate>
-<input type="hidden" name="kind" value="add"><input type="hidden" name="slug" value="">
-<div class="hp" aria-hidden="true"><label>Company<input name="company" tabindex="-1" autocomplete="off"></label></div>
-<label>Church name<input name="name" required maxlength="160" autocomplete="organization"></label>
-<div class="two"><label>City<input name="city" required maxlength="80" autocomplete="address-level2"></label><label>State<input name="state" maxlength="40" value="MI" autocomplete="address-level1"></label></div>
-<label>Website<input name="website" type="url" inputmode="url" placeholder="https://" maxlength="300" autocomplete="url"></label>
-<label>Street address<input name="address" maxlength="240" autocomplete="street-address"></label>
-<div class="two"><label>Phone<input name="phone" type="tel" maxlength="40" autocomplete="tel"></label><label>Pastor<input name="pastor" maxlength="120"></label></div>
-<label>Service times<textarea name="times" rows="3" maxlength="600" placeholder="Sunday School 10:00 am, Sunday Morning 11:00 am, Sunday Evening 6:00 pm, Wednesday 7:00 pm"></textarea></label>
-<label>Anything else (Bible version, what to expect)<textarea name="notes" rows="2" maxlength="1200"></textarea></label>
-<label>Your email (so we can reach you)<input name="email" type="email" maxlength="200" autocomplete="email"></label>
-<button type="submit" class="nearbtn" id="subbtn">Send for review</button>
-<p class="note" id="submsg" role="status" aria-live="polite" hidden></p>
-</form></div>
-<p class="slim">Free King James Bible online and in the app: <a href="/bible">read on the web</a> · <a href="${appHref()}" data-cta="churches-ios">get the iPhone app</a></p>
-<script>${FINDER_JS}</script>
-<script>${SUBMIT_JS}</script>`;
-  const jsonld = webPageLd([
-    { "@type": "CollectionPage", name: "Church directory", url: SITE + "/churches", isPartOf: { "@id": SITE + "/#website" },
-      mainEntity: { "@type": "ItemList", itemListElement: DIRECTORY.slice(0, 100).map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, url: SITE + churchUrl(c) })) } },
-    breadcrumbLd([["Home", "/"], ["Churches", "/churches"]]),
-  ]);
-  return ok(shell({ title: `Find a Church Near You – ${DIRECTORY.length} Bible-Preaching Churches | ${SITE_NAME}`, description: `Find a Bible-preaching church: service times, address, pastor, and website for ${DIRECTORY.length} churches in ${groups.map((g) => g.stateName).join(", ")}. Search by city or use your location. Free listings, no ads.`, canonical: "/churches", h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true }));
-}
-
-
-/* ---- church city pages */
-const cityKey = (c) => `${c.city.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-${c.state.toLowerCase()}`;
-const cityUrl = (c) => `/churches/in/${cityKey(c)}`;
-const CITY_MAP = new Map();
-for (const c of DIRECTORY) { const k = cityKey(c); if (!CITY_MAP.has(k)) CITY_MAP.set(k, []); CITY_MAP.get(k).push(c); }
-/* TheWay's home city. It lists one church today, but it is the page people in
- * Big Rapids reach, so it stays indexable while other one-church cities don't. */
-const HOME_CITY = "big-rapids-mi";
-const cityIndexable = (g) => g.list.length > 1 || g.key === HOME_CITY;
-const CITY_LIST = [...CITY_MAP.entries()].map(([key, list]) => ({ key, city: list[0].city, state: list[0].state, stateName: list[0].stateName, list: list.slice().sort((a, b) => a.name.localeCompare(b.name)) }))
-  .sort((a, b) => a.city.localeCompare(b.city));
-function cityPage(key) {
-  const g = CITY_LIST.find((x) => x.key === key);
-  if (!g) return notFound();
-  const n = g.list.length;
-  const title = `${n === 1 ? "Church" : "Churches"} in ${g.city}, ${g.state} – Service Times & Addresses | ${SITE_NAME}`;
-  const near = DIRECTORY.filter((c) => cityKey(c) !== key && c.lat != null && g.list[0].lat != null)
-    .map((c) => ({ c, mi: milesBetween(g.list[0], c) })).filter((x) => x.mi <= 25).sort((a, b) => a.mi - b.mi).slice(0, 6);
-  const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], [`${g.city}, ${g.state}`, `/churches/in/${key}`]])}
-<h1>${n === 1 ? "Church" : "Churches"} in ${esc(g.city)}, ${esc(g.state)}</h1>
-<p class="sub">${n} Bible-preaching ${n === 1 ? "church" : "churches"} listed in ${esc(g.city)}, ${esc(g.stateName)}, with service times, address, pastor, and a link to each church's own website.</p>
-<div class="dir">${g.list.map((c) => churchCard(c)).join("")}</div>
-${near.length ? `<h2>Churches near ${esc(g.city)}</h2><div class="dir">${near.map((x) => churchCard(x.c, x.mi)).join("")}</div>` : ""}
-<p class="slim"><a href="/churches">All churches</a> · <a href="/churches#list-your-church">List your church</a></p>`;
-  const jsonld = webPageLd([
-    { "@type": "CollectionPage", name: `Churches in ${g.city}, ${g.state}`, url: SITE + `/churches/in/${key}`, isPartOf: { "@id": SITE + "/#website" },
-      mainEntity: { "@type": "ItemList", itemListElement: g.list.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, url: SITE + churchUrl(c) })) } },
-    breadcrumbLd([["Home", "/"], ["Churches", "/churches"], [`${g.city}, ${g.state}`, `/churches/in/${key}`]]),
-  ]);
-  return ok(shell({ title, description: `${n} ${n === 1 ? "church" : "churches"} in ${g.city}, ${g.stateName}: ${g.list.slice(0, 3).map((c) => c.name).join(", ")}${n > 3 ? " and more" : ""}. Service times, addresses, phone numbers and websites. Free, no ads.`, canonical: `/churches/in/${key}`, h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true, noindex: !cityIndexable(g) }));
-}
-
-
-function churchNetwork() {
-  const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], ["Church network", "/churches/network"]])}
-<h1>The church network</h1>
-<p class="sub">A free directory where churches that preach the Bible help each other be found.</p>
-<h2>What every church gets</h2>
-<div class="info"><p>A page of its own with service times, address, pastor, a map link, and a link straight to the church's website. No ads, no paid placement, and no charge. ${DIRECTORY.length} churches are listed so far.</p></div>
-<h2>How the network helps</h2>
-<div class="info"><p>People searching for a church near them find the churches in this directory, and they click through to each church's own site. When churches also link to their listing from their own websites, every church in the network is easier to find. Linking back is optional, and your listing stays the same either way.</p></div>
-<h2>Join</h2>
-<div class="info"><ol>
-<li><a href="/churches">Find your church</a> in the directory. If it is not there, <a href="/churches#list-your-church">send it for review</a>.</li>
-<li>Check your page. Send a correction from the bottom of the page if anything is out of date.</li>
-<li>Optional: open "Link to this page from your church website" at the bottom of your page and paste the link into your site.</li>
-</ol></div>
-<p class="slim"><a href="/churches">All churches</a> · <a href="/churches#list-your-church">List your church</a></p>`;
-  const jsonld = webPageLd([breadcrumbLd([["Home", "/"], ["Churches", "/churches"], ["Church network", "/churches/network"]])]);
-  return ok(shell({ title: `The Church Network – Free Church Directory | ${SITE_NAME}`, description: "A free directory where Bible-preaching churches help each other be found: a page for every church with service times, address and a link to its own website. No ads.", canonical: "/churches/network", h, jsonld, pageType: "churches", extraCss: CHURCH_CSS, noInvite: true }));
-}
-
-function churchPage(c) {
-  const title = churchTitle(c);
-  const place = `${c.city}, ${c.stateName}`;
-  const main = mainLink(c);
-  const nearby = DIRECTORY.filter((x) => x !== c && x.state === c.state)
-    .map((x) => ({ x, mi: milesBetween(c, x) }))
-    .sort((p, q) => (p.mi ?? 1e9) - (q.mi ?? 1e9) || p.x.city.localeCompare(q.x.city)).slice(0, 5);
-  const social = Object.entries(c.social || {}).map(([k, u]) => `<a class="btn" href="${attr(u)}" target="_blank" rel="noopener">${{ facebook: "Facebook", instagram: "Instagram", youtube: "YouTube" }[k] || k}</a>`).join("");
-  const extra = [...(c.website && c.sermons ? [["Sermons", c.sermons]] : []), ...(c.links || [])].map(([n, u]) => `<a class="btn" href="${attr(u)}" target="_blank" rel="noopener">${esc(n)}</a>`).join("");
-  const facts = [c.kjv && `<span class="kjv-b"><b>King James Bible</b></span>`, c.affiliation && `<span><b>${esc(c.affiliation)}</b></span>`, c.worship && `<span>${esc(c.worship)} worship</span>`, c.founded && `<span>Founded <b>${c.founded}</b></span>`].filter(Boolean).join("");
-  const times = c.services.length
-    ? `<table class="times">${c.services.map((s) => `<tr><td class="t">${esc([s.day, s.time].filter(Boolean).join(" "))}</td><td>${esc(s.label)}</td></tr>`).join("")}</table>`
-    : c.planting
-      ? `<div class="info"><p>No regular service times yet. ${esc(c.name)} is gathering people first and meeting in homes and coffee shops. Join the interest list on the church website to hear the location and times first.</p></div>`
-      : c.timesNote
-        ? `<div class="info"><p>${esc(c.timesNote)}</p></div>`
-        : `<div class="info"><p>Service times aren't listed yet.${c.phone ? " Call the church to confirm." : ""}${c.website ? " The church website may have them." : ""}</p></div>`;
-  const contact = `<div class="info">
-${c.address ? `<p><b>Address:</b> ${esc(addressLine(c.address))} · <a href="${mapsHref(c)}" target="_blank" rel="noopener">Get directions</a></p>` : `<p><b>Location:</b> ${esc(place)} — meeting place not announced yet.</p>`}
-${c.phone ? `<p><b>Phone:</b> <a href="${telHref(c.phone)}">${esc(c.phone)}</a></p>` : ""}
-${c.email ? `<p><b>Email:</b> <a href="mailto:${attr(c.email)}">${esc(c.email)}</a></p>` : ""}
-${c.pastor ? `<p><b>Pastor:</b> ${esc(c.pastor)}</p>` : ""}
-${c.website ? `<p><b>Website:</b> <a href="${attr(c.website)}" target="_blank" rel="noopener">${esc(hostOf(c.website))}</a></p>` : ""}
-</div>`;
-  const bar = [c.phone && `<a href="${telHref(c.phone)}" data-cta="church-call-bar">Call</a>`, c.address && `<a href="${mapsHref(c)}" target="_blank" rel="noopener" data-cta="church-directions-bar">Directions</a>`, main && `<a class="go" href="${attr(main.href)}" target="_blank" rel="noopener" data-cta="${main.cta}-bar">${main.short}</a>`].filter(Boolean);
-  const h = `${crumbs([["Home", "/"], ["Churches", "/churches"], [c.stateName, `/churches#${c.state.toLowerCase()}`], [`${c.city}, ${c.state}`, cityUrl(c)], [c.name, churchUrl(c)]])}
-<h1>${esc(title)}</h1>
-<p class="sub">${esc(place)}${c.county ? ` · ${esc(c.county)}` : ""}${c.tagline ? `<br>${esc(c.tagline)}` : ""}</p>
-${facts ? `<div class="facts">${facts}</div>` : ""}
-<div class="actions">${main ? `<a class="btn primary" href="${attr(main.href)}" target="_blank" rel="noopener" data-cta="${main.cta}">${esc(main.label)}</a>` : ""}${c.address ? `<a class="btn" href="${mapsHref(c)}" target="_blank" rel="noopener" data-cta="church-directions">Directions</a>` : ""}${c.phone ? `<a class="btn" href="${telHref(c.phone)}" data-cta="church-call">Call</a>` : ""}</div>
-<h2>Service times</h2>
-${times}
-<h2>Visit</h2>
-${contact}
-<h2>About ${esc(c.name)}</h2>
-<div class="about"><p>${esc(c.about)}</p></div>
-${c.ministries?.length ? `<h2>Ministries</h2><ul class="outline">${c.ministries.map((m) => `<li>${esc(m)}</li>`).join("")}</ul>` : ""}
-${social || extra ? `<h2>Online</h2><div class="actions">${social}${extra}</div>` : ""}
-${nearby.length ? `<h2>Churches nearby</h2><div class="dir">${nearby.map(({ x, mi }) => churchCard(x, mi)).join("")}</div>` : ""}
-<details class="linkbox"><summary>Link to this page from your church website</summary>
-<p>If this is your church, you can point visitors here from your own site. Copy this into your page or footer:</p>
-<textarea readonly rows="3" onclick="this.select()" aria-label="Link code">${esc(`<a href="${SITE}${churchUrl(c)}">Find us in the TheWay Church Directory</a>`)}</textarea>
-<p class="fine">Optional, and it never affects your listing. <a href="/churches/network">About the church network</a></p></details>
-<p class="fine">Details from ${esc(c.source || "the church's website")}, checked ${esc(c.checked || "October 2026")}. Times change, so confirm with the church before you visit. Is this your church? <a href="/churches?fix=${encodeURIComponent(c.slug)}&n=${encodeURIComponent(c.name)}&c=${encodeURIComponent(c.city)}#list-your-church">Send a correction</a> or <a href="/churches?fix=${encodeURIComponent(c.slug)}&n=${encodeURIComponent(c.name)}&c=${encodeURIComponent(c.city)}&remove=1#list-your-church">ask us to remove this page</a>. <a href="/churches">All churches</a></p>
-<p class="slim">Free King James Bible online and in the app: <a href="/bible">read on the web</a> · <a href="${appHref()}" data-cta="church-ios">get the iPhone app</a></p>
-${bar.length ? `<nav class="cbar" aria-label="Contact ${attr(c.name)}">${bar.join("")}</nav>` : ""}`;
-  const church = {
-    "@type": "Church", "@id": SITE + churchUrl(c) + "#church", name: c.name, url: c.website || SITE + churchUrl(c), description: c.about,
-    ...(c.address ? { address: { "@type": "PostalAddress", streetAddress: c.address.street, addressLocality: c.address.city, addressRegion: c.address.state, ...(c.address.zip ? { postalCode: c.address.zip } : {}), addressCountry: "US" } }
-      : { address: { "@type": "PostalAddress", addressLocality: c.city, addressRegion: c.state, addressCountry: "US" } }),
-    ...(c.lat != null ? { geo: { "@type": "GeoCoordinates", latitude: c.lat, longitude: c.lng } } : {}),
-    ...(c.phone ? { telephone: "+1" + c.phone.replace(/\D/g, "") } : {}),
-    ...(c.email ? { email: c.email } : {}),
-    ...(c.founded ? { foundingDate: String(c.founded) } : {}),
-    ...(c.pastor ? { employee: { "@type": "Person", name: c.pastor.replace(/^Pastor\s+/, ""), jobTitle: "Pastor" } } : {}),
-    ...((c.social || c.sermons) ? { sameAs: [...Object.values(c.social || {}), ...(c.sermons ? [c.sermons] : [])] } : {}),
-  };
-  const jsonld = webPageLd([
-    { "@type": "WebPage", name: `${c.name} – ${place}`, url: SITE + churchUrl(c), isPartOf: { "@id": SITE + "/#website" }, about: { "@id": church["@id"] } },
-    church,
-    breadcrumbLd([["Home", "/"], ["Churches", "/churches"], [`${c.city}, ${c.state}`, cityUrl(c)], [c.name, churchUrl(c)]]),
-  ]);
-  const sun = c.services.filter((s) => s.day === "Sunday").map((s) => `${s.label} ${s.time}`).join(", ");
-  const timesBit = sun ? `Service times: ${sun}. ` : c.timesNote ? `Service times: ${c.timesNote} ` : "";
-  const description = c.planting
-    ? `${c.name} is a new church forming in ${place}. Contact, social links, and how to join the interest list.`
-    : `${c.name} in ${place}${c.address ? ` (${c.address.street})` : ""}. ${timesBit}${c.pastor ? c.pastor + ". " : ""}Address, phone, directions, and ${c.website ? "website" : "sermons"}.`;
-  return ok(shell({ title: c.planting ? `${c.name} – A New Church in ${c.city}, ${c.state} | ${SITE_NAME}` : `${title} – ${c.city}, ${c.state} | Service Times, Address & Website`, description: description.length > 300 ? description.slice(0, 297).replace(/\s+\S*$/, "") + "..." : description, canonical: churchUrl(c), h, jsonld, pageType: "church", ref: c.slug, extraCss: CHURCH_CSS, noInvite: true }));
-}
 
 /* ------------------------------------------------------------------ search */
 /* Noise people type around a reference, mostly copied out of Google's own
@@ -1570,7 +1330,6 @@ function sitemapFile(name) {
   if (name === "pages") {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/kids/", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
-    // Church directory moved to churchesinmichigan.com (Nov 2026); /churches/* now 308-redirects there.
     urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"], ["/bible-statistics", "0.9"]);
     for (const w of WORDS) urls.push([`/bible-words/${w.word.replace(/ /g, "-")}`, "0.7"]);
     urls.push(["/bible-names", "0.9"], ["/bible-names/boys", "0.8"], ["/bible-names/girls", "0.8"]);
@@ -1604,14 +1363,6 @@ export function render(q = {}) {
   if (kind === "sitemap") return sitemapFile(String(q.file || "").replace(/\.xml$/, ""));
   if (kind === "topics") return topicsIndex();
   if (kind === "votd") return votdPage();
-  if (kind === "churches") return churchesIndex();
-  if (kind === "churchcity") return cityPage(String(q.city || "").toLowerCase());
-  if (kind === "church") {
-    const slug = String(q.slug || "").toLowerCase();
-    if (slug === "network") return churchNetwork();
-    const c = CHURCH_BY_SLUG.get(slug);
-    return c ? churchPage(c) : notFound();
-  }
   if (kind === "names") return namesIndex();
   if (kind === "name") {
     const raw = String(q.name || "").toLowerCase();

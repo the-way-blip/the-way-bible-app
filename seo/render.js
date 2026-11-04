@@ -342,7 +342,7 @@ ${fb}
 <header class="top"><div class="wrap">
 <a class="brand" href="/"><img src="/icon-192.png" alt="" width="28" height="28">TheWay Bible</a>
 ${hideSearch ? "" : `<form class="search" action="/bible/search" role="search"><input type="search" name="q" placeholder="Search verse, topic, or word" aria-label="Search the Bible" enterkeyhint="search" autocapitalize="none" autocorrect="off"><button type="submit" aria-label="Search">⌕</button></form>`}
-<nav class="main"><a href="/bible">Read</a><a href="/verses-about">Topics</a><a href="/verse-of-the-day" class="hide">Verse of the day</a><a href="/churches" class="hide">Churches</a></nav>
+<nav class="main"><a href="/bible">Read</a><a href="/verses-about">Topics</a><a href="/verse-of-the-day" class="hide">Verse of the day</a><a href="https://churchesinmichigan.com/" class="hide">Churches</a></nav>
 </div></header>
 <div class="appbar"><div class="wrap"><div class="t"><b>Free on iPhone</b><span>Study, memorize, journal, and pray.</span></div><a class="cta" href="${appHref()}" data-cta="appbar-ios">Get the app</a></div></div>
 <main><div class="wrap">
@@ -351,7 +351,7 @@ ${h}
 <footer class="bottom"><div class="wrap">
 <span class="apps"><strong>More from TheWay</strong> · <a href="https://scroll.thewaybible.app">Scroll</a> — a verse a day, in a feed · <a href="https://thewaybible.app/kids/">TheWay Kids</a> — the Gospels, for children learning to read · <a href="https://thewaylibrary.com">TheWay Library</a> · <a href="https://thewayhelp.com">TheWay Help</a> · <a href="https://bigrapids.church">TheWay church in Big Rapids</a></span>
 <span>© ${new Date().getFullYear()} TheWay Bible App · Scripture text: ${VERSION_LONG} (public domain)</span>
-<span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="/churches">Find a church</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:dillon@bigrapids.church">Contact</a></span>
+<span><a href="/bible">Bible</a> · <a href="/verses-about">Topics</a> · <a href="/verse-of-the-day">Verse of the day</a> · <a href="https://churchesinmichigan.com/">Find a church</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a> · <a href="mailto:dillon@bigrapids.church">Contact</a></span>
 </div></footer>
 ${noindex || noInvite ? "" : inviteHtml(appHref())}
 ${noindex || noInvite ? "" : `<script>${inviteJs(pageType)}</script>`}
@@ -1570,9 +1570,7 @@ function sitemapFile(name) {
   if (name === "pages") {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/kids/", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
     for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
-    urls.push(["/churches", "0.8"], ["/churches/network", "0.5"]);
-    for (const g of CITY_LIST) if (cityIndexable(g)) urls.push([`/churches/in/${g.key}`, "0.7"]);
-    for (const c of DIRECTORY) urls.push([churchUrl(c), "0.7"]);
+    // Church directory moved to churchesinmichigan.com (Nov 2026); /churches/* now 308-redirects there.
     urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"], ["/bible-statistics", "0.9"]);
     for (const w of WORDS) urls.push([`/bible-words/${w.word.replace(/ /g, "-")}`, "0.7"]);
     urls.push(["/bible-names", "0.9"], ["/bible-names/boys", "0.8"], ["/bible-names/girls", "0.8"]);

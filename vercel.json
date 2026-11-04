@@ -37,6 +37,31 @@
       "permanent": true
     },
     {
+      "source": "/churches",
+      "destination": "https://churchesinmichigan.com/",
+      "permanent": true
+    },
+    {
+      "source": "/churches/network",
+      "destination": "https://churchesinmichigan.com/add-church",
+      "permanent": true
+    },
+    {
+      "source": "/churches/in/:city([a-z0-9-]+)-mi",
+      "destination": "https://churchesinmichigan.com/churches/:city",
+      "permanent": true
+    },
+    {
+      "source": "/churches/in/:city",
+      "destination": "https://churchesinmichigan.com/churches/:city",
+      "permanent": true
+    },
+    {
+      "source": "/churches/:slug",
+      "destination": "https://churchesinmichigan.com/church/:slug",
+      "permanent": true
+    },
+    {
       "source": "/:path((?:bible|verses-about|bible-names|bible-words|churches|strongs|verse-of-the-day|king-james-bible|bible-statistics)(?:/.*)?)/",
       "destination": "/:path",
       "permanent": true
@@ -86,18 +111,6 @@
     {
       "source": "/verse-of-the-day",
       "destination": "/api/bible-page?kind=votd"
-    },
-    {
-      "source": "/churches",
-      "destination": "/api/bible-page?kind=churches"
-    },
-    {
-      "source": "/churches/in/:city",
-      "destination": "/api/bible-page?kind=churchcity&city=:city"
-    },
-    {
-      "source": "/churches/:slug",
-      "destination": "/api/bible-page?kind=church&slug=:slug"
     },
     {
       "source": "/king-james-bible",

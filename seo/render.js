@@ -27,6 +27,7 @@ import { TOPIC_INTROS } from "./topic-intros.js";
 import { TOPIC_LISTS } from "./topic-lists.js";
 import { NAMES } from "./names.js";
 import { CHURCH, studyFor } from "./studies.js";
+import { HELP_SITE, helpFor } from "./help.js";
 import { inviteHtml, inviteJs, INVITE_CSS } from "./invite.js";
 import { KJV_FACTS, KJV_SECTIONS, KJV_FAQ } from "./kjv-story.js";
 import { WORDS } from "./words-archaic.js";
@@ -649,6 +650,8 @@ function topicPage(t) {
   // The exposition on bigrapids.church, where there is one. See seo/studies.js
   // for why this points out rather than in.
   const study = studyFor(t.slug);
+  // A matching page on thewayhelp.com, TheWay's help site. See seo/help.js.
+  const help = helpFor(t.slug);
   const keyR = t.lead ? parseRef(t.lead) : null;
   const keyBlock = keyR ? `<div class="keyv"><p class="r">The verse people usually mean · <a href="${verseUrl(keyR.book, keyR.chapter, keyR.from, keyR.to)}">${esc(t.lead)}</a> · ${VERSION}</p><blockquote>${verseHtml(keyR.book.chapters[keyR.chapter - 1].slice(keyR.from - 1, keyR.to).join(" "))}</blockquote></div>` : "";
   // Description names the key verse first, then the next two in order.
@@ -666,7 +669,7 @@ ${L ? `<h2>${esc(L.title)} in scripture — ${n} verses, quoted in full</h2>` : 
 <p class="sub">${t.blurb ? esc(t.blurb) + " " : ""}Each verse is quoted in full — tap a reference to read it in context, see cross references, and study the original words.</p>
 ${list}
 ${L ? `<h2>Common questions</h2><div class="faq">${L.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>` : ""}
-${study ? `<h2>Read the study</h2><p>TheWay church in Big Rapids works this through at length: <a href="${CHURCH}${study.path}">${esc(study.title)}</a>.</p>` : ""}
+${study ? `<h2>Read the study</h2><p>TheWay church in Big Rapids works this through at length: <a href="${CHURCH}${study.path}">${esc(study.title)}</a>.</p>` : ""}${help ? `<h2>Get help</h2><p>${esc(help.text)} <a href="${HELP_SITE}${help.path}">${esc(help.label)}</a>.</p>` : ""}
 ${related.length ? `<h2>Related topics</h2><div class="chips">${related.map((o) => `<a href="/verses-about/${o.slug}">${esc(o.name)}</a>`).join("")}</div>` : ""}
 <p style="font-size:14px;margin-top:20px"><a href="/verses-about">All ${TOPICS.length} topics →</a></p>
 ${promo()}`;

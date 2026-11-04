@@ -12,6 +12,41 @@
       "permanent": true
     },
     {
+      "source": "/churches",
+      "destination": "https://churchesinmichigan.com/churches",
+      "permanent": true
+    },
+    {
+      "source": "/churches/",
+      "destination": "https://churchesinmichigan.com/churches",
+      "permanent": true
+    },
+    {
+      "source": "/churches/network",
+      "destination": "https://churchesinmichigan.com/add-church",
+      "permanent": true
+    },
+    {
+      "source": "/churches/in/:city([a-z0-9-]+)-mi",
+      "destination": "https://churchesinmichigan.com/churches/:city",
+      "permanent": true
+    },
+    {
+      "source": "/churches/in/:rest*",
+      "destination": "https://churchesinmichigan.com/churches",
+      "permanent": true
+    },
+    {
+      "source": "/churches/:slug",
+      "destination": "https://churchesinmichigan.com/church/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/churches/:slug/",
+      "destination": "https://churchesinmichigan.com/church/:slug",
+      "permanent": true
+    },
+    {
       "source": "/lamp",
       "destination": "/kids/",
       "permanent": true
@@ -37,7 +72,7 @@
       "permanent": true
     },
     {
-      "source": "/:path((?:bible|verses-about|bible-names|bible-words|churches|strongs|verse-of-the-day|king-james-bible|bible-statistics)(?:/.*)?)/",
+      "source": "/:path((?:bible|verses-about|bible-names|bible-words|strongs|verse-of-the-day|king-james-bible|bible-statistics)(?:/.*)?)/",
       "destination": "/:path",
       "permanent": true
     }
@@ -88,18 +123,6 @@
       "destination": "/api/bible-page?kind=votd"
     },
     {
-      "source": "/churches",
-      "destination": "/api/bible-page?kind=churches"
-    },
-    {
-      "source": "/churches/in/:city",
-      "destination": "/api/bible-page?kind=churchcity&city=:city"
-    },
-    {
-      "source": "/churches/:slug",
-      "destination": "/api/bible-page?kind=church&slug=:slug"
-    },
-    {
       "source": "/king-james-bible",
       "destination": "/api/bible-page?kind=kjv"
     },
@@ -144,7 +167,7 @@
       "destination": "/api/app-page?page=login"
     },
     {
-      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|churches|strongs|sitemap|kids|lamp).*)",
+      "source": "/((?!api|data|assets|favicon|manifest|icons|.well-known|bible|bible-names|verses-about|verse-of-the-day|strongs|sitemap|kids|lamp).*)",
       "destination": "/index.html"
     }
   ],

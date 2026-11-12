@@ -31,6 +31,7 @@ import { HELP_SITE, helpFor } from "./help.js";
 import { inviteHtml, inviteJs, INVITE_CSS } from "./invite.js";
 import { KJV_FACTS, KJV_SECTIONS, KJV_FAQ } from "./kjv-story.js";
 import { WORDS } from "./words-archaic.js";
+import { NOINDEX_TOPICS } from "./noindex.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -559,7 +560,7 @@ ${promo(b, c, from)}`;
     ...(meaning ? [{ "@type": "FAQPage", "@id": SITE + canonical + "#faq",
       mainEntity: [{ "@type": "Question", name: `What does ${label} mean?`, acceptedAnswer: { "@type": "Answer", text: meaning } }] }] : []),
   ]);
-  return ok(shell({ title, description, canonical, h, jsonld, ogImage: `${SITE}/api/og?ref=${encodeURIComponent(label)}`, pageType: "bible-verse", ref: label }));
+  return ok(shell({ title, description, canonical, h, jsonld, ogImage: `${SITE}/api/og?ref=${encodeURIComponent(label)}`, pageType: "bible-verse", ref: label, noindex: !meaning && !commentary }));
 }
 
 function topicsIndex() {
@@ -728,7 +729,7 @@ ${promo()}`;
     ...(L ? [{ "@type": "FAQPage", "@id": SITE + `/verses-about/${t.slug}#faq`,
       mainEntity: L.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }] : []),
   ]);
-  return ok(shell({ title: L ? `${L.title} (KJV) — ${L.titleSuffix || `All ${L.items.length} Listed`} | ${SITE_NAME}` : `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: (keyR || first) ? `${SITE}/api/og?ref=${encodeURIComponent(keyR ? t.lead : first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
+  return ok(shell({ title: L ? `${L.title} (KJV) — ${L.titleSuffix || `All ${L.items.length} Listed`} | ${SITE_NAME}` : `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: (keyR || first) ? `${SITE}/api/og?ref=${encodeURIComponent(keyR ? t.lead : first.ref)}` : undefined, pageType: "verses-topic", ref: t.name, noindex: NOINDEX_TOPICS.has(t.slug) }));
 }
 
 const NAME_BY_SLUG = new Map(NAMES.map((n) => [n.name.toLowerCase(), n]));
@@ -987,7 +988,7 @@ ${gaSearch}${promo()}`;
 /* ------------------------------------------------------------------ sitemaps */
 /* Last date the server-rendered pages changed in a way search engines should
  * re-read (templates, titles, descriptions, listings). Bump it when they do. */
-const LASTMOD = "2026-11-03";
+const LASTMOD = "2026-11-12";
 const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc><lastmod>${LASTMOD}</lastmod>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
 /* ------------------------------------------------------------------ stats */
@@ -1373,7 +1374,7 @@ function sitemapIndex() {
 function sitemapFile(name) {
   if (name === "pages") {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/kids/", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
-    for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
+    for (const t of TOPICS) if (!NOINDEX_TOPICS.has(t.slug)) urls.push([`/verses-about/${t.slug}`, "0.8"]);
     urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"], ["/bible-statistics", "0.9"]);
     for (const w of WORDS) urls.push([`/bible-words/${w.word.replace(/ /g, "-")}`, "0.7"]);
     urls.push(["/bible-names", "0.9"], ["/bible-names/boys", "0.8"], ["/bible-names/girls", "0.8"]);
@@ -1390,7 +1391,10 @@ function sitemapFile(name) {
   const b = m && findBook(m[1]);
   if (!b) return notFound();
   const urls = [];
-  b.chapters.forEach((ch, ci) => ch.forEach((_, vi) => urls.push([verseUrl(b, ci + 1, vi + 1)])));
+  b.chapters.forEach((ch, ci) => ch.forEach((_, vi) => {
+    // verse pages with neither a study note nor commentary are noindex (see versePage)
+    if (meaningFor(b, ci + 1, vi + 1, vi + 1) || commentaryFor(`${b.abbr}|${ci + 1}|${vi + 1}`)) urls.push([verseUrl(b, ci + 1, vi + 1)]);
+  }));
   return xml(urlset(urls));
 }
 

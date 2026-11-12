@@ -158,6 +158,57 @@ function verseTopics() {
   return _verseTopics;
 }
 
+
+/* ------------------------------------------------------------------ indexability */
+/**
+ * Which long-tail pages ask to be indexed. Added Nov 11, 2026 after the site
+ * lost ~98% of its Search Console impressions overnight on Oct 26 with every
+ * page still indexed and no manual action — the shape of a site-wide quality
+ * demotion. The site was offering Google ~47,000 URLs (every one of the 31,102
+ * verses, 14,197 Strong's entries) on a two-month-old domain, and 18,000+ of the
+ * verse pages had never earned a single impression. Most of those are the KJV
+ * text, Matthew Henry and the cross references — the same public-domain content
+ * Bible Gateway, Bible Hub and King James Bible Online already rank for.
+ *
+ * The rule keeps a page indexable when there is a reason for it to exist in
+ * search: original writing of ours (a meaning), a link from a topic page, or
+ * real demand in Search Console (seo/data/gsc-keep.json). Everything else
+ * renders exactly as before for readers but carries noindex,follow and leaves
+ * the sitemap. Chapter, book, topic, name and word pages are not affected.
+ */
+let _keep, _topicRefs;
+const keepData = () => (_keep ??= (() => {
+  try { const k = readJson("gsc-keep.json"); return { verses: new Set(k.verses || []), strongs: new Set(k.strongs || []) }; }
+  catch { return { verses: new Set(), strongs: new Set() }; }
+})());
+function topicRefKeys() {
+  if (!_topicRefs) {
+    _topicRefs = new Set();
+    for (const t of TOPICS) for (const ref of [t.lead, ...t.verses]) {
+      const r = ref && parseRef(ref);
+      if (r) _topicRefs.add(`${r.book.abbr}|${r.chapter}|${r.from}|${r.to}`);
+    }
+    for (const ref of Object.keys(VERSE_MEANINGS)) {
+      const r = parseRef(ref);
+      if (r) _topicRefs.add(`${r.book.abbr}|${r.chapter}|${r.from}|${r.to}`);
+    }
+  }
+  return _topicRefs;
+}
+/** Strong's entries used fewer times than this carry little beyond the lexicon line. */
+const STRONGS_MIN_USES = 20;
+export function verseIndexable(b, c, from, to) {
+  if (topicRefKeys().has(`${b.abbr}|${c}|${from}|${to}`)) return true;
+  return keepData().verses.has(verseUrl(b, c, from, to));
+}
+export function strongsIndexable(id) {
+  const e = strongsIndex()[id];
+  if (!e) return false;
+  if ((e.n || 0) >= STRONGS_MIN_USES || keepData().strongs.has(id)) return true;
+  // Entries a topic list links to (the fruit of the Spirit) stay indexable whatever their count.
+  return Object.values(TOPIC_LISTS).some((L) => L.detail?.items.some((d) => d.strongs === id));
+}
+
 /* ------------------------------------------------------------------ text */
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const attr = esc;
@@ -258,6 +309,7 @@ h2{font-size:15px;text-transform:uppercase;letter-spacing:.08em;color:var(--brow
 .commentary{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
 .meaning p{font-size:17px;line-height:1.7;margin:0}
 .lead{font-size:18px;line-height:1.65;margin:0 0 18px}
+.det{margin:0 0 22px}.det h3{font-size:18px;margin:18px 0 8px}
 .facts{display:flex;flex-wrap:wrap;gap:8px 10px;margin:0 0 22px;font-size:14px}
 .facts span{background:var(--paper);border:1px solid var(--line);border-radius:999px;padding:6px 12px;color:var(--brown-light)}
 .facts span b{color:var(--brown);font-weight:600}
@@ -559,7 +611,7 @@ ${promo(b, c, from)}`;
     ...(meaning ? [{ "@type": "FAQPage", "@id": SITE + canonical + "#faq",
       mainEntity: [{ "@type": "Question", name: `What does ${label} mean?`, acceptedAnswer: { "@type": "Answer", text: meaning } }] }] : []),
   ]);
-  return ok(shell({ title, description, canonical, h, jsonld, ogImage: `${SITE}/api/og?ref=${encodeURIComponent(label)}`, pageType: "bible-verse", ref: label }));
+  return ok(shell({ title, description, canonical, h, jsonld, ogImage: `${SITE}/api/og?ref=${encodeURIComponent(label)}`, pageType: "bible-verse", ref: label, noindex: !verseIndexable(b, c, from, to) }));
 }
 
 function topicsIndex() {
@@ -666,6 +718,28 @@ const TOPIC_PAIRS = {
   "fear-and-anxiety": "worry",
 };
 
+/** The "each one in full" section under a topic list (seo/topic-lists.js `detail`):
+ *  the item's whole KJV wording, a parallel passage, its Strong's word, and where
+ *  else it appears. Everything printed is KJV text or lexicon data. */
+const kjvText = (r) => r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" ");
+const refA = (ref) => { const r = parseRef(ref); return r ? `<a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a>` : ""; };
+function listDetail(L) {
+  const S = strongsIndex();
+  const rows = L.detail.items.map((d, i) => {
+    const [text] = L.items[i] || [];
+    const full = d.full ? parseRef(d.full) : null;
+    const par = d.parallel ? parseRef(d.parallel) : null;
+    const e = d.strongs ? S[d.strongs] : null;
+    const also = (d.also || []).map(refA).filter(Boolean);
+    return `<div class="det"><h3>${i + 1}. ${esc(text || "")}${full ? ` <span class="muted" style="font-size:14px;font-weight:400">— ${refA(d.full)}</span>` : ""}</h3>
+${full && plain(kjvText(full)) !== text ? `<blockquote class="scripture">${verseHtml(kjvText(full))}<span class="ref">${refA(d.full)} · ${VERSION}</span></blockquote>` : ""}
+${par ? `<p class="muted">Given again in ${refA(d.parallel)}: “${esc(plain(kjvText(par)))}”</p>` : ""}
+${e ? `<p><b>${esc(e.lemma)}</b>${e.xlit ? ` <i>(${esc(e.xlit)})</i>` : ""} — ${esc(e.def)}.${e.kjvDef ? ` KJV renderings (Strong’s): ${esc(e.kjvDef)}.` : ""} Used ${e.n} time${e.n === 1 ? "" : "s"} in the New Testament. <a class="code" href="${strongsUrl(d.strongs)}" data-cta="list-word-study">${esc(d.strongs)} →</a></p>` : ""}
+${also.length ? `<p class="muted">${e ? "Also in" : "Repeated or applied in"} ${also.join(", ")}</p>` : ""}</div>`;
+  }).join("\n");
+  return `<h2>${esc(L.detail.heading)}</h2>\n${rows}`;
+}
+
 function topicPage(t) {
   const items = t.verses.map((ref) => ({ ref, r: parseRef(ref) })).filter((x) => x.r);
   const n = items.length;
@@ -697,7 +771,8 @@ function topicPage(t) {
   const incl = (keyR ? [t.lead, ...items.map((x) => x.ref).filter((r) => r !== t.lead)] : items.map((x) => x.ref)).slice(0, 3).join(", ");
   const listBlock = L ? `<h2>${esc(L.heading)}</h2>
 <ol class="enum">${L.items.map(([text, ref]) => { const r = parseRef(ref); return `<li><span>${esc(text)}</span>${r ? ` <a class="r" href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a>` : ""}</li>`; }).join("")}</ol>
-${L.note ? `<p class="note">${esc(L.note)}</p>` : ""}` : "";
+${L.note ? `<p class="note">${esc(L.note)}</p>` : ""}
+${L.detail ? listDetail(L) : ""}` : "";
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
 <h1>${L ? esc(L.title) : `${n} ${esc(topicPhrase(t))}`} <span class="badge">${VERSION}</span></h1>
 ${L ? `<p class="lead">${esc(L.lead)}</p>` : intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
@@ -987,7 +1062,7 @@ ${gaSearch}${promo()}`;
 /* ------------------------------------------------------------------ sitemaps */
 /* Last date the server-rendered pages changed in a way search engines should
  * re-read (templates, titles, descriptions, listings). Bump it when they do. */
-const LASTMOD = "2026-11-03";
+const LASTMOD = "2026-11-11";
 const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc><lastmod>${LASTMOD}</lastmod>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
 /* ------------------------------------------------------------------ stats */
@@ -1334,7 +1409,7 @@ ${promo(first ? first[0] : undefined, first ? first[1] : undefined, first ? firs
     breadcrumbLd([["Home", "/"], ["Strong's concordance", "/strongs"], [id, strongsUrl(id)]]),
   ]);
   return ok(shell({ title: `Strong's ${id}: ${e.lemma}${e.xlit ? ` (${e.xlit})` : ""} — Meaning and Verses | ${SITE_NAME}`,
-    description, canonical: strongsUrl(id), h, jsonld, pageType: "strongs", ref: id }));
+    description, canonical: strongsUrl(id), h, jsonld, pageType: "strongs", ref: id, noindex: !strongsIndexable(id) }));
 }
 
 /** /strongs — the hub, and the only page that links into 14,197 others. */
@@ -1384,14 +1459,17 @@ function sitemapFile(name) {
   const sm = /^strongs-(hebrew|greek)$/.exec(name);
   if (sm) {
     const letter = sm[1] === "hebrew" ? "H" : "G";
-    return xml(urlset(Object.keys(strongsIndex()).filter((k) => k[0] === letter).map((k) => [strongsUrl(k), "0.5"])));
+    return xml(urlset(Object.keys(strongsIndex()).filter((k) => k[0] === letter && strongsIndexable(k)).map((k) => [strongsUrl(k), "0.5"])));
   }
   const m = /^verses-(.+)$/.exec(name);
   const b = m && findBook(m[1]);
   if (!b) return notFound();
-  const urls = [];
-  b.chapters.forEach((ch, ci) => ch.forEach((_, vi) => urls.push([verseUrl(b, ci + 1, vi + 1)])));
-  return xml(urlset(urls));
+  // Only the verse and range pages that ask to be indexed (see verseIndexable).
+  const urls = new Set();
+  b.chapters.forEach((ch, ci) => ch.forEach((_, vi) => { if (verseIndexable(b, ci + 1, vi + 1, vi + 1)) urls.add(verseUrl(b, ci + 1, vi + 1)); }));
+  for (const k of topicRefKeys()) { const [abbr, c, f, t] = k.split("|"); if (abbr === b.abbr) urls.add(verseUrl(b, +c, +f, +t)); }
+  for (const u of keepData().verses) if (u.startsWith(`/bible/${b.slug}/`)) urls.add(u);
+  return xml(urlset([...urls].map((u) => [u])));
 }
 
 /* ------------------------------------------------------------------ router */

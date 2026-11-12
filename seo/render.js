@@ -31,6 +31,7 @@ import { HELP_SITE, helpFor } from "./help.js";
 import { inviteHtml, inviteJs, INVITE_CSS } from "./invite.js";
 import { KJV_FACTS, KJV_SECTIONS, KJV_FAQ } from "./kjv-story.js";
 import { WORDS } from "./words-archaic.js";
+import { NOINDEX_TOPICS } from "./noindex.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -174,7 +175,9 @@ function verseTopics() {
  * search: original writing of ours (a meaning), a link from a topic page, or
  * real demand in Search Console (seo/data/gsc-keep.json). Everything else
  * renders exactly as before for readers but carries noindex,follow and leaves
- * the sitemap. Chapter, book, topic, name and word pages are not affected.
+ * the sitemap. Chapter, book, name and word pages are not affected; the 90
+ * entity topic pages in seo/noindex.js are handled there. This rule replaced
+ * the Nov 12 "no meaning and no commentary" verse rule, which it covers.
  */
 let _keep, _topicRefs;
 const keepData = () => (_keep ??= (() => {
@@ -184,7 +187,7 @@ const keepData = () => (_keep ??= (() => {
 function topicRefKeys() {
   if (!_topicRefs) {
     _topicRefs = new Set();
-    for (const t of TOPICS) for (const ref of [t.lead, ...t.verses]) {
+    for (const t of TOPICS) if (!NOINDEX_TOPICS.has(t.slug)) for (const ref of [t.lead, ...t.verses]) {
       const r = ref && parseRef(ref);
       if (r) _topicRefs.add(`${r.book.abbr}|${r.chapter}|${r.from}|${r.to}`);
     }
@@ -803,7 +806,7 @@ ${promo()}`;
     ...(L ? [{ "@type": "FAQPage", "@id": SITE + `/verses-about/${t.slug}#faq`,
       mainEntity: L.faq.map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })) }] : []),
   ]);
-  return ok(shell({ title: L ? `${L.title} (KJV) — ${L.titleSuffix || `All ${L.items.length} Listed`} | ${SITE_NAME}` : `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: (keyR || first) ? `${SITE}/api/og?ref=${encodeURIComponent(keyR ? t.lead : first.ref)}` : undefined, pageType: "verses-topic", ref: t.name }));
+  return ok(shell({ title: L ? `${L.title} (KJV) — ${L.titleSuffix || `All ${L.items.length} Listed`} | ${SITE_NAME}` : `${n} ${topicPhrase(t, true)} (KJV) | ${SITE_NAME}`, description, canonical: `/verses-about/${t.slug}`, h, jsonld, ogImage: (keyR || first) ? `${SITE}/api/og?ref=${encodeURIComponent(keyR ? t.lead : first.ref)}` : undefined, pageType: "verses-topic", ref: t.name, noindex: NOINDEX_TOPICS.has(t.slug) }));
 }
 
 const NAME_BY_SLUG = new Map(NAMES.map((n) => [n.name.toLowerCase(), n]));
@@ -1062,7 +1065,7 @@ ${gaSearch}${promo()}`;
 /* ------------------------------------------------------------------ sitemaps */
 /* Last date the server-rendered pages changed in a way search engines should
  * re-read (templates, titles, descriptions, listings). Bump it when they do. */
-const LASTMOD = "2026-11-11";
+const LASTMOD = "2026-11-12";
 const urlset = (urls) => `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map(([u, p]) => `<url><loc>${SITE}${u}</loc><lastmod>${LASTMOD}</lastmod>${p ? `<priority>${p}</priority>` : ""}</url>`).join("\n")}\n</urlset>`;
 
 /* ------------------------------------------------------------------ stats */
@@ -1448,7 +1451,7 @@ function sitemapIndex() {
 function sitemapFile(name) {
   if (name === "pages") {
     const urls = [["/", "1.0"], ["/bible", "0.9"], ["/verses-about", "0.9"], ["/verse-of-the-day", "0.8"], ["/kids/", "0.8"], ["/privacy", "0.3"], ["/terms", "0.3"]];
-    for (const t of TOPICS) urls.push([`/verses-about/${t.slug}`, "0.8"]);
+    for (const t of TOPICS) if (!NOINDEX_TOPICS.has(t.slug)) urls.push([`/verses-about/${t.slug}`, "0.8"]);
     urls.push(["/strongs", "0.9"], ["/king-james-bible", "0.9"], ["/bible-words", "0.9"], ["/bible-statistics", "0.9"]);
     for (const w of WORDS) urls.push([`/bible-words/${w.word.replace(/ /g, "-")}`, "0.7"]);
     urls.push(["/bible-names", "0.9"], ["/bible-names/boys", "0.8"], ["/bible-names/girls", "0.8"]);

@@ -59,6 +59,28 @@ export const TOPIC_LISTS = {
       ["Thou shalt not bear false witness against thy neighbour.", "Exodus 20:16"],
       ["Thou shalt not covet.", "Exodus 20:17"],
     ],
+    /* Nov 11, 2026. The pages that outrank this one for "10 commandments
+     * scripture" are Exodus 20 itself and study guides that give each
+     * commandment its full text. The list above quotes only the opening clause
+     * (the second and fourth commandments run to three and four verses), so
+     * each one now gets its whole wording, the Deuteronomy 5 parallel, and the
+     * New Testament places it is repeated or applied — all taken from the KJV
+     * and the cross-reference data, nothing written for the page. */
+    detail: {
+      heading: "Each commandment in full",
+      items: [
+        { full: "Exodus 20:3", parallel: "Deuteronomy 5:7", also: ["Matthew 4:10"] },
+        { full: "Exodus 20:4-6", parallel: "Deuteronomy 5:8-10", also: ["Acts 17:29", "1 John 5:21"] },
+        { full: "Exodus 20:7", parallel: "Deuteronomy 5:11", also: ["Matthew 5:33-37", "James 5:12"] },
+        { full: "Exodus 20:8-11", parallel: "Deuteronomy 5:12-15", also: ["Mark 2:27-28"] },
+        { full: "Exodus 20:12", parallel: "Deuteronomy 5:16", also: ["Ephesians 6:1-3", "Colossians 3:20", "Mark 7:10"] },
+        { full: "Exodus 20:13", parallel: "Deuteronomy 5:17", also: ["Matthew 5:21-22", "Romans 13:9"] },
+        { full: "Exodus 20:14", parallel: "Deuteronomy 5:18", also: ["Matthew 5:27-28", "Hebrews 13:4"] },
+        { full: "Exodus 20:15", parallel: "Deuteronomy 5:19", also: ["Ephesians 4:28", "Romans 13:9"] },
+        { full: "Exodus 20:16", parallel: "Deuteronomy 5:20", also: ["Matthew 19:18"] },
+        { full: "Exodus 20:17", parallel: "Deuteronomy 5:21", also: ["Luke 12:15", "Hebrews 13:5", "Romans 13:9"] },
+      ],
+    },
     note: "The numbering above is the one used by most Protestant churches. Catholic and Lutheran tradition joins the first two into one and splits coveting into two, which gets to ten a different way. The text of Exodus 20 is the same either way; it is the dividing that differs.",
     faq: [
       ["What are the Ten Commandments?", "They are the ten commands God gave Israel at Mount Sinai, recorded in Exodus 20:3-17 and again in Deuteronomy 5:7-21: have no other gods, make no graven image, do not take the LORD's name in vain, keep the sabbath, honour your father and mother, do not kill, do not commit adultery, do not steal, do not bear false witness, and do not covet."],
@@ -86,6 +108,27 @@ export const TOPIC_LISTS = {
       ["Meekness — gentleness", "Galatians 5:23"],
       ["Temperance — self-control", "Galatians 5:23"],
     ],
+    /* Nov 11, 2026. Every page that outranks this one for "fruit of the
+     * spirit" (Crosswalk, BibleProject, Christianity.com, Bible Gateway's
+     * topic page) takes the nine one at a time and says what each word means.
+     * The Greek behind each is already in seo/data/strongs.json, so each fruit
+     * now shows its word, Strong's definition, how the KJV renders it elsewhere
+     * and how often it occurs — public-domain lexicon data, not new prose.
+     * Every `also` reference is checked to carry the same Strong's number. */
+    detail: {
+      heading: "Each fruit, and the Greek word behind it",
+      items: [
+        { strongs: "G26", also: ["1 Corinthians 13:4-7", "Romans 5:8"] },
+        { strongs: "G5479", also: ["John 15:11", "Romans 14:17"] },
+        { strongs: "G1515", also: ["John 14:27", "Romans 5:1"] },
+        { strongs: "G3115", also: ["Colossians 1:11", "2 Timothy 4:2"] },
+        { strongs: "G5544", also: ["Colossians 3:12", "Titus 3:4"] },
+        { strongs: "G19", also: ["Ephesians 5:9", "Romans 15:14"] },
+        { strongs: "G4102", also: ["Matthew 23:23", "Romans 3:3"] },
+        { strongs: "G4236", also: ["Galatians 6:1", "Ephesians 4:2"] },
+        { strongs: "G1466", also: ["Acts 24:25", "2 Peter 1:6"] },
+      ],
+    },
     note: "Four of the nine are words the King James translators used in 1611 that have since drifted. Longsuffering is what newer translations call patience, gentleness is kindness, faith here means faithfulness, and temperance is self-control. The second word in each line above is the modern rendering, not a different item — the list is nine, not thirteen.",
     faq: [
       ["What are the nine fruits of the Spirit?", "Love, joy, peace, longsuffering, gentleness, goodness, faith, meekness, and temperance — Galatians 5:22-23 in the King James Version. Newer translations render the last several as patience, kindness, goodness, faithfulness, gentleness, and self-control."],

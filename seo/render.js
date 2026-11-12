@@ -628,13 +628,53 @@ function aliasNames(t) {
   return out;
 }
 
+/* Related topics, closest first. The list used to be the first eight topics in
+ * alphabetical order that shared any verse, so /verses-about/worry linked
+ * A New Job, Breakups, Caregiving... and never Fear & Anxiety, which carries 9
+ * of Worry's 12 verses. Score each other topic by how many of this page's
+ * verses it also carries (a range counts when any of its verses overlaps),
+ * then break ties by the other topic's size and its slug. */
+const REF_RE = /^(.+?) (\d+):(\d+)(?:-(\d+))?$/;
+const refVerses = (ref) => {
+  const m = REF_RE.exec(ref);
+  if (!m) return [ref];
+  const a = +m[3], b = m[4] ? +m[4] : a, out = [];
+  for (let v = a; v <= b; v++) out.push(`${m[1]} ${m[2]}:${v}`);
+  return out;
+};
+const TOPIC_VERSE_SETS = new Map();
+const verseSetOf = (t) => {
+  let s = TOPIC_VERSE_SETS.get(t);
+  if (!s) TOPIC_VERSE_SETS.set(t, (s = new Set(t.verses.flatMap(refVerses))));
+  return s;
+};
+export function relatedTopics(t, n = 8) {
+  const mine = t.verses.map(refVerses);
+  return TOPICS
+    .filter((o) => o !== t)
+    .map((o) => { const theirs = verseSetOf(o); return { o, shared: mine.filter((vs) => vs.some((v) => theirs.has(v))).length }; })
+    .filter((x) => x.shared > 0)
+    .sort((a, b) => b.shared - a.shared || b.o.verses.length - a.o.verses.length || a.o.slug.localeCompare(b.o.slug))
+    .slice(0, n)
+    .map((x) => x.o);
+}
+
+/* Near-duplicate pairs that should point at each other near the top of the
+ * page, so readers and Google can tell the two apart. */
+const TOPIC_PAIRS = {
+  worry: "fear-and-anxiety",
+  "fear-and-anxiety": "worry",
+};
+
 function topicPage(t) {
   const items = t.verses.map((ref) => ({ ref, r: parseRef(ref) })).filter((x) => x.r);
   const n = items.length;
   const phrase = topicPhrase(t);
   const list = items.map(({ ref, r }) => `<div class="topicv"><p class="r"><a href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a> <span style="font-weight:400;color:var(--brown-light)">· ${VERSION}</span></p><blockquote>${verseHtml(r.book.chapters[r.chapter - 1].slice(r.from - 1, r.to).join(" "))}</blockquote></div>`).join("");
   const intro = TOPIC_INTROS[t.slug] || null;
-  const related = TOPICS.filter((o) => o !== t && o.verses.some((v) => t.verses.includes(v))).slice(0, 8);
+  const related = relatedTopics(t);
+  const pair = TOPIC_PAIRS[t.slug] ? TOPIC_BY_SLUG.get(TOPIC_PAIRS[t.slug]) : null;
+  const pairBlock = pair ? `<p class="sub">See also <a href="/verses-about/${pair.slug}">${esc(topicPhrase(pair))}</a>.</p>` : "";
   // Topics that ARE a list (the ten commandments, the nine fruit, the twelve)
   // get the list itself above the verses. See seo/topic-lists.js for why.
   const L = TOPIC_LISTS[t.slug] || null;
@@ -661,6 +701,7 @@ ${L.note ? `<p class="note">${esc(L.note)}</p>` : ""}` : "";
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
 <h1>${L ? esc(L.title) : `${n} ${esc(topicPhrase(t))}`} <span class="badge">${VERSION}</span></h1>
 ${L ? `<p class="lead">${esc(L.lead)}</p>` : intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
+${pairBlock}
 ${keyBlock}
 ${altBlock}
 ${listBlock}

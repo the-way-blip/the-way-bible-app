@@ -223,4 +223,67 @@ export const TOPIC_LISTS = {
       ["Is the phrase 'Great Commission' in the Bible?", "No. The passage is; the label is not. It became the common name for it among English-speaking Protestants in the 1800s."],
     ],
   },
+  /* ------------------------------------------------------- bible stories */
+  /* Story pages. Search Console (Nov 2026) had "david and goliath bible
+   * verse", "where is david and goliath in the bible" and "prodigal son
+   * bible verse" at thousands of impressions and positions past 10. The
+   * pages that win answer where the story is and walk through it in order,
+   * so these get the passage, the story step by step, and an FAQ. */
+  "david-and-goliath": {
+    desc: "David and Goliath is in 1 Samuel 17. The story in order, from Goliath's challenge to the sling and the stone, with every verse quoted in full.",
+    title: "David and Goliath in the Bible",
+    h1: "David and Goliath in the Bible: 12 Verses from 1 Samuel 17",
+    titleSuffix: "Verses and the Story in 1 Samuel 17",
+    lead: "The story of David and Goliath is told in 1 Samuel 17. A giant held two armies at a standstill for forty days, and a shepherd boy who came to bring his brothers bread asked why nobody had answered him.",
+    heading: "The story in order, from 1 Samuel 17",
+    versesHeading: "David and Goliath in scripture",
+    source: "1 Samuel 17:4-51",
+    items: [
+      ["Goliath of Gath, six cubits and a span tall, challenges Israel to send one man to fight him.", "1 Samuel 17:4"],
+      ["He comes out morning and evening for forty days, and no one answers.", "1 Samuel 17:16"],
+      ["Jesse sends David to the camp with bread for his brothers.", "1 Samuel 17:17"],
+      ["David asks who this Philistine is, that he should defy the armies of the living God.", "1 Samuel 17:26"],
+      ["Saul puts his own armour on David, and David takes it off because he has not proved it.", "1 Samuel 17:38-39"],
+      ["David chooses five smooth stones out of the brook and goes out with his sling.", "1 Samuel 17:40"],
+      ["David tells Goliath he comes in the name of the LORD of hosts, for the battle is the LORD's.", "1 Samuel 17:45-47"],
+      ["One stone strikes Goliath in the forehead, and he falls on his face to the earth.", "1 Samuel 17:49"],
+      ["David takes Goliath's own sword to finish the fight, and the Philistines flee.", "1 Samuel 17:51"],
+    ],
+    note: "David had already been anointed king by Samuel in 1 Samuel 16, but he was still a shepherd and the youngest of Jesse's sons when he walked into the valley of Elah.",
+    faq: [
+      ["Where is David and Goliath in the Bible?", "In the Old Testament, in 1 Samuel 17. The whole account runs from verse 1 to verse 58, and the fight itself is verses 40 to 51."],
+      ["How tall was Goliath?", "1 Samuel 17:4 says his height was six cubits and a span. A cubit was about 18 inches and a span about 9, which puts him at roughly nine feet nine inches."],
+      ["What did David use to kill Goliath?", "A sling and one stone, chosen from five smooth stones out of the brook. 1 Samuel 17:50 notes there was no sword in David's hand. He used Goliath's own sword afterward in verse 51."],
+      ["What did David say to Goliath?", "\"Thou comest to me with a sword, and with a spear, and with a shield: but I come to thee in the name of the LORD of hosts\" (1 Samuel 17:45), and \"the battle is the LORD's\" (1 Samuel 17:47)."],
+      ["What does the story of David and Goliath teach?", "David says it himself in 1 Samuel 17:46-47: so that all the earth may know there is a God in Israel, and that the LORD does not save with sword and spear."],
+    ],
+  },
+
+  "the-prodigal-son": {
+    desc: "The prodigal son is in Luke 15:11-32. The story in order, from the inheritance to the older brother outside the feast, with every verse quoted.",
+    title: "The Prodigal Son in the Bible",
+    h1: "The Prodigal Son in the Bible: Luke 15:11-32",
+    titleSuffix: "Verses and the Story in Luke 15",
+    lead: "Jesus tells the parable of the prodigal son in Luke 15:11-32, the third of three stories about something lost and found. A son asks for his inheritance early, spends it, and comes home rehearsing a speech he never gets to finish.",
+    heading: "The story in order, from Luke 15",
+    versesHeading: "The prodigal son in scripture",
+    source: "Luke 15:11-32",
+    items: [
+      ["The younger of two sons asks his father for his share of the inheritance.", "Luke 15:11-12"],
+      ["He travels to a far country and wastes it with riotous living.", "Luke 15:13"],
+      ["A famine comes, and he ends up feeding pigs and wishing he could eat what they eat.", "Luke 15:14-16"],
+      ["He comes to himself and decides to go home and ask to be a hired servant.", "Luke 15:17-19"],
+      ["While he is still a great way off, his father sees him, runs, and kisses him.", "Luke 15:20"],
+      ["The father calls for the best robe, a ring, shoes, and the fatted calf.", "Luke 15:22-24"],
+      ["The older son hears the music, is angry, and will not go in.", "Luke 15:25-28"],
+      ["The father goes out to him too: this thy brother was dead, and is alive again.", "Luke 15:31-32"],
+    ],
+    note: "The parable is the last of three in Luke 15, after the lost sheep and the lost coin. All three were told to Pharisees and scribes who complained that Jesus received sinners and ate with them (Luke 15:2).",
+    faq: [
+      ["Where is the prodigal son in the Bible?", "Luke 15:11-32, in the New Testament. Only Luke's gospel records it."],
+      ["What does prodigal mean?", "Wasteful, spending freely. The word is not in the passage itself. It comes from the son who wasted his substance with riotous living in Luke 15:13."],
+      ["Who is the older brother in the parable?", "The son who stayed home and served his father, and then would not come in to the feast (Luke 15:28-30). Jesus told the parable to Pharisees and scribes who objected to him eating with sinners, and the older brother is the part of the story aimed at them."],
+      ["What is the point of the parable of the prodigal son?", "Luke 15:24 and 15:32 say it: \"this my son was dead, and is alive again; he was lost, and is found.\" It shows the welcome God gives a sinner who comes home, and asks the listener whether they will share in it."],
+    ],
+  },
 };

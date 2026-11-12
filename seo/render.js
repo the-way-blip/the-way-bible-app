@@ -32,6 +32,7 @@ import { inviteHtml, inviteJs, INVITE_CSS } from "./invite.js";
 import { KJV_FACTS, KJV_SECTIONS, KJV_FAQ } from "./kjv-story.js";
 import { WORDS } from "./words-archaic.js";
 import { NOINDEX_TOPICS } from "./noindex.js";
+import { VERSE_EXTRAS } from "./verse-extras.js";
 
 const DIR = path.dirname(fileURLToPath(import.meta.url));
 export const SITE = "https://thewaybible.app";
@@ -534,6 +535,11 @@ function versePage(b, c, from, to) {
   const topics = []; for (let v = from; v <= to; v++) for (const t of verseTopics().get(`${b.abbr}|${c}|${v}`) || []) if (!topics.includes(t)) topics.push(t);
   const commentary = commentaryFor(`${b.abbr}|${c}|${from}`);
   const meaning = meaningFor(b, c, from, to);
+  // Extra sections for a few high-impression verses. See seo/verse-extras.js.
+  const X = VERSE_EXTRAS[label] || null;
+  const extraBlock = X ? `${(X.sections || []).map(([hd, html]) => `<h2>${esc(hd)}</h2>${html}`).join("\n")}
+${X.faq && X.faq.length ? `<h2>Common questions about ${esc(label)}</h2><div class="faq">${X.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>` : ""}
+${X.next && X.next.length ? `<h2>Read next</h2><ul class="refs"><li><a href="${chapterUrl(b, c)}">${esc(chapterLabel(b, c))}, the whole chapter</a></li>${X.next.map((r) => `<li>${refLink(r)}</li>`).join("")}</ul>` : ""}` : "";
 
   const h = `${crumbs([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)], [chapterLabel(b, c), chapterUrl(b, c)], [label, verseUrl(b, c, from, to)]])}
 <h1>${esc(label)} <span class="badge">${VERSION}</span></h1>
@@ -541,6 +547,7 @@ function versePage(b, c, from, to) {
 ${scripture}
 <div class="actions"><a class="btn primary" href="${appChapterUrl(b, c, from)}" data-cta="verse-study-app">Study in the app</a><a class="btn" href="${chapterUrl(b, c)}#${from}" data-cta="verse-read-chapter">Read ${esc(chapterLabel(b, c))} in full</a><a class="btn" href="/api/og?ref=${encodeURIComponent(label)}" data-cta="verse-share-image" download="${attr(label.replace(/[: ]/g, "-"))}.png">Share image</a></div>
 ${meaning ? `<h2>What ${esc(label)} means</h2><div class="meaning"><p>${esc(meaning)}</p></div><p class="muted">Study note provided by TheWay Bible App, separate from the KJV text. Read the full chapter in context and compare interpretations. <a href="mailto:dillon@bigrapids.church">Report a correction</a>.</p>` : ""}
+${extraBlock}
 <h2>${esc(label)} in context</h2><div class="ctx">${context}</div>
 <p style="font-size:14px"><a href="${chapterUrl(b, c)}">Read all of ${esc(chapterLabel(b, c))} →</a></p>
 ${commentary ? `<h2>Commentary</h2><div class="commentary"><p>${esc(commentary.excerpt)}</p><p class="cite">— Matthew Henry's Concise Commentary${commentary.range && commentary.range !== String(from) ? ` on verses ${esc(commentary.range)}` : ""}</p></div>` : ""}
@@ -550,15 +557,18 @@ ${topics.length ? `<h2>Topics</h2><div class="chips">${topics.map((t) => `<a hre
 <div class="pn"><span>${prev ? `<a href="${verseUrl(prev[0], prev[1], prev[2])}">← ${esc(refLabel(prev[0], prev[1], prev[2]))}</a>` : ""}</span><span>${next ? `<a href="${verseUrl(next[0], next[1], next[2])}">${esc(refLabel(next[0], next[1], next[2]))} →</a>` : ""}</span></div>
 ${promo(b, c, from)}`;
 
-  const title = `${label} KJV – ${snippet(text, 52)} | ${SITE_NAME}`;
-  const description = text.length > 158 ? snippet(text, 155) : text;
+  const title = X && X.title ? `${X.title} | ${SITE_NAME}` : `${label} KJV – ${snippet(text, 52)} | ${SITE_NAME}`;
+  const description = X && X.description ? X.description : text.length > 158 ? snippet(text, 155) : text;
   const canonical = verseUrl(b, c, from, to);
   const jsonld = webPageLd([
     { "@type": "WebPage", name: `${label} (KJV)`, url: SITE + canonical, description, isPartOf: { "@id": SITE + "/#website" },
       mainEntity: { "@type": "CreativeWork", name: label, text, inLanguage: "en", isPartOf: { "@type": "Book", name: "The Holy Bible, King James Version" }, license: "https://creativecommons.org/publicdomain/mark/1.0/" } },
     breadcrumbLd([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)], [chapterLabel(b, c), chapterUrl(b, c)], [label, canonical]]),
-    ...(meaning ? [{ "@type": "FAQPage", "@id": SITE + canonical + "#faq",
-      mainEntity: [{ "@type": "Question", name: `What does ${label} mean?`, acceptedAnswer: { "@type": "Answer", text: meaning } }] }] : []),
+    ...(meaning || (X && X.faq) ? [{ "@type": "FAQPage", "@id": SITE + canonical + "#faq",
+      mainEntity: [
+        ...(meaning ? [{ "@type": "Question", name: `What does ${label} mean?`, acceptedAnswer: { "@type": "Answer", text: meaning } }] : []),
+        ...((X && X.faq) || []).map(([q, a]) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+      ] }] : []),
   ]);
   return ok(shell({ title, description, canonical, h, jsonld, ogImage: `${SITE}/api/og?ref=${encodeURIComponent(label)}`, pageType: "bible-verse", ref: label, noindex: !meaning && !commentary }));
 }
@@ -700,13 +710,13 @@ function topicPage(t) {
 <ol class="enum">${L.items.map(([text, ref]) => { const r = parseRef(ref); return `<li><span>${esc(text)}</span>${r ? ` <a class="r" href="${verseUrl(r.book, r.chapter, r.from, r.to)}">${esc(ref)}</a>` : ""}</li>`; }).join("")}</ol>
 ${L.note ? `<p class="note">${esc(L.note)}</p>` : ""}` : "";
   const h = `${crumbs([["Home", "/"], ["Verses by topic", "/verses-about"], [t.name, `/verses-about/${t.slug}`]])}
-<h1>${L ? esc(L.title) : `${n} ${esc(topicPhrase(t))}`} <span class="badge">${VERSION}</span></h1>
+<h1>${L ? esc(L.h1 || L.title) : `${n} ${esc(topicPhrase(t))}`} <span class="badge">${VERSION}</span></h1>
 ${L ? `<p class="lead">${esc(L.lead)}</p>` : intro ? `<div class="meaning"><p>${esc(intro)}</p></div>` : ""}
 ${pairBlock}
 ${keyBlock}
 ${altBlock}
 ${listBlock}
-${L ? `<h2>${esc(L.title)} in scripture — ${n} verses, quoted in full</h2>` : ""}
+${L ? `<h2>${esc(L.versesHeading || `${L.title} in scripture`)} — ${n} verses, quoted in full</h2>` : ""}
 <p class="sub">${t.blurb ? esc(t.blurb) + " " : ""}Each verse is quoted in full — tap a reference to read it in context, see cross references, and study the original words.</p>
 ${list}
 ${L ? `<h2>Common questions</h2><div class="faq">${L.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>` : ""}

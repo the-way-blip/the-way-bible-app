@@ -160,6 +160,18 @@ function verseTopics() {
   return _verseTopics;
 }
 
+/** Topics that cite verses in a chapter, most verses in the chapter first, then by name; noindex topics left out. */
+function topicsForChapter(b, c, n = 8) {
+  const out = [];
+  for (const t of TOPICS) {
+    if (NOINDEX_TOPICS.has(t.slug)) continue;
+    let hits = 0;
+    for (const ref of t.verses) { const r = parseRef(ref); if (r && r.book === b && r.chapter === c) hits++; }
+    if (hits) out.push({ t, hits });
+  }
+  return out.sort((x, y) => y.hits - x.hits || x.t.name.localeCompare(y.t.name)).slice(0, n).map((x) => x.t);
+}
+
 /* ------------------------------------------------------------------ text */
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const attr = esc;
@@ -486,11 +498,13 @@ function chapterPage(b, c) {
   const prevLabel = c > 1 ? chapterLabel(b, c - 1) : books()[b.index - 1] ? chapterLabel(books()[b.index - 1], books()[b.index - 1].chapters.length) : "";
   const next = c < b.chapters.length ? chapterUrl(b, c + 1) : books()[b.index + 1] ? chapterUrl(books()[b.index + 1], 1) : null;
   const nextLabel = c < b.chapters.length ? chapterLabel(b, c + 1) : books()[b.index + 1] ? chapterLabel(books()[b.index + 1], 1) : "";
+  const chapterTopics = topicsForChapter(b, c);
   const h = `${crumbs([["Home", "/"], ["Bible", "/bible"], [b.name, bookUrl(b)], [label, chapterUrl(b, c)]])}
 <h1>${esc(label)} <span class="badge">${VERSION}</span></h1>
 <p class="sub">${ch.length} verses · <a href="${bookUrl(b)}">all chapters of ${esc(b.name)}</a></p>
 <div class="actions"><a class="btn primary" href="${appChapterUrl(b, c)}" data-cta="chapter-study-app">Study this chapter in the app</a></div>
 <div class="chapter">${text}</div>
+${chapterTopics.length ? `<h2>Topics in this chapter</h2><div class="chips">${chapterTopics.map((t) => `<a href="/verses-about/${t.slug}">${esc(t.name)}</a>`).join("")}</div>` : ""}
 <div class="pn"><span>${prev ? `<a href="${prev}">← ${esc(prevLabel)}</a>` : ""}</span><span>${next ? `<a href="${next}">${esc(nextLabel)} →</a>` : ""}</span></div>
 <h2>Chapters in ${esc(b.name)}</h2><div class="grid">${b.chapters.map((_, i) => `<a href="${chapterUrl(b, i + 1)}"${i + 1 === c ? ' style="border-color:var(--gold);background:#fff3b0"' : ""}>${i + 1}</a>`).join("")}</div>
 ${promo(b, c)}`;

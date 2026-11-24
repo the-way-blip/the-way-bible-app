@@ -295,3 +295,37 @@ and the service worker in `vite.config.js`. The third was missed for
 /bible-names in September and again for /strongs in October. The service worker
 now decides by allowlist instead, so new SEO routes are safe by default — but
 check all three anyway.
+
+## The Oct 26 drop — Nov 11, 2026
+
+Search Console, thewaybible.app, by day: ~10,000 impressions on Oct 25, ~150 a
+day from Oct 27 on. Every template fell to about 2% of its previous rate — verse,
+topic, Strong's, word, names — on mobile and desktop alike.
+
+Ruled out: no deploy between Oct 23 and Oct 28; URL Inspection still reports
+the key pages "Submitted and indexed" with matching canonicals; robots.txt and
+the live `<head>` are clean; Manual Actions reads "No issues detected". It lines
+up with an unconfirmed Google ranking update Search Engine Roundtable reported
+Oct 24–27, which lingered about a week.
+
+Index intact, rankings gone everywhere at once, and a two-month-old domain
+offering Google 47,222 URLs — 31,102 verse pages and 14,197 Strong's pages,
+18,000+ of the verse pages never shown once — is the shape of a site-wide
+quality judgment, not a page problem.
+
+**Shipped on branch `seo/index-pruning-nov2026` (needs Dillon's OK to merge):**
+
+- `verseIndexable()` / `strongsIndexable()` in seo/render.js. A verse or range
+  page stays indexable if it has a meaning, is linked from a topic page, or drew
+  10+ impressions in the 90 days to Nov 9 (seo/data/gsc-keep.json). A Strong's
+  page stays if the word is used 20+ times, drew 5+ impressions, or a topic list
+  links to it. Everything else still renders for readers with noindex,follow.
+- Sitemaps list only indexable pages: 47,222 → ~10,950 URLs.
+- The ten commandments and the fruit of the Spirit — position 50–57 on their
+  head terms — now take each item in full: the whole KJV wording with the
+  Deuteronomy 5 parallel and New Testament restatements, and for each fruit its
+  Greek word, Strong's definition and usage count. Data, not new prose.
+
+What to watch: Search Console → Pages → "Excluded by noindex tag" should climb
+toward ~35,000 over a few weeks. Recovery from a site-wide demotion usually
+waits for Google's next broad update; judge it then, not week to week.
